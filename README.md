@@ -1,9 +1,91 @@
-# CultureCourse OCRForge
+# 古籍重光 · Relumine
 
-`ocrforge` 是面向 DeepSeek-OCR 的训练+测评一体框架。它替代旧的临时
-`ocr_eval` 脚本体系，主线目标是整页 OCR，行级/字符级能力用于诊断和训练样本构造。
+> 让沉睡在古籍里的繁体汉字重见光明 —— 从识别，到溯源，到文化计算。
+>
+> *Bringing the characters of ancient texts back to light — from recognition, to provenance, to cultural computing.*
 
-## 目录结构
+**古籍重光（Relumine）** 是北京邮电大学（BUPT）提出的一项面向汉字文化遗产的计算研究项目。
+我们不止于把古籍页面"读"成文字，而是要为每一个繁体字建立**可追溯、可计算、可对齐**的数字身份：
+它从何而来、如何一步步简化为今天的字形、在语义空间里又与简体字处于怎样的位置。
+
+OCR 只是入口。最终目标是一套支撑**文化计算（cultural computing）**的基础设施——
+让古籍文本不仅能被检索，更能被分析、被度量、被理解。
+
+## 三大支柱
+
+### 1. 古籍 OCR —— 让文字重新可读
+面向 DeepSeek-OCR / PaddleOCR-VL 的训练与评测一体框架 [`ocrforge`](#工程框架ocrforge)，
+主线是整页 OCR，行级 / 字符级能力用于诊断与训练样本构造。这是整个项目的数据入口：
+把扫描影像稳定、高质量地转写为带版面结构的文本。
+
+### 2. 繁简映射数据库 —— 记录每个字的简化历程
+为常用繁体字建立结构化的**繁→简映射数据库**，不只记录"繁体 X 对应简体 Y"这一对结果，
+而是刻画其**简化历程（simplification provenance）**：
+
+- 一对多 / 多对一的合并与分化关系（如 *發 / 髮 → 发*，*乾 / 幹 / 干 → 干*）；
+- 简化所依据的方式（草书楷化、古字复用、形声新造、同音替代、偏旁类推……）；
+- 历史层次与依据来源（说文、碑帖、近代简化方案、1956 年《汉字简化方案》等节点）。
+
+目标是让"汉字怎么变成今天这样"成为机器可查询、可统计、可验证的结构化知识，而非散落于注解中的经验。
+
+### 3. 语义空间对齐 —— 通往文化计算
+将繁体字与简体字**对齐到同一语义空间**，使得跨字形、跨时代的文本可以在统一表示下比较与计算。
+在此之上支撑一系列文化计算任务：古今语义漂移分析、异体字归一、跨时代文本检索、
+字形—语义关系建模等。这是把"识别出的文字"升维为"可被研究的文化数据"的关键一步。
+
+```text
+扫描影像 ──[① OCR]──▶ 结构化文本 ──[② 繁简映射]──▶ 字级溯源知识 ──[③ 语义对齐]──▶ 文化计算
+```
+
+---
+
+## 线上产品 · Live Demo
+
+三大支柱已落地为一个可演示的 Web 产品「**古籍重光**」，对外公开的三个功能恰好对应三条主线：
+
+| Tab | 功能 | 对应支柱 | 做什么 |
+|-----|------|----------|--------|
+| 壹 · **繁简通译** | 繁⇄简转换 + 合并冲突检测 | ② 繁简映射 | 在 OpenCC 转换基础上，自动标出"多对一"的简化合并点——如 `后 ← 後/后`、`发 ← 發/髮`、`干 ← 乾/幹/干`，把简化造成的语义歧义显式暴露出来 |
+| 貳 · **古籍识读** | 古籍影像 OCR | ① OCR | 上传刻本/写本影像，调用**以古籍微调的 PaddleOCR-VL** 模型转写为文本，返回字数与推理延迟；单卡串行队列、可查看排队深度 |
+| 參 · **形声流变** | 单字繁简演化时间轴 | ② 繁简映射 | 按 `甲骨→金文→小篆→隶书→楷书(繁)→一简(1956)` 展示典型字的字形流变、合并关系与考据注记，是繁简映射数据库的可视化窗口 |
+
+产品定位一句话（取自首页）：
+
+> 完善现有繁体字典，给出北邮方案 · 以古籍为本微调 PaddleOCR，让刻本重现 · 追溯典型汉字繁简演化
+
+### 系统架构
+
+```text
+浏览器 ──▶ Next.js 前端 (:3000) ──/api/* rewrites──▶ FastAPI 后端 (:7860) ──▶ PaddleOCR-VL (常驻 GPU)
+                  │                                         │
+            cloudflared 隧道                          OpenCC 繁简词典 + evolution.json
+            (临时公网 URL)
+```
+
+- **前端** `apps/web/`：Next.js 16，中式版式 UI，`next.config.ts` 把 `/api/*` 代理到后端，浏览器只见单一域名。
+- **后端** `apps/api/ocrforge_web/`：FastAPI，三个路由 `convert` / `ocr` / `evolution`，OCR 模型在 lifespan 中常驻加载。
+- **演化数据** `apps/api/ocrforge_web/data/evolution.json`：当前为 JSON 后端（`JsonEvolutionRepo`，热重载），预留 `SqliteEvolutionRepo` 以便扩展到上百字规模。
+- 启动与运维详见 [`apps/RUN.md`](apps/RUN.md)（三服务 tmux 启动手册）。
+
+### API 速览
+
+```text
+GET  /api/healthz            # 健康检查 + 模型是否就绪
+POST /api/convert            # 繁简转换，返回 result + 合并冲突 collisions
+GET  /api/ocr/queue          # 当前 OCR 队列深度
+POST /api/ocr                # 上传图片，返回 OCR 文本 / 字数 / 延迟
+GET  /api/evolution          # 列出已收录的演化字
+GET  /api/evolution/{char}   # 单字完整演化记录（stages / merges / notes）
+```
+
+---
+
+## 工程框架 `ocrforge`
+
+`ocrforge` 是支柱①的实现：面向 DeepSeek-OCR 的训练 + 测评一体框架，替代旧的临时
+`ocr_eval` 脚本体系。主线目标是整页 OCR，行级 / 字符级能力用于诊断和训练样本构造。
+
+### 目录结构
 
 ```text
 CultureCourse/
@@ -26,7 +108,7 @@ src/ocrforge/parallel    多 GPU 并行配置和兼容检查
 src/ocrforge/runtime     运行目录、config 快照、环境记录
 ```
 
-## 快速命令
+### 快速命令
 
 DeepSeek-OCR 相关命令必须在 `deepseek-ocr2-maca` 环境里运行：
 
@@ -66,7 +148,7 @@ python CultureCourse/tools/run.py evaluate --conda-env deepseek-ocr2-maca --devi
   experiment=full_eval data=tkh data.split=test data.limit=10 eval.limit=10
 ```
 
-## 配置机制
+### 配置机制
 
 配置由 `CultureCourse/configs/config.yaml` 组合各配置组：
 
@@ -93,7 +175,7 @@ python CultureCourse/tools/run.py evaluate --conda-env deepseek-ocr2-maca --devi
   experiment=full_eval eval.save_samples=20
 ```
 
-## 并行策略
+### 并行策略
 
 统一字段是 `parallel.mode`：
 
@@ -106,7 +188,7 @@ tensor    DeepSpeed init_inference tensor parallel；当前用于评测，不用
 
 不兼容的并行模式会明确报错，不会静默退化成单卡。
 
-## 进度条
+### 进度条
 
 训练和评测默认显示 tqdm 风格进度条。单进程时直接按本进程进度更新；多进程
 DDP/torchrun 时只由 rank 0 显示，所有 rank 通过独立的进度通信组定期汇总完成量，
@@ -122,7 +204,7 @@ python CultureCourse/tools/run.py train --conda-env deepseek-ocr2-maca --devices
   experiment=deepseek_full_finetune logging.progress.refresh_seconds=5
 ```
 
-## Checkpoint
+### Checkpoint
 
 训练里的 `step` 现在是一次 `optimizer.step()`。有效 batch：
 
@@ -236,10 +318,14 @@ python CultureCourse/tools/run.py evaluate --conda-env deepseek-ocr2-maca --devi
   parallel=tensor parallel.tensor_parallel_size=2
 ```
 
-## 评测粒度
+### 评测粒度
 
 - 页面级：默认主线，整页图输入、整页文本输出、计算页面级 OCR 指标。
 - 行级：ICDAR `TextLine` 可用于行级诊断和训练样本构造。
-- 字符级：TKH/MTH 字符框可用于单字诊断和训练样本构造。
+- 字符级：TKH/MTH 字符框可用于单字诊断和训练样本构造，也是繁简映射与字形分析的数据基础。
 
 实验记录保存在 `CultureCourse/EXPERIMENTS.md`。
+
+---
+
+<sub>古籍重光 · Relumine — a Beijing University of Posts and Telecommunications (BUPT) research project on Chinese character heritage computing.</sub>

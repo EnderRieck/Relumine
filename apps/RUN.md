@@ -1,5 +1,15 @@
 # 古籍重光 · 三服务启动手册（tmux）
 
+> ⚠️ **本文档面向演示 / 开发环境**：用的是 `next dev` 开发服务器 + cloudflared **临时隧道**，
+> 不是生产部署。临时隧道的公网 URL **每次启动都会变**，仅供临时演示，请勿当作长期地址分发。
+> 正式上线需另做生产构建（`next build` / 反向代理 / 固定域名），不在本手册范围内。
+>
+> 下文命令假设你先设好仓库根路径变量（按你的实际位置改一次即可）：
+>
+> ```bash
+> export REPO=/path/to/CultureCourse    # 例如 /mnt/paper2any/ziyi/CultureCourse
+> ```
+
 整套演示需要同时跑三个进程：
 
 | 名称 | 端口 | 内容 |
@@ -23,13 +33,13 @@ sleep 2
 
 # 2) 三个 tmux 会话
 tmux new-session -d -s api \
-  'conda run -n paddleocr-vl uvicorn ocrforge_web.main:app \
+  "conda run -n paddleocr-vl uvicorn ocrforge_web.main:app \
      --host 127.0.0.1 --port 7860 \
-     --app-dir /mnt/paper2any/ziyi/CultureCourse/apps/api'
+     --app-dir $REPO/apps/api"
 
 tmux new-session -d -s web \
-  'cd /mnt/paper2any/ziyi/CultureCourse/apps/web && \
-   npm run dev -- --port 3000 --hostname 127.0.0.1'
+  "cd $REPO/apps/web && \
+   npm run dev -- --port 3000 --hostname 127.0.0.1"
 
 tmux new-session -d -s cf \
   'cloudflared tunnel --url http://127.0.0.1:3000 --no-autoupdate'
@@ -104,9 +114,9 @@ tmux attach -t cf       # 看隧道连接 / 公网请求量
 # 比如只重启 api（改了 ocr_service.py 之后）
 tmux kill-session -t api
 tmux new-session -d -s api \
-  'conda run -n paddleocr-vl uvicorn ocrforge_web.main:app \
+  "conda run -n paddleocr-vl uvicorn ocrforge_web.main:app \
      --host 127.0.0.1 --port 7860 \
-     --app-dir /mnt/paper2any/ziyi/CultureCourse/apps/api'
+     --app-dir $REPO/apps/api"
 ```
 
 > 注意：每次 `tmux kill-session -t cf` 然后重启，公网 URL 都会变。
@@ -146,12 +156,14 @@ tmux ls   # 应为空
 
 ## 文件路径速查
 
+路径均相对仓库根（`$REPO`）：
+
 | 用途 | 路径 |
 |------|------|
-| 后端代码 | `CultureCourse/apps/api/ocrforge_web/` |
-| 前端代码 | `CultureCourse/apps/web/src/` |
-| 模型 checkpoint | `CultureCourse/runs/train/20260429-152932_train_paddle/checkpoints/step_000200` |
-| 演化数据 | `CultureCourse/apps/api/ocrforge_web/data/evolution.json` |
-| 后端环境变量配置 | `CultureCourse/apps/api/ocrforge_web/settings.py` |
-| Next 配置 | `CultureCourse/apps/web/next.config.ts` |
-| 测试图片 | `CultureCourse/datasets/MTH/raw/JPEGImages/01-V001P000D.jpg` |
+| 后端代码 | `apps/api/ocrforge_web/` |
+| 前端代码 | `apps/web/src/` |
+| 模型 checkpoint | 训练产物，位于 `runs/train/<run_name>/checkpoints/<step>`（由 `settings.py` 的 OCR 模型路径指定；`runs/` 是指向外部存储的软链接，不随仓库分发） |
+| 演化数据 | `apps/api/ocrforge_web/data/evolution.json` |
+| 后端环境变量配置 | `apps/api/ocrforge_web/settings.py` |
+| Next 配置 | `apps/web/next.config.ts` |
+| 测试图片 | 任意古籍页影像（如 `datasets/` 下的 MTH/TKH 样本，`datasets/` 同为外部软链接） |
