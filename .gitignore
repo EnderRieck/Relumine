@@ -1,9 +1,6 @@
 # Large model weights (17G+ — not for GitHub)
 /models/
 
-# Third-party upstream clone (re-clone from deepseek-ai/DeepSeek-OCR-2)
-/DeepSeek-OCR-2/
-
 # HF cache
 /.hf_cache/
 
