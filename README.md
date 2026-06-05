@@ -80,6 +80,67 @@ GET  /api/evolution/{char}   # 单字完整演化记录（stages / merges / note
 
 ---
 
+## 数据集 · Datasets
+
+项目使用三个公开的历史文献 OCR 数据集。`datasets/` 在本仓库中是指向外部存储的软链接、
+**不随仓库分发**（已在 `.gitignore` 中排除），需自行下载并按下述结构放置。
+
+| 数据集 | 内容 | 获取方式 |
+|--------|------|----------|
+| **TKH**（Tripitaka Koreana in Han） | 高丽大藏经刻本，字符级标注 | HCIILAB 公开发布：<https://github.com/HCIILAB/MTHv2_Datasets_Release> |
+| **MTH**（Multiple Tripitaka in Han） | 多版大藏经，字符级标注 | 同上（MTHv2 仓库，含 TKH + MTH） |
+| **ICDAR 2019 HDRC-Chinese** | 历史中文文档识别竞赛数据 | ICDAR 2019 Historical Document Reading Competition 官方数据 |
+
+> TKH / MTH 来自 HCIILAB 的 *MTHv2* 数据集；ICDAR2019-HDRC 为竞赛数据，按主办方说明申请/下载。
+> 各数据集请遵守其原始许可与引用要求。
+
+### 下载与放置
+
+1. 准备数据根目录（可以是外部大容量盘），并把它软链接到仓库下的 `datasets/`：
+
+   ```bash
+   ln -s /path/to/your/datasets $REPO/datasets
+   ```
+
+2. 从上述来源下载并解压，按如下结构组织（TKH/MTH 为 Pascal VOC 风格）：
+
+   ```text
+   datasets/
+     TKH/raw/
+       JPEGImages/                 # 页面影像
+       Annotations/                # 字符级标注 (xml)
+       ImageSets/Main/{train,test}.txt   # 官方划分 id 列表
+       Class_label/
+     MTH/raw/
+       JPEGImages/
+       Annotations/
+       ImageSets/Main/test.txt     # 官方仅给 test 划分
+     ICDAR2019-HDRC-Chinese/
+       images/                     # 页面影像
+       ground_truth/{segmentation,xml}
+   ```
+
+3. 生成训练/测试用的 manifest（`splits/*.jsonl`，记录每张图的相对路径与划分来源）：
+
+   ```bash
+   python CultureCourse/tools/prepare_splits.py --dataset all
+   # 或单独某个：--dataset tkh | mth | icdar2019
+   ```
+
+   - **TKH** 用官方 `train/test.txt` 划分；
+   - **MTH** 官方只给 test，脚本按 `seed=20260428` 做 80/20 划分；
+   - **ICDAR2019** 无官方划分，同样按固定种子 80/20 划分。
+
+4. 验证数据可被框架正确读取：
+
+   ```bash
+   python CultureCourse/tools/check_data.py data=tkh   # 或 data=mth / icdar2019_hdrc / mixed
+   ```
+
+数据集路径由 `configs/data/*.yaml` 的 `root` 字段指定（默认即上面的目录结构），`data=mixed` 会合并三者。
+
+---
+
 ## 工程框架 `ocrforge`
 
 `ocrforge` 是支柱①的实现：面向 DeepSeek-OCR 的训练 + 测评一体框架，替代旧的临时
