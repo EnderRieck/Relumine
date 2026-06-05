@@ -1,0 +1,6 @@
+name: mth
+split: train
+root: CultureCourse/datasets/MTH
+limit: null
+shuffle: false
+

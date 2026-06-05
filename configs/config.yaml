@@ -1,0 +1,13 @@
+defaults:
+  - model: deepseek_ocr2
+  - data: mixed
+  - train: full_finetune
+  - eval: page_ocr
+  - parallel: data
+  - runtime: local
+  - logging: default
+  - experiment: default
+  - _self_
+
+task: train
+seed: 20260428

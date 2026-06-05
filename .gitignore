@@ -1,0 +1,40 @@
+# Large model weights (17G+ — not for GitHub)
+/models/
+
+# Third-party upstream clone (re-clone from deepseek-ai/DeepSeek-OCR-2)
+/DeepSeek-OCR-2/
+
+# HF cache
+/.hf_cache/
+
+# Symlinks to external storage (/mnt/DataFlow/...)
+/datasets
+/runs
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+*.log

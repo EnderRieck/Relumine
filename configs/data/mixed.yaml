@@ -1,0 +1,12 @@
+name: mixed
+split: train
+limit: null
+shuffle: false
+datasets:
+  - name: tkh
+    root: CultureCourse/datasets/TKH
+  - name: mth
+    root: CultureCourse/datasets/MTH
+  - name: icdar2019_hdrc
+    root: CultureCourse/datasets/ICDAR2019-HDRC-Chinese
+

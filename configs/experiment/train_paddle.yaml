@@ -1,0 +1,24 @@
+# @package _global_
+defaults:
+  - override /model: paddleocr_vl
+
+task: train
+experiment:
+  name: train_paddle
+data:
+  split: train
+train:
+  enabled: true
+  strategy: full
+  batch_size: 1
+  gradient_accumulation_steps: 8
+  max_steps: 1000
+  eval_every_steps: 200
+  eval_limit: 20
+  save_every_steps: 200
+  save_final: true
+  plot_curve: true
+eval:
+  enabled: true
+  mode: page
+  prompt_name: free_ocr

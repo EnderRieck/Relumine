@@ -1,0 +1,9 @@
+[project]
+name = "culturecourse-ocrforge"
+version = "0.1.0"
+description = "Training and evaluation framework for DeepSeek-OCR experiments."
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+

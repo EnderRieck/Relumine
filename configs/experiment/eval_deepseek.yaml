@@ -1,0 +1,12 @@
+# @package _global_
+task: evaluate
+experiment:
+  name: eval_deepseek
+data:
+  split: test
+eval:
+  enabled: true
+  mode: page
+  prompt_name: free_ocr
+train:
+  enabled: false

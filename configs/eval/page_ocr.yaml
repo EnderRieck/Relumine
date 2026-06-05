@@ -1,0 +1,8 @@
+enabled: true
+mode: page
+prompt_name: free_ocr
+limit: null
+batch_size: 2
+save_samples: false
+normalize:
+  keep_ascii: false

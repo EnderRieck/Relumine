@@ -1,0 +1,6 @@
+name: icdar2019_hdrc
+split: train
+root: CultureCourse/datasets/ICDAR2019-HDRC-Chinese
+limit: null
+shuffle: false
+

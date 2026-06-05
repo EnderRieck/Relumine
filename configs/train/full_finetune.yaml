@@ -1,0 +1,17 @@
+enabled: true
+strategy: full
+batch_size: 2
+gradient_accumulation_steps: 2
+max_steps: 1000
+learning_rate: 1.0e-5
+weight_decay: 0.0
+max_grad_norm: 1.0
+eval_every_steps: 100
+eval_split: test
+eval_limit: 100
+save_every_steps: 200
+save_final: true
+checkpoint_dir: checkpoints
+resume_from_checkpoint: null
+plot_curve: true
+gradient_checkpointing: false

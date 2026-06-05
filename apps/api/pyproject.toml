@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ocrforge-web"
+version = "0.1.0"
+description = "CultureCourse demo web API (FastAPI)."
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "python-multipart",
+  "opencc-python-reimplemented",
+  "pydantic-settings>=2",
+  "pillow",
+]
+
+[tool.setuptools.packages.find]
+include = ["ocrforge_web*"]

@@ -1,0 +1,7 @@
+mode: data
+backend: deepspeed
+launcher: torchrun
+devices: [0, 1, 2, 3]
+zero_stage: 2
+enabled: true
+

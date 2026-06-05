@@ -1,0 +1,7 @@
+mode: tensor
+backend: deepspeed
+launcher: torchrun
+devices: [0, 1, 2, 3]
+enabled: true
+tensor_parallel_size: 4
+

@@ -1,0 +1,6 @@
+name: tkh
+split: train
+root: CultureCourse/datasets/TKH
+limit: null
+shuffle: false
+

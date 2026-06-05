@@ -1,0 +1,13 @@
+name: deepseek_ocr2
+path: CultureCourse/models/DeepSeek-OCR-2
+trust_remote_code: true
+local_files_only: true
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+device: cuda
+base_size: 1024
+image_size: 768
+crop_mode: true
+max_new_tokens: 8192
+no_repeat_ngram_size: 35
+

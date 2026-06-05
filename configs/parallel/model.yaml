@@ -1,0 +1,11 @@
+mode: model
+backend: torch
+launcher: single_process
+devices: [0, 1, 2, 3]
+enabled: true
+partition:
+  vision: 0
+  projector: 0
+  language: [1, 2, 3]
+  lm_head: 3
+

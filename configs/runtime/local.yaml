@@ -1,0 +1,6 @@
+project_root: auto
+run_root: CultureCourse/runs
+output_dir: ${runtime.run_root}/${task}/${now:%Y%m%d-%H%M%S}_${experiment.name}
+num_workers: 0
+fail_fast: false
+

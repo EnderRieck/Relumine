@@ -1,0 +1,11 @@
+# @package _global_
+task: train
+experiment:
+  name: train_deepseek
+data:
+  split: train
+train:
+  strategy: full
+  max_steps: 1000
+eval:
+  enabled: false

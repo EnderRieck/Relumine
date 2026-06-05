@@ -1,0 +1,10 @@
+enabled: true
+mode: diagnostics
+prompt_name: free_ocr
+limit: null
+batch_size: 2
+line_level: true
+char_level: true
+normalize:
+  keep_ascii: false
+

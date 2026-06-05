@@ -1,0 +1,6 @@
+level: INFO
+log_every_steps: 1
+progress:
+  enabled: true
+  sync_every: 1
+  refresh_seconds: 1.0

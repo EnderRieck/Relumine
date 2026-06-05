@@ -1,0 +1,11 @@
+mode: pipeline
+backend: accelerate_dispatch
+launcher: single_process
+devices: [0, 1, 2, 3]
+enabled: true
+micro_batch_size: 1
+stages: 4
+partition:
+  vision_stage: 0
+  projector_stage: 0
+  lm_head_stage: 3

@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #f7f5f0;
+  --color-surface: #ffffff;
+  --color-ink: #1a1a1a;
+  --color-ink-soft: #4a4845;
+  --color-ink-mute: #8a8680;
+  --color-line: #e6e3dc;
+  --color-accent: #9a2a1f;
+  --color-accent-gold: #c2a96a;
+
+  --font-serif: var(--font-song), "Noto Serif SC", "Songti SC", "Source Han Serif SC", serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Helvetica Neue", sans-serif;
+
+  --tracking-wider2: 0.08em;
+  --tracking-wider3: 0.16em;
+
+  --radius: 0.25rem;
+
+  /* ---------- 新中式动效曲线与时长 ---------- */
+  /* 通用"墨入纸"曲线：起步快、收尾极慢，呈大气感 */
+  --ease-ink: cubic-bezier(0.16, 1, 0.3, 1);
+  /* 线条绘制曲线：两端对称，匀速感 */
+  --ease-draw: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ---------- 命名动画（Tailwind 4 自动生成 animate-* utility） ---------- */
+  --animate-ink-rise: ink-rise 700ms var(--ease-ink) both;
+  --animate-ink-rise-soft: ink-rise-soft 500ms var(--ease-ink) both;
+  --animate-line-draw-x: line-draw-x 800ms var(--ease-draw) both;
+  --animate-line-draw-y: line-draw-y 500ms var(--ease-draw) both;
+  --animate-fade-in: fade-in 500ms ease-out both;
+  --animate-stamp-in: stamp-in 320ms var(--ease-ink) both;
+  --animate-bg-fade: bg-fade 1200ms ease-out both;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: rgba(154, 42, 31, 0.18);
+  color: var(--color-ink);
+}
+
+/* ---------- 关键帧 ---------- */
+
+@keyframes ink-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ink-rise-soft {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes line-draw-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes line-draw-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 印章落印：稍大尺寸压入，无回弹 */
+@keyframes stamp-in {
+  from {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bg-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.08;
+  }
+}
+
+/* 朱砂虚下划线呼吸（极轻微，用于 collision 标记字） */
+@keyframes accent-breathe {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+/* ---------- 偏好减少动效时全部退化 ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
