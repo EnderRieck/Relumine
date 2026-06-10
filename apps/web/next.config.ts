@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   // trycloudflare 临时隧道域名是随机的，所以用通配符
   allowedDevOrigins: [
     "*.trycloudflare.com",
+    "*.serveousercontent.com",
     "127.0.0.1",
     "localhost",
   ],

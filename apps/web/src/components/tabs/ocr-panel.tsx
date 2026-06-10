@@ -99,7 +99,7 @@ export function OcrPanel() {
   return (
     <section className="relative rounded-[var(--radius)] border border-line bg-surface p-8 md:p-12 animate-ink-rise">
       <CornerBrackets />
-      <SectionMark title="古籍识读" subtitle="PaddleOCR-VL古籍微调" />
+      <SectionMark title="古籍识读" subtitle="本机OCR识读 · 繁简转换" />
 
       {!file ? (
         <div className="mt-8">

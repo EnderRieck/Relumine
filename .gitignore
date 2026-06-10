@@ -8,6 +8,9 @@
 /datasets
 /runs
 
+# Downloaded external Han-character databases for local analysis
+/analysis/hanzi_databases/raw/
+
 # Node / Next.js
 node_modules/
 .next/

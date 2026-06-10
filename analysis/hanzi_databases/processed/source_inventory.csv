@@ -1,0 +1,6 @@
+database,local_path,record_count,unique_chars,main_fields,best_for,license_or_note,source_url
+Relumine evolution.json,apps/api/ocrforge_web/data/evolution.json,10,28,"simplified, traditional, pinyin, stages, merges, notes",本项目自建字形流变与简化历程,项目内部数据,
+Unihan,analysis/hanzi_databases/raw/Unihan.zip,1555629,102998,"kMandarin, kDefinition, kTotalStrokes, kRSUnicode, kTraditionalVariant, kSimplifiedVariant",编码、读音、释义、笔画、异体/繁简变体,Unicode 数据文件,https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip
+OpenCC,analysis/hanzi_databases/raw/opencc_STCharacters.txt; analysis/hanzi_databases/raw/opencc_TSCharacters.txt,8130,8169,"STCharacters, TSCharacters",繁简转换、繁简多候选关系,Apache-2.0,https://github.com/BYVoid/OpenCC/tree/master/data/dictionary
+CC-CEDICT,analysis/hanzi_databases/raw/cc_cedict.zip,125002,14382,"traditional word, simplified word, pinyin, English definition",词级繁简对齐、读音、释义例证,CC BY-SA 4.0,https://cc-cedict.org/editor/editor.php?handler=Download
+CHISE IDS,analysis/hanzi_databases/raw/chise_ids,97431,97431,"codepoint, character, IDS",汉字结构分解、部件分析,GPL-2.0-or-later,https://gitlab.nijl.ac.jp/CHISE/ids

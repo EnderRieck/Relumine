@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "expected_records": 100,
+  "actual_records": 100,
+  "duplicate_ids": [],
+  "duplicate_chars": [],
+  "missing_coverage": [],
+  "auto_records_without_source_examples": [],
+  "summary": {
+    "final_target_records": 100,
+    "records": 100,
+    "handcrafted_records": 10,
+    "auto_external_records": 90,
+    "multi_source_records": 96,
+    "traditional_source_pairs": 211,
+    "records_with_unihan": 100,
+    "records_with_chise_ids": 100,
+    "records_with_opencc_mapping": 100,
+    "records_with_cedict_evidence": 100,
+    "records_passing_quality_gate": 100
+  }
+}

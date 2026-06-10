@@ -1,0 +1,101 @@
+simplified,curation_level,canonical_traditional,record_type,simplification_types,source_count,traditional_sources,has_unihan,has_chise_ids,has_opencc_mapping,has_cedict_evidence,quality_gate
+学,handcrafted,學,one_to_one_or_single_source,草书楷化,1,學,True,True,True,True,pass
+书,handcrafted,書,one_to_one_or_single_source,草书楷化,1,書,True,True,True,True,pass
+东,handcrafted,東,one_to_one_or_single_source,草书楷化;符号化简省,1,東,True,True,True,True,pass
+车,handcrafted,車,one_to_one_or_single_source,草书楷化,1,車,True,True,True,True,pass
+发,handcrafted,發,multi_source_merge,多对一合并,2,發 髮,True,True,True,True,pass
+后,handcrafted,後,multi_source_merge,多对一合并;古字复用,2,後 后,True,True,True,True,pass
+面,handcrafted,麵,multi_source_merge,多对一合并,2,麵 面,True,True,True,True,pass
+台,handcrafted,臺,multi_source_merge,多对一合并;古字复用,4,臺 台 檯 颱,True,True,True,True,pass
+余,handcrafted,餘,multi_source_merge,多对一合并,2,餘 余,True,True,True,True,pass
+杰,handcrafted,傑,multi_source_merge,多对一合并;异体字采纳,2,傑 杰,True,True,True,True,pass
+蒙,auto_external,矇,multi_source_merge,多对一合并;待人工考据,4,蒙 矇 濛 懞,True,True,True,True,pass
+干,auto_external,幹,multi_source_merge,多对一合并;待人工考据,3,幹 乾 干,True,True,True,True,pass
+复,auto_external,復,multi_source_merge,多对一合并;待人工考据,3,復 複 覆,True,True,True,True,pass
+系,auto_external,係,multi_source_merge,多对一合并;待人工考据,3,系 係 繫,True,True,True,True,pass
+苏,auto_external,蘇,multi_source_merge,多对一合并;待人工考据,3,蘇 甦 囌,True,True,True,True,pass
+胡,auto_external,鬍,multi_source_merge,多对一合并;待人工考据,3,胡 鬍 衚,True,True,True,True,pass
+向,auto_external,嚮,multi_source_merge,多对一合并;待人工考据,3,向 嚮 曏,True,True,True,True,pass
+汇,auto_external,匯,multi_source_merge,多对一合并;待人工考据,3,匯 彙 滙,True,True,True,True,pass
+只,auto_external,隻,multi_source_merge,多对一合并;待人工考据,3,只 隻 祇,True,True,True,True,pass
+泛,auto_external,氾,multi_source_merge,多对一合并;待人工考据,3,泛 氾 汎,True,True,True,True,pass
+毁,auto_external,毀,multi_source_merge,多对一合并;待人工考据,3,毀 燬 譭,True,True,True,True,pass
+熏,auto_external,燻,multi_source_merge,多对一合并;待人工考据,3,燻 熏 薰,True,True,True,True,pass
+家,auto_external,傢,multi_source_merge,多对一合并;待人工考据,2,家 傢,True,True,True,True,pass
+克,auto_external,剋,multi_source_merge,多对一合并;待人工考据,2,克 剋,True,True,True,True,pass
+出,auto_external,齣,multi_source_merge,多对一合并;待人工考据,2,出 齣,True,True,True,True,pass
+合,auto_external,閤,multi_source_merge,多对一合并;待人工考据,2,合 閤,True,True,True,True,pass
+里,auto_external,裏,multi_source_merge,多对一合并;待人工考据,2,裏 里,True,True,True,True,pass
+布,auto_external,佈,multi_source_merge,多对一合并;待人工考据,2,布 佈,True,True,True,True,pass
+同,auto_external,衕,multi_source_merge,多对一合并;待人工考据,2,同 衕,True,True,True,True,pass
+制,auto_external,製,multi_source_merge,多对一合并;待人工考据,2,制 製,True,True,True,True,pass
+回,auto_external,迴,multi_source_merge,多对一合并;待人工考据,2,回 迴,True,True,True,True,pass
+当,auto_external,當,multi_source_merge,多对一合并;待人工考据,2,當 噹,True,True,True,True,pass
+夫,auto_external,伕,multi_source_merge,多对一合并;待人工考据,2,夫 伕,True,True,True,True,pass
+板,auto_external,闆,multi_source_merge,多对一合并;待人工考据,2,板 闆,True,True,True,True,pass
+万,auto_external,萬,multi_source_merge,多对一合并;待人工考据,2,萬 万,True,True,True,True,pass
+表,auto_external,錶,multi_source_merge,多对一合并;待人工考据,2,表 錶,True,True,True,True,pass
+云,auto_external,雲,multi_source_merge,多对一合并;待人工考据,2,雲 云,True,True,True,True,pass
+宁,auto_external,寧,multi_source_merge,多对一合并;待人工考据,2,寧 甯,True,True,True,True,pass
+游,auto_external,遊,multi_source_merge,多对一合并;待人工考据,2,遊 游,True,True,True,True,pass
+吃,auto_external,喫,multi_source_merge,多对一合并;待人工考据,2,喫 吃,True,True,True,True,pass
+核,auto_external,覈,multi_source_merge,多对一合并;待人工考据,2,核 覈,True,True,True,True,pass
+药,auto_external,藥,multi_source_merge,多对一合并;待人工考据,2,藥 葯,True,True,True,True,pass
+曲,auto_external,麴,multi_source_merge,多对一合并;待人工考据,2,曲 麴,True,True,True,True,pass
+症,auto_external,癥,multi_source_merge,多对一合并;待人工考据,2,症 癥,True,True,True,True,pass
+广,auto_external,廣,multi_source_merge,多对一合并;待人工考据,2,廣 广,True,True,True,True,pass
+于,auto_external,於,multi_source_merge,多对一合并;待人工考据,2,於 于,True,True,True,True,pass
+背,auto_external,揹,multi_source_merge,多对一合并;待人工考据,2,背 揹,True,True,True,True,pass
+证,auto_external,證,multi_source_merge,多对一合并;待人工考据,2,證 証,True,True,True,True,pass
+了,auto_external,瞭,multi_source_merge,多对一合并;待人工考据,2,了 瞭,True,True,True,True,pass
+托,auto_external,託,multi_source_merge,多对一合并;待人工考据,2,託 托,True,True,True,True,pass
+术,auto_external,術,multi_source_merge,多对一合并;待人工考据,2,術 朮,True,True,True,True,pass
+叶,auto_external,葉,multi_source_merge,多对一合并;待人工考据,2,葉 叶,True,True,True,True,pass
+团,auto_external,團,multi_source_merge,多对一合并;待人工考据,2,團 糰,True,True,True,True,pass
+周,auto_external,週,multi_source_merge,多对一合并;待人工考据,2,周 週,True,True,True,True,pass
+斗,auto_external,鬥,multi_source_merge,多对一合并;待人工考据,2,鬥 斗,True,True,True,True,pass
+千,auto_external,韆,multi_source_merge,多对一合并;待人工考据,2,千 韆,True,True,True,True,pass
+价,auto_external,價,multi_source_merge,多对一合并;待人工考据,2,價 价,True,True,True,True,pass
+别,auto_external,別,multi_source_merge,多对一合并;待人工考据,2,別 彆,True,True,True,True,pass
+虫,auto_external,蟲,multi_source_merge,多对一合并;待人工考据,2,蟲 虫,True,True,True,True,pass
+烟,auto_external,煙,multi_source_merge,多对一合并;待人工考据,2,煙 菸,True,True,True,True,pass
+松,auto_external,鬆,multi_source_merge,多对一合并;待人工考据,2,松 鬆,True,True,True,True,pass
+局,auto_external,侷,multi_source_merge,多对一合并;待人工考据,2,局 侷,True,True,True,True,pass
+豆,auto_external,荳,multi_source_merge,多对一合并;待人工考据,2,豆 荳,True,True,True,True,pass
+恶,auto_external,惡,multi_source_merge,多对一合并;待人工考据,2,惡 噁,True,True,True,True,pass
+修,auto_external,脩,multi_source_merge,多对一合并;待人工考据,2,修 脩,True,True,True,True,pass
+个,auto_external,個,multi_source_merge,多对一合并;待人工考据,2,個 箇,True,True,True,True,pass
+枪,auto_external,槍,multi_source_merge,多对一合并;待人工考据,2,槍 鎗,True,True,True,True,pass
+佛,auto_external,彿,multi_source_merge,多对一合并;待人工考据,2,佛 彿,True,True,True,True,pass
+尽,auto_external,盡,multi_source_merge,多对一合并;待人工考据,2,盡 儘,True,True,True,True,pass
+志,auto_external,誌,multi_source_merge,多对一合并;待人工考据,2,志 誌,True,True,True,True,pass
+冲,auto_external,衝,multi_source_merge,多对一合并;待人工考据,2,衝 沖,True,True,True,True,pass
+岩,auto_external,巖,multi_source_merge,多对一合并;待人工考据,2,巖 岩,True,True,True,True,pass
+暗,auto_external,闇,multi_source_merge,多对一合并;待人工考据,2,暗 闇,True,True,True,True,pass
+针,auto_external,針,multi_source_merge,多对一合并;待人工考据,2,針 鍼,True,True,True,True,pass
+折,auto_external,摺,multi_source_merge,多对一合并;待人工考据,2,折 摺,True,True,True,True,pass
+坐,auto_external,座,multi_source_merge,多对一合并;待人工考据,2,坐 座,True,True,True,True,pass
+征,auto_external,徵,multi_source_merge,多对一合并;待人工考据,2,徵 征,True,True,True,True,pass
+秋,auto_external,鞦,multi_source_merge,多对一合并;待人工考据,2,秋 鞦,True,True,True,True,pass
+准,auto_external,準,multi_source_merge,多对一合并;待人工考据,2,準 准,True,True,True,True,pass
+卷,auto_external,捲,multi_source_merge,多对一合并;待人工考据,2,卷 捲,True,True,True,True,pass
+历,auto_external,歷,multi_source_merge,多对一合并;待人工考据,2,歷 曆,True,True,True,True,pass
+谷,auto_external,穀,multi_source_merge,多对一合并;待人工考据,2,谷 穀,True,True,True,True,pass
+录,auto_external,錄,multi_source_merge,多对一合并;待人工考据,2,錄 彔,True,True,True,True,pass
+几,auto_external,幾,multi_source_merge,多对一合并;待人工考据,2,幾 几,True,True,True,True,pass
+念,auto_external,唸,multi_source_merge,多对一合并;待人工考据,2,念 唸,True,True,True,True,pass
+丰,auto_external,豐,multi_source_merge,多对一合并;待人工考据,2,豐 丰,True,True,True,True,pass
+旋,auto_external,鏇,multi_source_merge,多对一合并;待人工考据,2,旋 鏇,True,True,True,True,pass
+才,auto_external,纔,multi_source_merge,多对一合并;待人工考据,2,才 纔,True,True,True,True,pass
+致,auto_external,緻,multi_source_merge,多对一合并;待人工考据,2,致 緻,True,True,True,True,pass
+注,auto_external,註,multi_source_merge,多对一合并;待人工考据,2,注 註,True,True,True,True,pass
+溪,auto_external,谿,multi_source_merge,多对一合并;待人工考据,2,溪 谿,True,True,True,True,pass
+杆,auto_external,桿,multi_source_merge,多对一合并;待人工考据,2,杆 桿,True,True,True,True,pass
+借,auto_external,藉,multi_source_merge,多对一合并;待人工考据,2,借 藉,True,True,True,True,pass
+据,auto_external,據,multi_source_merge,多对一合并;待人工考据,2,據 据,True,True,True,True,pass
+巨,auto_external,鉅,multi_source_merge,多对一合并;待人工考据,2,巨 鉅,True,True,True,True,pass
+舍,auto_external,捨,multi_source_merge,多对一合并;待人工考据,2,舍 捨,True,True,True,True,pass
+吊,auto_external,弔,multi_source_merge,多对一合并;待人工考据,2,吊 弔,True,True,True,True,pass
+拿,auto_external,拏,multi_source_merge,多对一合并;待人工考据,2,拿 拏,True,True,True,True,pass
+欲,auto_external,慾,multi_source_merge,多对一合并;待人工考据,2,欲 慾,True,True,True,True,pass
+玩,auto_external,翫,multi_source_merge,多对一合并;待人工考据,2,玩 翫,True,True,True,True,pass

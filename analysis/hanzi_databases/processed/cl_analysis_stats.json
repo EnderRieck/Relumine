@@ -1,0 +1,3204 @@
+{
+  "schema_version": "relumine-char-db-v1",
+  "generated_at": "2026-06-09T23:57:32",
+  "total_chars": 100,
+  "simplification_types": {
+    "distribution": {
+      "多对一合并": 96,
+      "古字复用（简体兼用古体）": 70,
+      "草书楷化": 4,
+      "古字复用": 2,
+      "符号化简省": 1,
+      "异体字采纳": 1
+    },
+    "chars_by_type": {
+      "草书楷化": [
+        "学",
+        "书",
+        "东",
+        "车"
+      ],
+      "符号化简省": [
+        "东"
+      ],
+      "多对一合并": [
+        "发",
+        "后",
+        "面",
+        "台",
+        "余",
+        "杰",
+        "蒙",
+        "干",
+        "复",
+        "系",
+        "苏",
+        "胡",
+        "向",
+        "汇",
+        "只",
+        "泛",
+        "毁",
+        "熏",
+        "家",
+        "克",
+        "出",
+        "合",
+        "里",
+        "布",
+        "同",
+        "制",
+        "回",
+        "当",
+        "夫",
+        "板",
+        "万",
+        "表",
+        "云",
+        "宁",
+        "游",
+        "吃",
+        "核",
+        "药",
+        "曲",
+        "症",
+        "广",
+        "于",
+        "背",
+        "证",
+        "了",
+        "托",
+        "术",
+        "叶",
+        "团",
+        "周",
+        "斗",
+        "千",
+        "价",
+        "别",
+        "虫",
+        "烟",
+        "松",
+        "局",
+        "豆",
+        "恶",
+        "修",
+        "个",
+        "枪",
+        "佛",
+        "尽",
+        "志",
+        "冲",
+        "岩",
+        "暗",
+        "针",
+        "折",
+        "坐",
+        "征",
+        "秋",
+        "准",
+        "卷",
+        "历",
+        "谷",
+        "录",
+        "几",
+        "念",
+        "丰",
+        "旋",
+        "才",
+        "致",
+        "注",
+        "溪",
+        "杆",
+        "借",
+        "据",
+        "巨",
+        "舍",
+        "吊",
+        "拿",
+        "欲",
+        "玩"
+      ],
+      "古字复用": [
+        "后",
+        "台"
+      ],
+      "异体字采纳": [
+        "杰"
+      ],
+      "古字复用（简体兼用古体）": [
+        "蒙",
+        "干",
+        "系",
+        "胡",
+        "向",
+        "只",
+        "泛",
+        "熏",
+        "家",
+        "克",
+        "出",
+        "合",
+        "里",
+        "布",
+        "同",
+        "制",
+        "回",
+        "夫",
+        "板",
+        "万",
+        "表",
+        "云",
+        "游",
+        "吃",
+        "核",
+        "曲",
+        "症",
+        "广",
+        "于",
+        "背",
+        "了",
+        "托",
+        "叶",
+        "周",
+        "斗",
+        "千",
+        "价",
+        "虫",
+        "松",
+        "局",
+        "豆",
+        "修",
+        "佛",
+        "志",
+        "岩",
+        "暗",
+        "折",
+        "坐",
+        "征",
+        "秋",
+        "准",
+        "卷",
+        "谷",
+        "几",
+        "念",
+        "丰",
+        "旋",
+        "才",
+        "致",
+        "注",
+        "溪",
+        "杆",
+        "借",
+        "据",
+        "巨",
+        "舍",
+        "吊",
+        "拿",
+        "欲",
+        "玩"
+      ]
+    },
+    "handcrafted_types": {
+      "学": [
+        "草书楷化"
+      ],
+      "书": [
+        "草书楷化"
+      ],
+      "东": [
+        "草书楷化",
+        "符号化简省"
+      ],
+      "车": [
+        "草书楷化"
+      ],
+      "发": [
+        "多对一合并"
+      ],
+      "后": [
+        "多对一合并",
+        "古字复用"
+      ],
+      "面": [
+        "多对一合并"
+      ],
+      "台": [
+        "多对一合并",
+        "古字复用"
+      ],
+      "余": [
+        "多对一合并"
+      ],
+      "杰": [
+        "多对一合并",
+        "异体字采纳"
+      ]
+    },
+    "ancient_reuse_chars": [
+      "蒙",
+      "干",
+      "系",
+      "胡",
+      "向",
+      "只",
+      "泛",
+      "熏",
+      "家",
+      "克",
+      "出",
+      "合",
+      "里",
+      "布",
+      "同",
+      "制",
+      "回",
+      "夫",
+      "板",
+      "万",
+      "表",
+      "云",
+      "游",
+      "吃",
+      "核",
+      "曲",
+      "症",
+      "广",
+      "于",
+      "背",
+      "了",
+      "托",
+      "叶",
+      "周",
+      "斗",
+      "千",
+      "价",
+      "虫",
+      "松",
+      "局",
+      "豆",
+      "修",
+      "佛",
+      "志",
+      "岩",
+      "暗",
+      "折",
+      "坐",
+      "征",
+      "秋",
+      "准",
+      "卷",
+      "谷",
+      "几",
+      "念",
+      "丰",
+      "旋",
+      "才",
+      "致",
+      "注",
+      "溪",
+      "杆",
+      "借",
+      "据",
+      "巨",
+      "舍",
+      "吊",
+      "拿",
+      "欲",
+      "玩"
+    ]
+  },
+  "stroke_reduction": {
+    "pairs_analyzed": 136,
+    "mean_reduction": 6.54,
+    "median_reduction": 7,
+    "max_reduction": {
+      "simplified": "千",
+      "traditional": "韆",
+      "simp_strokes": 3,
+      "trad_strokes": 24,
+      "reduction": 21,
+      "reduction_pct": 87.5
+    },
+    "min_reduction": {
+      "simplified": "吊",
+      "traditional": "弔",
+      "simp_strokes": 6,
+      "trad_strokes": 4,
+      "reduction": -2,
+      "reduction_pct": -50.0
+    },
+    "distribution": {
+      "negative_or_zero": 9,
+      "1_to_3": 31,
+      "4_to_6": 27,
+      "7_to_9": 39,
+      "10_plus": 30
+    },
+    "top_reductions": [
+      {
+        "simplified": "千",
+        "traditional": "韆",
+        "simp_strokes": 3,
+        "trad_strokes": 24,
+        "reduction": 21,
+        "reduction_pct": 87.5
+      },
+      {
+        "simplified": "才",
+        "traditional": "纔",
+        "simp_strokes": 3,
+        "trad_strokes": 23,
+        "reduction": 20,
+        "reduction_pct": 87.0
+      },
+      {
+        "simplified": "苏",
+        "traditional": "囌",
+        "simp_strokes": 7,
+        "trad_strokes": 22,
+        "reduction": 15,
+        "reduction_pct": 68.2
+      },
+      {
+        "simplified": "出",
+        "traditional": "齣",
+        "simp_strokes": 5,
+        "trad_strokes": 20,
+        "reduction": 15,
+        "reduction_pct": 75.0
+      },
+      {
+        "simplified": "了",
+        "traditional": "瞭",
+        "simp_strokes": 2,
+        "trad_strokes": 17,
+        "reduction": 15,
+        "reduction_pct": 88.2
+      },
+      {
+        "simplified": "团",
+        "traditional": "糰",
+        "simp_strokes": 6,
+        "trad_strokes": 20,
+        "reduction": 14,
+        "reduction_pct": 70.0
+      },
+      {
+        "simplified": "岩",
+        "traditional": "巖",
+        "simp_strokes": 8,
+        "trad_strokes": 22,
+        "reduction": 14,
+        "reduction_pct": 63.6
+      },
+      {
+        "simplified": "丰",
+        "traditional": "豐",
+        "simp_strokes": 4,
+        "trad_strokes": 18,
+        "reduction": 14,
+        "reduction_pct": 77.8
+      },
+      {
+        "simplified": "台",
+        "traditional": "檯",
+        "simp_strokes": 5,
+        "trad_strokes": 18,
+        "reduction": 13,
+        "reduction_pct": 72.2
+      },
+      {
+        "simplified": "曲",
+        "traditional": "麴",
+        "simp_strokes": 6,
+        "trad_strokes": 19,
+        "reduction": 13,
+        "reduction_pct": 68.4
+      }
+    ]
+  },
+  "merge_complexity": {
+    "distribution": {
+      "1": 4,
+      "2": 83,
+      "3": 11,
+      "4": 2
+    },
+    "mean_sources": 2.11,
+    "total_source_pairs": 211,
+    "chars_with_2plus": 96,
+    "chars_with_3plus": 13,
+    "chars_with_4plus": 2,
+    "high_merge_chars": [
+      {
+        "simplified": "台",
+        "canonical_traditional": "臺",
+        "source_count": 4,
+        "sources": [
+          "臺",
+          "台",
+          "檯",
+          "颱"
+        ]
+      },
+      {
+        "simplified": "蒙",
+        "canonical_traditional": "矇",
+        "source_count": 4,
+        "sources": [
+          "蒙",
+          "矇",
+          "濛",
+          "懞"
+        ]
+      },
+      {
+        "simplified": "干",
+        "canonical_traditional": "幹",
+        "source_count": 3,
+        "sources": [
+          "幹",
+          "乾",
+          "干"
+        ]
+      },
+      {
+        "simplified": "复",
+        "canonical_traditional": "復",
+        "source_count": 3,
+        "sources": [
+          "復",
+          "複",
+          "覆"
+        ]
+      },
+      {
+        "simplified": "系",
+        "canonical_traditional": "係",
+        "source_count": 3,
+        "sources": [
+          "系",
+          "係",
+          "繫"
+        ]
+      },
+      {
+        "simplified": "苏",
+        "canonical_traditional": "蘇",
+        "source_count": 3,
+        "sources": [
+          "蘇",
+          "甦",
+          "囌"
+        ]
+      },
+      {
+        "simplified": "胡",
+        "canonical_traditional": "鬍",
+        "source_count": 3,
+        "sources": [
+          "胡",
+          "鬍",
+          "衚"
+        ]
+      },
+      {
+        "simplified": "向",
+        "canonical_traditional": "嚮",
+        "source_count": 3,
+        "sources": [
+          "向",
+          "嚮",
+          "曏"
+        ]
+      },
+      {
+        "simplified": "汇",
+        "canonical_traditional": "匯",
+        "source_count": 3,
+        "sources": [
+          "匯",
+          "彙",
+          "滙"
+        ]
+      },
+      {
+        "simplified": "只",
+        "canonical_traditional": "隻",
+        "source_count": 3,
+        "sources": [
+          "只",
+          "隻",
+          "祇"
+        ]
+      },
+      {
+        "simplified": "泛",
+        "canonical_traditional": "氾",
+        "source_count": 3,
+        "sources": [
+          "泛",
+          "氾",
+          "汎"
+        ]
+      },
+      {
+        "simplified": "毁",
+        "canonical_traditional": "毀",
+        "source_count": 3,
+        "sources": [
+          "毀",
+          "燬",
+          "譭"
+        ]
+      },
+      {
+        "simplified": "熏",
+        "canonical_traditional": "燻",
+        "source_count": 3,
+        "sources": [
+          "燻",
+          "熏",
+          "薰"
+        ]
+      }
+    ]
+  },
+  "database_agreement": {
+    "total_pairs": 136,
+    "agreement_distribution": {
+      "1": 8,
+      "2": 32,
+      "3": 96
+    },
+    "high_confidence_ratio": 0.941,
+    "low_confidence_pairs": [],
+    "all_three_agree_pairs": [
+      {
+        "simplified": "学",
+        "traditional": "學",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "书",
+        "traditional": "書",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "东",
+        "traditional": "東",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "车",
+        "traditional": "車",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "发",
+        "traditional": "發",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "发",
+        "traditional": "髮",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "后",
+        "traditional": "後",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "面",
+        "traditional": "麵",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "台",
+        "traditional": "臺",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "台",
+        "traditional": "檯",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "台",
+        "traditional": "颱",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "余",
+        "traditional": "餘",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "杰",
+        "traditional": "傑",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "蒙",
+        "traditional": "矇",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "蒙",
+        "traditional": "濛",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "蒙",
+        "traditional": "懞",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "干",
+        "traditional": "幹",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "干",
+        "traditional": "乾",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "复",
+        "traditional": "復",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "复",
+        "traditional": "複",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "复",
+        "traditional": "覆",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "系",
+        "traditional": "係",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "系",
+        "traditional": "繫",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "苏",
+        "traditional": "蘇",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "苏",
+        "traditional": "囌",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "胡",
+        "traditional": "鬍",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "胡",
+        "traditional": "衚",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "向",
+        "traditional": "嚮",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "向",
+        "traditional": "曏",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "汇",
+        "traditional": "匯",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "汇",
+        "traditional": "彙",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "只",
+        "traditional": "隻",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "毁",
+        "traditional": "毀",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "家",
+        "traditional": "傢",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "克",
+        "traditional": "剋",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "出",
+        "traditional": "齣",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "合",
+        "traditional": "閤",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "里",
+        "traditional": "裏",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "同",
+        "traditional": "衕",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "制",
+        "traditional": "製",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "回",
+        "traditional": "迴",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "当",
+        "traditional": "當",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "当",
+        "traditional": "噹",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "板",
+        "traditional": "闆",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "万",
+        "traditional": "萬",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "表",
+        "traditional": "錶",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "云",
+        "traditional": "雲",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "宁",
+        "traditional": "寧",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "药",
+        "traditional": "藥",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "药",
+        "traditional": "葯",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "症",
+        "traditional": "癥",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "广",
+        "traditional": "廣",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "于",
+        "traditional": "於",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "证",
+        "traditional": "證",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "了",
+        "traditional": "瞭",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "术",
+        "traditional": "術",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "叶",
+        "traditional": "葉",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "团",
+        "traditional": "團",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "团",
+        "traditional": "糰",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "斗",
+        "traditional": "鬥",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "千",
+        "traditional": "韆",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "价",
+        "traditional": "價",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "别",
+        "traditional": "別",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "别",
+        "traditional": "彆",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "虫",
+        "traditional": "蟲",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "烟",
+        "traditional": "煙",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "松",
+        "traditional": "鬆",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "恶",
+        "traditional": "惡",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "恶",
+        "traditional": "噁",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "个",
+        "traditional": "個",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "枪",
+        "traditional": "槍",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "尽",
+        "traditional": "盡",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "尽",
+        "traditional": "儘",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "志",
+        "traditional": "誌",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "冲",
+        "traditional": "衝",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "冲",
+        "traditional": "沖",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "针",
+        "traditional": "針",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "折",
+        "traditional": "摺",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "征",
+        "traditional": "徵",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "秋",
+        "traditional": "鞦",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "准",
+        "traditional": "準",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "卷",
+        "traditional": "捲",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "历",
+        "traditional": "歷",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "历",
+        "traditional": "曆",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "谷",
+        "traditional": "穀",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "录",
+        "traditional": "錄",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "几",
+        "traditional": "幾",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "丰",
+        "traditional": "豐",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "旋",
+        "traditional": "鏇",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "才",
+        "traditional": "纔",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "致",
+        "traditional": "緻",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "注",
+        "traditional": "註",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "杆",
+        "traditional": "桿",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "借",
+        "traditional": "藉",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "据",
+        "traditional": "據",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      },
+      {
+        "simplified": "舍",
+        "traditional": "捨",
+        "agreement_count": 3,
+        "agreeing_databases": [
+          "Unihan",
+          "OpenCC",
+          "CC-CEDICT"
+        ]
+      }
+    ]
+  },
+  "semantic_ambiguity": {
+    "chars_with_merge": 96,
+    "mean_merged_per_char": 2.16,
+    "top_ambiguous_cases": [
+      {
+        "simplified": "台",
+        "canonical_traditional": "臺",
+        "merged_count": 4,
+        "sources": [
+          {
+            "traditional": "臺",
+            "definition": "tower, lookout; stage, platform",
+            "example_words": [
+              "下臺/下台",
+              "中臺/中台"
+            ]
+          },
+          {
+            "traditional": "台",
+            "definition": "platform; unit; term of address",
+            "example_words": []
+          },
+          {
+            "traditional": "檯",
+            "definition": "table",
+            "example_words": [
+              "檯子/台子",
+              "檯布/台布"
+            ]
+          },
+          {
+            "traditional": "颱",
+            "definition": "typhoon",
+            "example_words": [
+              "颱風/台风",
+              "颱/台"
+            ]
+          }
+        ]
+      },
+      {
+        "simplified": "蒙",
+        "canonical_traditional": "矇",
+        "merged_count": 4,
+        "sources": [
+          {
+            "traditional": "蒙",
+            "definition": "cover; ignorant; suffer; Mongolia; hexagram ䷃",
+            "example_words": [
+              "內蒙/内蒙",
+              "呂蒙/吕蒙"
+            ]
+          },
+          {
+            "traditional": "矇",
+            "definition": "stupid, ignorant; blind",
+            "example_words": [
+              "啟矇/启蒙",
+              "愚矇/愚蒙"
+            ]
+          },
+          {
+            "traditional": "濛",
+            "definition": "drizzling, misty, raining",
+            "example_words": [
+              "迷濛/迷蒙",
+              "凌濛初/凌蒙初"
+            ]
+          },
+          {
+            "traditional": "懞",
+            "definition": "(variant of 蒙)",
+            "example_words": [
+              "懞/蒙"
+            ]
+          }
+        ]
+      },
+      {
+        "simplified": "干",
+        "canonical_traditional": "幹",
+        "merged_count": 3,
+        "sources": [
+          {
+            "traditional": "幹",
+            "definition": "trunk of tree or of human body",
+            "example_words": [
+              "主幹/主干",
+              "公幹/公干"
+            ]
+          },
+          {
+            "traditional": "乾",
+            "definition": "dry; warming principle of the sun, penetrating and fertilizing, heaven…",
+            "example_words": [
+              "乾俸/干俸",
+              "乾兒/干儿"
+            ]
+          },
+          {
+            "traditional": "干",
+            "definition": "oppose, offend; invade; dried",
+            "example_words": []
+          }
+        ]
+      },
+      {
+        "simplified": "复",
+        "canonical_traditional": "復",
+        "merged_count": 3,
+        "sources": [
+          {
+            "traditional": "復",
+            "definition": "return; repeat; repeatedly; hexagram ䷗",
+            "example_words": [
+              "不復/不复",
+              "修復/修复"
+            ]
+          },
+          {
+            "traditional": "複",
+            "definition": "repeat, double, overlap",
+            "example_words": [
+              "繁複/繁复",
+              "複利/复利"
+            ]
+          },
+          {
+            "traditional": "覆",
+            "definition": "cover; tip over; return; reply",
+            "example_words": [
+              "反覆/反复",
+              "批覆/批复"
+            ]
+          }
+        ]
+      },
+      {
+        "simplified": "系",
+        "canonical_traditional": "係",
+        "merged_count": 3,
+        "sources": [
+          {
+            "traditional": "系",
+            "definition": "system; line, link, connection",
+            "example_words": []
+          },
+          {
+            "traditional": "係",
+            "definition": "bind, tie up; involve, relation",
+            "example_words": [
+              "係數/系数",
+              "干係/干系"
+            ]
+          },
+          {
+            "traditional": "繫",
+            "definition": "attach, connect, unite, fasten",
+            "example_words": [
+              "品繫/品系",
+              "械繫/械系"
+            ]
+          }
+        ]
+      },
+      {
+        "simplified": "苏",
+        "canonical_traditional": "蘇",
+        "merged_count": 3,
+        "sources": [
+          {
+            "traditional": "蘇",
+            "definition": "revive, resurrect; a species of thyme; transliteration of 'Soviet'",
+            "example_words": [
+              "三蘇/三苏",
+              "哈蘇/哈苏"
+            ]
+          },
+          {
+            "traditional": "甦",
+            "definition": "be reborn; resuscitate, revive",
+            "example_words": [
+              "復甦/复苏",
+              "甦醒/苏醒"
+            ]
+          },
+          {
+            "traditional": "囌",
+            "definition": "loquacious; nag",
+            "example_words": [
+              "嚕囌/噜苏",
+              "囉囌/啰苏"
+            ]
+          }
+        ]
+      },
+      {
+        "simplified": "胡",
+        "canonical_traditional": "鬍",
+        "merged_count": 3,
+        "sources": [
+          {
+            "traditional": "胡",
+            "definition": "recklessly, foolishly; wildly",
+            "example_words": []
+          },
+          {
+            "traditional": "鬍",
+            "definition": "beard; mustache; whiskers",
+            "example_words": [
+              "腮鬍/腮胡",
+              "鬍匪/胡匪"
+            ]
+          },
+          {
+            "traditional": "衚",
+            "definition": "lane, alley, side street",
+            "example_words": [
+              "衚衕/胡同",
+              "衚/胡"
+            ]
+          }
+        ]
+      },
+      {
+        "simplified": "向",
+        "canonical_traditional": "嚮",
+        "merged_count": 3,
+        "sources": [
+          {
+            "traditional": "向",
+            "definition": "toward, direction, trend",
+            "example_words": []
+          },
+          {
+            "traditional": "嚮",
+            "definition": "guide, direct; incline to, favor",
+            "example_words": [
+              "嚮導/向导",
+              "嚮往/向往"
+            ]
+          },
+          {
+            "traditional": "曏",
+            "definition": "once upon time; period of time",
+            "example_words": [
+              "曏/向"
+            ]
+          }
+        ]
+      },
+      {
+        "simplified": "汇",
+        "canonical_traditional": "匯",
+        "merged_count": 3,
+        "sources": [
+          {
+            "traditional": "匯",
+            "definition": "a concourse; to flow together, gather together; (same as 滙) to remit m…",
+            "example_words": [
+              "交匯/交汇",
+              "創匯/创汇"
+            ]
+          },
+          {
+            "traditional": "彙",
+            "definition": "collect, compile, assemble; hedgehog",
+            "example_words": [
+              "交彙/交汇",
+              "字彙/字汇"
+            ]
+          },
+          {
+            "traditional": "滙",
+            "definition": "waters converging to one spot; whirling waters; to remit money",
+            "example_words": [
+              "滙/汇"
+            ]
+          }
+        ]
+      },
+      {
+        "simplified": "只",
+        "canonical_traditional": "隻",
+        "merged_count": 3,
+        "sources": [
+          {
+            "traditional": "只",
+            "definition": "only, just, simply",
+            "example_words": []
+          },
+          {
+            "traditional": "隻",
+            "definition": "single, one of pair, lone; measure word",
+            "example_words": [
+              "大隻/大只",
+              "牛隻/牛只"
+            ]
+          },
+          {
+            "traditional": "祇",
+            "definition": "the spirit of the earth; (same as 只) only, merely, but",
+            "example_words": [
+              "祇/只"
+            ]
+          }
+        ]
+      },
+      {
+        "simplified": "泛",
+        "canonical_traditional": "氾",
+        "merged_count": 3,
+        "sources": [
+          {
+            "traditional": "泛",
+            "definition": "to drift, float; careless, reckless",
+            "example_words": [
+              "寬泛/宽泛",
+              "廣泛/广泛"
+            ]
+          },
+          {
+            "traditional": "氾",
+            "definition": "overflow, flood, inundate",
+            "example_words": [
+              "氾濫/泛滥",
+              "氾/泛"
+            ]
+          },
+          {
+            "traditional": "汎",
+            "definition": "float, drift; afloat; careless",
+            "example_words": [
+              "汎/泛"
+            ]
+          }
+        ]
+      },
+      {
+        "simplified": "毁",
+        "canonical_traditional": "毀",
+        "merged_count": 3,
+        "sources": [
+          {
+            "traditional": "毀",
+            "definition": "destroy, ruin, injure; slander",
+            "example_words": [
+              "墜毀/坠毁",
+              "崩毀/崩毁"
+            ]
+          },
+          {
+            "traditional": "燬",
+            "definition": "burn down; blaze, fire",
+            "example_words": [
+              "炸燬/炸毁",
+              "焚燬/焚毁"
+            ]
+          },
+          {
+            "traditional": "譭",
+            "definition": "to slander; to defame",
+            "example_words": [
+              "黃鐘譭棄瓦釜雷鳴/黄钟毁弃瓦釜雷鸣",
+              "譭/毁"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "frequency": {
+    "mean_occurrences": 214.4,
+    "median_occurrences": 172,
+    "top_20": [
+      {
+        "simplified": "学",
+        "cedict_occurrences": 966,
+        "curation_level": "handcrafted",
+        "source_count": 1,
+        "frequency_rank": 1
+      },
+      {
+        "simplified": "家",
+        "cedict_occurrences": 727,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 2
+      },
+      {
+        "simplified": "克",
+        "cedict_occurrences": 643,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 3
+      },
+      {
+        "simplified": "发",
+        "cedict_occurrences": 609,
+        "curation_level": "handcrafted",
+        "source_count": 2,
+        "frequency_rank": 4
+      },
+      {
+        "simplified": "面",
+        "cedict_occurrences": 605,
+        "curation_level": "handcrafted",
+        "source_count": 2,
+        "frequency_rank": 5
+      },
+      {
+        "simplified": "出",
+        "cedict_occurrences": 561,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 6
+      },
+      {
+        "simplified": "里",
+        "cedict_occurrences": 540,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 7
+      },
+      {
+        "simplified": "车",
+        "cedict_occurrences": 534,
+        "curation_level": "handcrafted",
+        "source_count": 1,
+        "frequency_rank": 8
+      },
+      {
+        "simplified": "合",
+        "cedict_occurrences": 505,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 9
+      },
+      {
+        "simplified": "东",
+        "cedict_occurrences": 433,
+        "curation_level": "handcrafted",
+        "source_count": 1,
+        "frequency_rank": 10
+      },
+      {
+        "simplified": "台",
+        "cedict_occurrences": 407,
+        "curation_level": "handcrafted",
+        "source_count": 4,
+        "frequency_rank": 11
+      },
+      {
+        "simplified": "后",
+        "cedict_occurrences": 401,
+        "curation_level": "handcrafted",
+        "source_count": 2,
+        "frequency_rank": 12
+      },
+      {
+        "simplified": "布",
+        "cedict_occurrences": 400,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 13
+      },
+      {
+        "simplified": "书",
+        "cedict_occurrences": 364,
+        "curation_level": "handcrafted",
+        "source_count": 1,
+        "frequency_rank": 14
+      },
+      {
+        "simplified": "同",
+        "cedict_occurrences": 358,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 15
+      },
+      {
+        "simplified": "制",
+        "cedict_occurrences": 348,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 16
+      },
+      {
+        "simplified": "回",
+        "cedict_occurrences": 313,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 17
+      },
+      {
+        "simplified": "当",
+        "cedict_occurrences": 283,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 18
+      },
+      {
+        "simplified": "夫",
+        "cedict_occurrences": 280,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 19
+      },
+      {
+        "simplified": "干",
+        "cedict_occurrences": 279,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 20
+      }
+    ],
+    "bottom_20": [
+      {
+        "simplified": "旋",
+        "cedict_occurrences": 109,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 81
+      },
+      {
+        "simplified": "才",
+        "cedict_occurrences": 106,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 82
+      },
+      {
+        "simplified": "致",
+        "cedict_occurrences": 106,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 83
+      },
+      {
+        "simplified": "注",
+        "cedict_occurrences": 105,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 84
+      },
+      {
+        "simplified": "溪",
+        "cedict_occurrences": 100,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 85
+      },
+      {
+        "simplified": "杆",
+        "cedict_occurrences": 95,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 86
+      },
+      {
+        "simplified": "借",
+        "cedict_occurrences": 93,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 87
+      },
+      {
+        "simplified": "据",
+        "cedict_occurrences": 92,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 88
+      },
+      {
+        "simplified": "汇",
+        "cedict_occurrences": 90,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 89
+      },
+      {
+        "simplified": "巨",
+        "cedict_occurrences": 89,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 90
+      },
+      {
+        "simplified": "舍",
+        "cedict_occurrences": 89,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 91
+      },
+      {
+        "simplified": "拿",
+        "cedict_occurrences": 89,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 92
+      },
+      {
+        "simplified": "吊",
+        "cedict_occurrences": 88,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 93
+      },
+      {
+        "simplified": "欲",
+        "cedict_occurrences": 88,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 94
+      },
+      {
+        "simplified": "玩",
+        "cedict_occurrences": 88,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 95
+      },
+      {
+        "simplified": "杰",
+        "cedict_occurrences": 61,
+        "curation_level": "handcrafted",
+        "source_count": 2,
+        "frequency_rank": 96
+      },
+      {
+        "simplified": "只",
+        "cedict_occurrences": 61,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 97
+      },
+      {
+        "simplified": "泛",
+        "cedict_occurrences": 49,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 98
+      },
+      {
+        "simplified": "毁",
+        "cedict_occurrences": 42,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 99
+      },
+      {
+        "simplified": "熏",
+        "cedict_occurrences": 30,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 100
+      }
+    ],
+    "tiers": {
+      "high_200plus": 33,
+      "mid_100_199": 52,
+      "low_under_100": 15
+    },
+    "ranked": [
+      {
+        "simplified": "学",
+        "cedict_occurrences": 966,
+        "curation_level": "handcrafted",
+        "source_count": 1,
+        "frequency_rank": 1
+      },
+      {
+        "simplified": "家",
+        "cedict_occurrences": 727,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 2
+      },
+      {
+        "simplified": "克",
+        "cedict_occurrences": 643,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 3
+      },
+      {
+        "simplified": "发",
+        "cedict_occurrences": 609,
+        "curation_level": "handcrafted",
+        "source_count": 2,
+        "frequency_rank": 4
+      },
+      {
+        "simplified": "面",
+        "cedict_occurrences": 605,
+        "curation_level": "handcrafted",
+        "source_count": 2,
+        "frequency_rank": 5
+      },
+      {
+        "simplified": "出",
+        "cedict_occurrences": 561,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 6
+      },
+      {
+        "simplified": "里",
+        "cedict_occurrences": 540,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 7
+      },
+      {
+        "simplified": "车",
+        "cedict_occurrences": 534,
+        "curation_level": "handcrafted",
+        "source_count": 1,
+        "frequency_rank": 8
+      },
+      {
+        "simplified": "合",
+        "cedict_occurrences": 505,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 9
+      },
+      {
+        "simplified": "东",
+        "cedict_occurrences": 433,
+        "curation_level": "handcrafted",
+        "source_count": 1,
+        "frequency_rank": 10
+      },
+      {
+        "simplified": "台",
+        "cedict_occurrences": 407,
+        "curation_level": "handcrafted",
+        "source_count": 4,
+        "frequency_rank": 11
+      },
+      {
+        "simplified": "后",
+        "cedict_occurrences": 401,
+        "curation_level": "handcrafted",
+        "source_count": 2,
+        "frequency_rank": 12
+      },
+      {
+        "simplified": "布",
+        "cedict_occurrences": 400,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 13
+      },
+      {
+        "simplified": "书",
+        "cedict_occurrences": 364,
+        "curation_level": "handcrafted",
+        "source_count": 1,
+        "frequency_rank": 14
+      },
+      {
+        "simplified": "同",
+        "cedict_occurrences": 358,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 15
+      },
+      {
+        "simplified": "制",
+        "cedict_occurrences": 348,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 16
+      },
+      {
+        "simplified": "回",
+        "cedict_occurrences": 313,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 17
+      },
+      {
+        "simplified": "当",
+        "cedict_occurrences": 283,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 18
+      },
+      {
+        "simplified": "夫",
+        "cedict_occurrences": 280,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 19
+      },
+      {
+        "simplified": "干",
+        "cedict_occurrences": 279,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 20
+      },
+      {
+        "simplified": "板",
+        "cedict_occurrences": 262,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 21
+      },
+      {
+        "simplified": "万",
+        "cedict_occurrences": 253,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 22
+      },
+      {
+        "simplified": "表",
+        "cedict_occurrences": 251,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 23
+      },
+      {
+        "simplified": "云",
+        "cedict_occurrences": 228,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 24
+      },
+      {
+        "simplified": "宁",
+        "cedict_occurrences": 228,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 25
+      },
+      {
+        "simplified": "复",
+        "cedict_occurrences": 226,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 26
+      },
+      {
+        "simplified": "系",
+        "cedict_occurrences": 224,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 27
+      },
+      {
+        "simplified": "游",
+        "cedict_occurrences": 220,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 28
+      },
+      {
+        "simplified": "吃",
+        "cedict_occurrences": 216,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 29
+      },
+      {
+        "simplified": "核",
+        "cedict_occurrences": 212,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 30
+      },
+      {
+        "simplified": "药",
+        "cedict_occurrences": 210,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 31
+      },
+      {
+        "simplified": "曲",
+        "cedict_occurrences": 206,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 32
+      },
+      {
+        "simplified": "症",
+        "cedict_occurrences": 203,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 33
+      },
+      {
+        "simplified": "广",
+        "cedict_occurrences": 197,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 34
+      },
+      {
+        "simplified": "于",
+        "cedict_occurrences": 196,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 35
+      },
+      {
+        "simplified": "背",
+        "cedict_occurrences": 193,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 36
+      },
+      {
+        "simplified": "证",
+        "cedict_occurrences": 193,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 37
+      },
+      {
+        "simplified": "了",
+        "cedict_occurrences": 192,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 38
+      },
+      {
+        "simplified": "托",
+        "cedict_occurrences": 191,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 39
+      },
+      {
+        "simplified": "术",
+        "cedict_occurrences": 190,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 40
+      },
+      {
+        "simplified": "叶",
+        "cedict_occurrences": 189,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 41
+      },
+      {
+        "simplified": "团",
+        "cedict_occurrences": 187,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 42
+      },
+      {
+        "simplified": "周",
+        "cedict_occurrences": 186,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 43
+      },
+      {
+        "simplified": "斗",
+        "cedict_occurrences": 186,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 44
+      },
+      {
+        "simplified": "千",
+        "cedict_occurrences": 181,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 45
+      },
+      {
+        "simplified": "价",
+        "cedict_occurrences": 180,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 46
+      },
+      {
+        "simplified": "别",
+        "cedict_occurrences": 178,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 47
+      },
+      {
+        "simplified": "虫",
+        "cedict_occurrences": 177,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 48
+      },
+      {
+        "simplified": "烟",
+        "cedict_occurrences": 173,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 49
+      },
+      {
+        "simplified": "松",
+        "cedict_occurrences": 172,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 50
+      },
+      {
+        "simplified": "局",
+        "cedict_occurrences": 172,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 51
+      },
+      {
+        "simplified": "蒙",
+        "cedict_occurrences": 170,
+        "curation_level": "auto_external",
+        "source_count": 4,
+        "frequency_rank": 52
+      },
+      {
+        "simplified": "豆",
+        "cedict_occurrences": 168,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 53
+      },
+      {
+        "simplified": "恶",
+        "cedict_occurrences": 163,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 54
+      },
+      {
+        "simplified": "苏",
+        "cedict_occurrences": 161,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 55
+      },
+      {
+        "simplified": "胡",
+        "cedict_occurrences": 156,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 56
+      },
+      {
+        "simplified": "修",
+        "cedict_occurrences": 155,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 57
+      },
+      {
+        "simplified": "向",
+        "cedict_occurrences": 154,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 58
+      },
+      {
+        "simplified": "个",
+        "cedict_occurrences": 147,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 59
+      },
+      {
+        "simplified": "枪",
+        "cedict_occurrences": 143,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 60
+      },
+      {
+        "simplified": "佛",
+        "cedict_occurrences": 143,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 61
+      },
+      {
+        "simplified": "余",
+        "cedict_occurrences": 137,
+        "curation_level": "handcrafted",
+        "source_count": 2,
+        "frequency_rank": 62
+      },
+      {
+        "simplified": "尽",
+        "cedict_occurrences": 136,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 63
+      },
+      {
+        "simplified": "志",
+        "cedict_occurrences": 135,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 64
+      },
+      {
+        "simplified": "冲",
+        "cedict_occurrences": 133,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 65
+      },
+      {
+        "simplified": "岩",
+        "cedict_occurrences": 133,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 66
+      },
+      {
+        "simplified": "暗",
+        "cedict_occurrences": 131,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 67
+      },
+      {
+        "simplified": "针",
+        "cedict_occurrences": 130,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 68
+      },
+      {
+        "simplified": "折",
+        "cedict_occurrences": 128,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 69
+      },
+      {
+        "simplified": "秋",
+        "cedict_occurrences": 125,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 70
+      },
+      {
+        "simplified": "坐",
+        "cedict_occurrences": 124,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 71
+      },
+      {
+        "simplified": "征",
+        "cedict_occurrences": 124,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 72
+      },
+      {
+        "simplified": "历",
+        "cedict_occurrences": 124,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 73
+      },
+      {
+        "simplified": "准",
+        "cedict_occurrences": 122,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 74
+      },
+      {
+        "simplified": "卷",
+        "cedict_occurrences": 122,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 75
+      },
+      {
+        "simplified": "谷",
+        "cedict_occurrences": 117,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 76
+      },
+      {
+        "simplified": "录",
+        "cedict_occurrences": 116,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 77
+      },
+      {
+        "simplified": "几",
+        "cedict_occurrences": 115,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 78
+      },
+      {
+        "simplified": "念",
+        "cedict_occurrences": 114,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 79
+      },
+      {
+        "simplified": "丰",
+        "cedict_occurrences": 113,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 80
+      },
+      {
+        "simplified": "旋",
+        "cedict_occurrences": 109,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 81
+      },
+      {
+        "simplified": "才",
+        "cedict_occurrences": 106,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 82
+      },
+      {
+        "simplified": "致",
+        "cedict_occurrences": 106,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 83
+      },
+      {
+        "simplified": "注",
+        "cedict_occurrences": 105,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 84
+      },
+      {
+        "simplified": "溪",
+        "cedict_occurrences": 100,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 85
+      },
+      {
+        "simplified": "杆",
+        "cedict_occurrences": 95,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 86
+      },
+      {
+        "simplified": "借",
+        "cedict_occurrences": 93,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 87
+      },
+      {
+        "simplified": "据",
+        "cedict_occurrences": 92,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 88
+      },
+      {
+        "simplified": "汇",
+        "cedict_occurrences": 90,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 89
+      },
+      {
+        "simplified": "巨",
+        "cedict_occurrences": 89,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 90
+      },
+      {
+        "simplified": "舍",
+        "cedict_occurrences": 89,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 91
+      },
+      {
+        "simplified": "拿",
+        "cedict_occurrences": 89,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 92
+      },
+      {
+        "simplified": "吊",
+        "cedict_occurrences": 88,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 93
+      },
+      {
+        "simplified": "欲",
+        "cedict_occurrences": 88,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 94
+      },
+      {
+        "simplified": "玩",
+        "cedict_occurrences": 88,
+        "curation_level": "auto_external",
+        "source_count": 2,
+        "frequency_rank": 95
+      },
+      {
+        "simplified": "杰",
+        "cedict_occurrences": 61,
+        "curation_level": "handcrafted",
+        "source_count": 2,
+        "frequency_rank": 96
+      },
+      {
+        "simplified": "只",
+        "cedict_occurrences": 61,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 97
+      },
+      {
+        "simplified": "泛",
+        "cedict_occurrences": 49,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 98
+      },
+      {
+        "simplified": "毁",
+        "cedict_occurrences": 42,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 99
+      },
+      {
+        "simplified": "熏",
+        "cedict_occurrences": 30,
+        "curation_level": "auto_external",
+        "source_count": 3,
+        "frequency_rank": 100
+      }
+    ]
+  },
+  "components": {
+    "unique_components": 112,
+    "most_common": [
+      {
+        "component": "口",
+        "count": 13
+      },
+      {
+        "component": "木",
+        "count": 7
+      },
+      {
+        "component": "氵",
+        "count": 5
+      },
+      {
+        "component": "艹",
+        "count": 3
+      },
+      {
+        "component": "正",
+        "count": 3
+      },
+      {
+        "component": "扌",
+        "count": 3
+      },
+      {
+        "component": "亻",
+        "count": 3
+      },
+      {
+        "component": "心",
+        "count": 3
+      },
+      {
+        "component": "冫",
+        "count": 3
+      },
+      {
+        "component": "丶",
+        "count": 2
+      },
+      {
+        "component": "厶",
+        "count": 2
+      },
+      {
+        "component": "亼",
+        "count": 2
+      },
+      {
+        "component": "古",
+        "count": 2
+      },
+      {
+        "component": "宀",
+        "count": 2
+      },
+      {
+        "component": "土",
+        "count": 2
+      },
+      {
+        "component": "巾",
+        "count": 2
+      },
+      {
+        "component": "刂",
+        "count": 2
+      },
+      {
+        "component": "囗",
+        "count": 2
+      },
+      {
+        "component": "彐",
+        "count": 2
+      },
+      {
+        "component": "十",
+        "count": 2
+      }
+    ],
+    "singleton_components": 91
+  },
+  "cultural_computation": {
+    "semantic_levels": {
+      "低": 19,
+      "中": 69,
+      "高": 12
+    },
+    "ocr_risk_levels": {
+      "中": 24,
+      "低": 3,
+      "高": 73
+    },
+    "frequency_tiers": {
+      "高频": 33,
+      "中频": 52,
+      "低频": 15
+    },
+    "top_tags": {
+      "大幅简化": 41,
+      "基础样本": 37,
+      "高频用字": 33,
+      "多源合并": 13,
+      "古字复用": 2
+    },
+    "high_priority_chars": [
+      {
+        "simplified": "台",
+        "canonical_traditional": "臺",
+        "semantic_level": "高",
+        "source_count": 4,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 9,
+        "frequency_tier": "高频",
+        "frequency_rank": 11,
+        "avg_stroke_reduction": 10.3,
+        "tags": "多源合并、古字复用、大幅简化、高频用字"
+      },
+      {
+        "simplified": "干",
+        "canonical_traditional": "幹",
+        "semantic_level": "高",
+        "source_count": 3,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 8,
+        "frequency_tier": "高频",
+        "frequency_rank": 20,
+        "avg_stroke_reduction": 9.0,
+        "tags": "多源合并、大幅简化、高频用字"
+      },
+      {
+        "simplified": "苏",
+        "canonical_traditional": "蘇",
+        "semantic_level": "高",
+        "source_count": 3,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 8,
+        "frequency_tier": "中频",
+        "frequency_rank": 55,
+        "avg_stroke_reduction": 10.7,
+        "tags": "多源合并、大幅简化"
+      },
+      {
+        "simplified": "胡",
+        "canonical_traditional": "鬍",
+        "semantic_level": "高",
+        "source_count": 3,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 8,
+        "frequency_tier": "中频",
+        "frequency_rank": 56,
+        "avg_stroke_reduction": 8.0,
+        "tags": "多源合并、大幅简化"
+      },
+      {
+        "simplified": "向",
+        "canonical_traditional": "嚮",
+        "semantic_level": "高",
+        "source_count": 3,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 8,
+        "frequency_tier": "中频",
+        "frequency_rank": 58,
+        "avg_stroke_reduction": 10.0,
+        "tags": "多源合并、大幅简化"
+      },
+      {
+        "simplified": "汇",
+        "canonical_traditional": "匯",
+        "semantic_level": "高",
+        "source_count": 3,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 8,
+        "frequency_tier": "低频",
+        "frequency_rank": 89,
+        "avg_stroke_reduction": 8.0,
+        "tags": "多源合并、大幅简化"
+      },
+      {
+        "simplified": "发",
+        "canonical_traditional": "發",
+        "semantic_level": "中",
+        "source_count": 2,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 7,
+        "frequency_tier": "高频",
+        "frequency_rank": 4,
+        "avg_stroke_reduction": 8.5,
+        "tags": "大幅简化、高频用字"
+      },
+      {
+        "simplified": "面",
+        "canonical_traditional": "麵",
+        "semantic_level": "中",
+        "source_count": 2,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 7,
+        "frequency_tier": "高频",
+        "frequency_rank": 5,
+        "avg_stroke_reduction": 11.0,
+        "tags": "大幅简化、高频用字"
+      },
+      {
+        "simplified": "出",
+        "canonical_traditional": "齣",
+        "semantic_level": "中",
+        "source_count": 2,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 7,
+        "frequency_tier": "高频",
+        "frequency_rank": 6,
+        "avg_stroke_reduction": 15.0,
+        "tags": "大幅简化、高频用字"
+      },
+      {
+        "simplified": "合",
+        "canonical_traditional": "閤",
+        "semantic_level": "中",
+        "source_count": 2,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 7,
+        "frequency_tier": "高频",
+        "frequency_rank": 9,
+        "avg_stroke_reduction": 8.0,
+        "tags": "大幅简化、高频用字"
+      },
+      {
+        "simplified": "当",
+        "canonical_traditional": "當",
+        "semantic_level": "中",
+        "source_count": 2,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 7,
+        "frequency_tier": "高频",
+        "frequency_rank": 18,
+        "avg_stroke_reduction": 8.5,
+        "tags": "大幅简化、高频用字"
+      },
+      {
+        "simplified": "板",
+        "canonical_traditional": "闆",
+        "semantic_level": "中",
+        "source_count": 2,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 7,
+        "frequency_tier": "高频",
+        "frequency_rank": 21,
+        "avg_stroke_reduction": 9.0,
+        "tags": "大幅简化、高频用字"
+      },
+      {
+        "simplified": "万",
+        "canonical_traditional": "萬",
+        "semantic_level": "低",
+        "source_count": 2,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 7,
+        "frequency_tier": "高频",
+        "frequency_rank": 22,
+        "avg_stroke_reduction": 9.0,
+        "tags": "大幅简化、高频用字"
+      },
+      {
+        "simplified": "表",
+        "canonical_traditional": "錶",
+        "semantic_level": "中",
+        "source_count": 2,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 7,
+        "frequency_tier": "高频",
+        "frequency_rank": 23,
+        "avg_stroke_reduction": 8.0,
+        "tags": "大幅简化、高频用字"
+      },
+      {
+        "simplified": "云",
+        "canonical_traditional": "雲",
+        "semantic_level": "中",
+        "source_count": 2,
+        "ocr_risk_level": "高",
+        "ocr_risk_score": 7,
+        "frequency_tier": "高频",
+        "frequency_rank": 24,
+        "avg_stroke_reduction": 8.0,
+        "tags": "大幅简化、高频用字"
+      }
+    ]
+  },
+  "figures": {
+    "stroke_reduction": "processed/figures/stroke_reduction_distribution.png",
+    "simplification_types": "processed/figures/simplification_type_pie.png",
+    "source_counts": "processed/figures/traditional_source_count_distribution.png",
+    "frequency_top20": "processed/figures/frequency_top20_bar.png"
+  }
+}

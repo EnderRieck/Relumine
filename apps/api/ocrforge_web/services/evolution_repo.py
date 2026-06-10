@@ -39,8 +39,8 @@ class JsonEvolutionRepo:
             data = json.loads(self._path.read_text(encoding="utf-8"))
             records: dict[str, CharRecord] = {}
             order: list[str] = []
-            for raw in data:
-                rec = CharRecord.model_validate(raw)
+            for raw in _iter_records(data):
+                rec = CharRecord.model_validate(_to_char_record(raw))
                 key = rec.simplified
                 records[key] = rec
                 if key not in order:
@@ -63,6 +63,52 @@ class JsonEvolutionRepo:
     def get(self, char: str) -> CharRecord | None:
         self._reload_if_stale()
         return self._records.get(char)
+
+
+def _iter_records(data: object) -> list[dict]:
+    if isinstance(data, list):
+        return [item for item in data if isinstance(item, dict)]
+    if isinstance(data, dict) and isinstance(data.get("characters"), list):
+        return [item for item in data["characters"] if isinstance(item, dict)]
+    raise ValueError("evolution data must be a list or an object with a characters list")
+
+
+def _to_char_record(raw: dict) -> dict:
+    if "traditional" in raw and "stages" in raw:
+        return raw
+
+    project = raw.get("project_interpretation") or {}
+    external = raw.get("external_profile") or {}
+    coverage = raw.get("coverage") or {}
+    sources = raw.get("traditional_sources") or []
+    traditional = raw.get("canonical_traditional") or ""
+    simplified = raw.get("simplified") or ""
+
+    extensions = dict(project.get("extensions") or {})
+    extensions.update(
+        {
+            "database_id": raw.get("id"),
+            "curation_level": raw.get("curation_level"),
+            "record_type": raw.get("record_type"),
+            "codepoint": raw.get("codepoint"),
+            "canonical_traditional": traditional,
+            "simplification_types": raw.get("simplification_types") or [],
+            "external_profile": external,
+            "traditional_sources": sources,
+            "cultural_computation": raw.get("cultural_computation"),
+            "coverage": coverage,
+        }
+    )
+
+    return {
+        "simplified": simplified,
+        "traditional": traditional,
+        "pinyin": raw.get("pinyin"),
+        "stages": project.get("stages") or [],
+        "merges": project.get("merges") or [item.get("char") for item in sources if item.get("char")],
+        "notes": project.get("notes"),
+        "extensions": extensions,
+    }
 
 
 class SqliteEvolutionRepo:

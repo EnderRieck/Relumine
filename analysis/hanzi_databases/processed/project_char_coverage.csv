@@ -1,0 +1,29 @@
+char,codepoint,project_roles,in_unihan,unihan_mandarin,unihan_definition,unihan_total_strokes,unihan_traditional_variant,unihan_simplified_variant,opencc_s2t,opencc_t2s,cedict_trad_occurrences,cedict_simp_occurrences,chise_ids,chise_file
+东,U+4E1C,simplified;stage_form,yes,dōng,"east, eastern, eastward",5,U+6771,,東,,0,433,东,IDS-UCS-Basic.txt
+书,U+4E66,simplified;stage_form,yes,shū,"book, letter, document; writings",4,U+66F8,,書,,0,364,书,IDS-UCS-Basic.txt
+余,U+4F59,merge_source;simplified;stage_form,yes,yú,"I, my, me; surname; surplus",7,U+4F59 U+9918,U+4F59,餘 余,,6,137,⿱亼朩,IDS-UCS-Basic.txt
+傑,U+5091,merge_source;stage_form;traditional,yes,jié,"hero; outstanding, remarkable",12,,U+6770,,杰,58,0,⿰亻桀,IDS-UCS-Basic.txt
+发,U+53D1,simplified;stage_form,yes,fā,"issue, dispatch, send out; hair",5,U+767C U+9AEE,,發 髮,,0,609,⿸⿺&CDP-89F6;丶又,IDS-UCS-Basic.txt
+台,U+53F0,merge_source;simplified;stage_form,yes,tái,platform; unit; term of address,5,U+53F0 U+6AAF U+81FA U+98B1,U+53F0,臺 檯 颱 台,,168,407,⿱厶口,IDS-UCS-Basic.txt
+后,U+540E,merge_source;simplified;stage_form,yes,hòu,"queen, empress, sovereign; (simp. for 後) behind, rear, after",6,U+540E U+5F8C,U+540E,後 后,,32,401,⿸𠂋口,IDS-UCS-Basic.txt
+壆,U+58C6,stage_form,yes,xué,"stiff, hard clay or rocky strata; crack in a jar",16,,,,,1,1,⿱𦥯土,IDS-UCS-Basic.txt
+学,U+5B66,simplified;stage_form,yes,xué,"learning, knowledge; school",8,U+5B78,,學,,0,966,⿱𰃮子,IDS-UCS-Basic.txt
+學,U+5B78,stage_form;traditional,yes,xué,"learning, knowledge; school",16,,U+5B66,,学,966,0,⿱𦥯子,IDS-UCS-Basic.txt
+後,U+5F8C,merge_source;stage_form;traditional,yes,hòu,"behind, rear, after; descendents",9,,U+540E,,后,369,0,⿰彳&CDP-8B7B;,IDS-UCS-Basic.txt
+斈,U+6588,stage_form,yes,xué,"learning, knowledge; school",7,,,,,1,1,⿱文子,IDS-UCS-Basic.txt
+書,U+66F8,stage_form;traditional,yes,shū,"book, letter, document; writings",10,,U+4E66,,书,364,0,⿱聿曰,IDS-UCS-Basic.txt
+杰,U+6770,merge_source;simplified;stage_form,yes,jié,"hero; heroic, outstanding",8,U+5091 U+6770,U+6770,傑 杰,,3,61,⿱木灬,IDS-UCS-Basic.txt
+東,U+6771,stage_form;traditional,yes,dōng,"east, eastern, eastward",8,,U+4E1C,,东,433,0,東,IDS-UCS-Basic.txt
+檯,U+6AAF,merge_source;stage_form,yes,tái,table,18,,U+53F0,,台,27,0,⿰木臺,IDS-UCS-Basic.txt
+癹,U+7679,stage_form,yes,bá,,9,,,,,0,0,⿱癶殳,IDS-UCS-Basic.txt
+發,U+767C,merge_source;stage_form;traditional,yes,fā,"issue, dispatch, send out, emit",12,,U+53D1,,发,493,0,⿹癹弓,IDS-UCS-Basic.txt
+聿,U+807F,stage_form,yes,yù,"writing brush, pencil; thereupon; Kangxi radical 129",6,,,,,2,2,聿,IDS-UCS-Basic.txt
+臺,U+81FA,merge_source;stage_form;traditional,yes,tái,"tower, lookout; stage, platform",14,,U+53F0,,台,210,0,⿱⿱吉冖至,IDS-UCS-Basic.txt
+車,U+8ECA,stage_form;traditional,yes,chē,"cart, vehicle; carry in a cart; Kangxi radical 159",7,,U+8F66,,车,534,0,車,IDS-UCS-Basic.txt
+车,U+8F66,simplified;stage_form,yes,chē,"cart, vehicle; carry in cart",4,U+8ECA,,車,,0,534,车,IDS-UCS-Basic.txt
+面,U+9762,merge_source;simplified;stage_form,yes,miàn,"face; surface; plane; side, dimension; Kangxi radical 176",9,U+9762 U+9EB5,U+9762,面 麪,,467,605,面,IDS-UCS-Basic.txt
+颱,U+98B1,merge_source;stage_form,yes,tái,typhoon,14,,U+53F0 U+310D7,,台,2,0,⿺風台,IDS-UCS-Basic.txt
+餘,U+9918,merge_source;stage_form;traditional,yes,yú,"surplus, excess, remainder",15,,U+4F59 U+9980,,余 馀,134,0,⿰飠余,IDS-UCS-Basic.txt
+髮,U+9AEE,merge_source;stage_form,yes,fà fǎ,hair,15,,U+53D1,,发,116,0,⿱髟犮,IDS-UCS-Basic.txt
+麵,U+9EB5,merge_source;stage_form;traditional,yes,miàn,"flour, dough, noodles",20,,U+9762,,面 麺,137,0,⿰麥面,IDS-UCS-Basic.txt
+𢁉,U+22049,stage_form,yes,,,12,,,,,0,0,⿱⿰己己共,IDS-UCS-Ext-B-2.txt

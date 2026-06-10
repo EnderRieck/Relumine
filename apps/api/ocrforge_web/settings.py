@@ -25,11 +25,14 @@ class Settings(BaseSettings):
     paddle_task: str = "ocr"
     paddle_max_pixels: int = 1003520
     paddle_max_new_tokens: int = 1024
+    ocr_backend: str = "auto"
+    remote_ocr_url: str | None = None
+    remote_ocr_timeout: float = 120.0
 
     opencc_profile: str = "t2s"
 
     evolution_backend: str = "json"
-    evolution_path: Path = Path(__file__).parent / "data" / "evolution.json"
+    evolution_path: Path = Path(__file__).parent / "data" / "relumine_char_db.v1.json"
 
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 

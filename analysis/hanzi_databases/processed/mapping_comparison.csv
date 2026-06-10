@@ -1,0 +1,19 @@
+simplified,traditional_source,in_project_mapping,opencc_t2s_candidates,opencc_t2s_has_project_simplified,opencc_s2t_candidates,opencc_s2t_has_project_traditional,unihan_variant_support,cedict_aligned_pair_count
+东,東,yes,东,yes,東,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,433
+书,書,yes,书,yes,書,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,364
+余,余,yes,,no,餘 余,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,6
+余,餘,yes,余 馀,yes,餘 余,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,131
+发,發,yes,发,yes,發 髮,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,493
+发,髮,yes,发,yes,發 髮,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,116
+台,台,yes,,no,臺 檯 颱 台,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,168
+台,檯,yes,台,yes,臺 檯 颱 台,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,27
+台,臺,yes,台,yes,臺 檯 颱 台,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,210
+台,颱,yes,台,yes,臺 檯 颱 台,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,2
+后,后,yes,,no,後 后,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,32
+后,後,yes,后,yes,後 后,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,369
+学,學,yes,学,yes,學,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,966
+杰,傑,yes,杰,yes,傑 杰,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,58
+杰,杰,yes,,no,傑 杰,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,3
+车,車,yes,车,yes,車,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,534
+面,面,yes,,no,面 麪,yes,simp.kTraditionalVariant;trad.kSimplifiedVariant,467
+面,麵,yes,面 麺,yes,面 麪,no,simp.kTraditionalVariant;trad.kSimplifiedVariant,137
