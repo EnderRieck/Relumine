@@ -14,7 +14,7 @@ import { CornerBrackets } from "@/components/chinese/CornerBrackets";
 
 type FilterMode = "all" | "high_ocr" | "high_semantic" | "multi_source" | "handcrafted";
 type SortMode = "default" | "frequency" | "ocr_risk" | "source_count" | "stroke_reduction";
-type Hall = "merge" | "grid";
+type Hall = "merge" | "grid" | "cl";
 type GroupAxis = "radical" | "reduction" | "frequency";
 
 export function EvolutionPanel() {
@@ -32,21 +32,18 @@ export function EvolutionPanel() {
   const [showInfo, setShowInfo] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showCorpus, setShowCorpus] = useState(false);
-  const [showCl, setShowCl] = useState(false);
   const [clData, setClData] = useState<ClAnalysis | null>(null);
 
-  function openClAnalysis() {
-    setShowCl(true);
-    if (clData) return;
+  useEffect(() => {
+    if (hall !== "cl" || clData) return;
     api.evolution
       .clAnalysis()
       .then(setClData)
       .catch((e) => {
         const detail = e instanceof ApiError ? e.message : "分析数据加载失败";
         toast.error(detail);
-        setShowCl(false);
       });
-  }
+  }, [hall, clData]);
   const [loadingList, setLoadingList] = useState(true);
   const [loadingRecord, setLoadingRecord] = useState(false);
 
@@ -207,27 +204,43 @@ export function EvolutionPanel() {
         ) : null}
       </div>
 
-      {/* ── 双馆切换 ── */}
-      <div className="mt-8 flex border-b border-line">
+      {/* ── 三馆切换 ── */}
+      <div className="mt-8 flex flex-wrap gap-x-1 border-b border-line">
         {(
           [
-            { key: "merge" as const, label: "壹 · 合并疑难", hint: `${mergeList.length} 字深度解析` },
-            { key: "grid" as const, label: "貳 · 通检", hint: `全库 ${stats?.total ?? 0} 字` },
+            { key: "merge" as const, numeral: "壹", label: "合并疑难", hint: `${mergeList.length} 字深度解析` },
+            { key: "grid" as const, numeral: "貳", label: "通检", hint: `全库 ${stats?.total ?? 0} 字` },
+            { key: "cl" as const, numeral: "參", label: "计算语言学", hint: "省力原则 · 同音替代 · 混淆预测" },
           ]
-        ).map(({ key, label, hint }) => (
+        ).map(({ key, numeral, label, hint }) => (
           <button
             key={key}
             type="button"
             onClick={() => setHall(key)}
             className={cn(
-              "relative px-5 py-3 font-serif text-sm tracking-[0.08em] transition-colors",
+              "relative flex items-center gap-2.5 px-4 py-3 transition-colors",
               hall === key ? "text-ink" : "text-ink-mute hover:text-ink-soft",
             )}
           >
-            {label}
-            <span className="ml-2 font-sans text-[10px] text-ink-mute">{hint}</span>
+            <span
+              aria-hidden
+              className={cn(
+                "flex h-8 w-8 shrink-0 items-center justify-center font-serif text-base leading-none transition-colors",
+                hall === key
+                  ? "bg-accent text-white"
+                  : "border border-line text-ink-mute",
+              )}
+            >
+              {numeral}
+            </span>
+            <span className="text-left">
+              <span className={cn("block font-serif text-base leading-tight", hall === key && "text-ink")}>
+                {label}
+              </span>
+              <span className="block font-sans text-[10px] text-ink-mute">{hint}</span>
+            </span>
             {hall === key ? (
-              <span aria-hidden className="absolute inset-x-3 bottom-0 h-0.5 bg-accent" />
+              <span aria-hidden className="absolute inset-x-2 bottom-0 h-0.5 bg-accent" />
             ) : null}
           </button>
         ))}
@@ -240,8 +253,8 @@ export function EvolutionPanel() {
 
       {hall === "merge" ? (
         <>
-          {/* 分析入口：三个大按钮占一行 */}
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* 分析入口：两个大按钮占一行 */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
               type="button"
               onClick={() => setShowDashboard(true)}
@@ -272,21 +285,6 @@ export function EvolutionPanel() {
                 {corpusText.trim()
                   ? `已分析 ${corpusCoverage.totalHan} 字 · 命中 ${corpusCoverage.matchedRecords} 字`
                   : "粘贴古籍文本或 OCR 输出，统计命中字与风险字"}
-              </div>
-            </button>
-            <button
-              type="button"
-              onClick={openClAnalysis}
-              className="group border border-line bg-surface px-5 py-4 text-left transition-colors hover:border-accent"
-            >
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="font-serif text-base text-ink group-hover:text-accent transition-colors">
-                  计算语言学分析
-                </span>
-                <span aria-hidden className="font-serif text-ink-mute group-hover:text-accent transition-colors">→</span>
-              </div>
-              <div className="mt-1.5 font-sans text-xs leading-relaxed text-ink-mute">
-                省力原则 · 同音替代 · OCR 混淆预测 · 全库笔画统计
               </div>
             </button>
           </div>
@@ -388,7 +386,7 @@ export function EvolutionPanel() {
             </div>
           </div>
         </>
-      ) : (
+      ) : hall === "grid" ? (
         <CharGridHall
           list={gridList}
           stats={stats}
@@ -401,6 +399,14 @@ export function EvolutionPanel() {
           onSelect={selectChar}
           record={record}
           loadingRecord={loadingRecord}
+        />
+      ) : (
+        <ClAnalysisView
+          data={clData}
+          onSelect={(char) => {
+            selectChar(char);
+            setHall("merge");
+          }}
         />
       )}
 
@@ -427,14 +433,6 @@ export function EvolutionPanel() {
             disabled={!summaries.length}
             onChange={setCorpusText}
           />
-        </OverlayModal>
-      ) : null}
-      {showCl ? (
-        <OverlayModal onClose={() => setShowCl(false)} ariaLabel="计算语言学分析">
-          <ClAnalysisView data={clData} onSelect={(char) => {
-            selectChar(char);
-            setShowCl(false);
-          }} />
         </OverlayModal>
       ) : null}
     </section>
@@ -845,11 +843,9 @@ function ClAnalysisView({
   const homophonyOrder = ["完全同音", "声同调异", "部分同音", "非同音", "读音缺失"];
 
   return (
-    <div className="py-4">
-      <div className="pr-12">
-        <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute">
-          计算语言学分析 · 全库 {reduction.full.char_count} 字
-        </div>
+    <div className="mt-6">
+      <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute">
+        计算语言学分析 · 全库 {reduction.full.char_count} 字
       </div>
 
       <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
