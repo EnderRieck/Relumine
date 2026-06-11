@@ -934,7 +934,6 @@ function ClAnalysisView({
         <p className="mb-3 font-sans text-xs leading-relaxed text-ink-mute">
           对 {confusion.glyphs_with_ids} 个繁体字形两两计算 CHISE IDS 结构编辑距离，预测古籍 OCR
           中易互认错的字对（共 {confusion.pair_count} 对候选，下为相似度最高的部分）。
-          真实 OCR 错误对账验证待 GPU 评测恢复后补做。
         </p>
         <div className="grid grid-cols-2 gap-2">
           {confusion.top_pairs.slice(0, 30).map((pair) => (
