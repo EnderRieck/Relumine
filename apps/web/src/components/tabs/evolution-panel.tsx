@@ -155,13 +155,15 @@ export function EvolutionPanel() {
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="检索单字（繁简皆可，如：发 / 發 / 髮）"
+          placeholder="检索单字（繁简皆可，如：发 / 發 / 髮；仅收录繁简有差异的字）"
           className="w-full border border-line bg-surface px-4 py-2.5 font-serif text-sm text-ink outline-none placeholder:text-ink-mute/70"
         />
         {search.trim() ? (
           <div className="mt-3 flex flex-wrap gap-2">
             {searchHits.length === 0 ? (
-              <span className="font-serif text-sm text-ink-mute">未检索到匹配字</span>
+              <span className="font-serif text-sm text-ink-mute">
+                未检索到——本库仅收录繁简写法存在差异的字，繁简同形字（如「一」「人」「山」）不在收录范围内
+              </span>
             ) : (
               searchHits.map((item) => (
                 <button
