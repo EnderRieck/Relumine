@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Noto_Serif_SC, Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -40,7 +41,15 @@ export default function RootLayout({
         <div className="relative z-10 min-h-screen flex flex-col">
           <header className="border-b border-line bg-bg/70 backdrop-blur-[2px]">
             <div className="mx-auto max-w-6xl px-6 md:px-10 h-16 flex items-center justify-between">
-              <div className="flex items-baseline gap-3">
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/logo.png"
+                  alt="古籍重光 logo"
+                  width={44}
+                  height={44}
+                  priority
+                  className="h-11 w-11 object-contain"
+                />
                 <span className="text-lg font-semibold tracking-[0.16em]">古籍重光</span>
                 <span className="text-xs text-ink-mute font-sans tracking-widest uppercase">
                   北邮学生项目组
