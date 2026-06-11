@@ -30,6 +30,8 @@ export function EvolutionPanel() {
   const [search, setSearch] = useState("");
   const [corpusText, setCorpusText] = useState("");
   const [showInfo, setShowInfo] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [showCorpus, setShowCorpus] = useState(false);
   const [loadingList, setLoadingList] = useState(true);
   const [loadingRecord, setLoadingRecord] = useState(false);
 
@@ -223,20 +225,41 @@ export function EvolutionPanel() {
 
       {hall === "merge" ? (
         <>
-          <DatabaseDashboard
-            dashboard={dashboard}
-            mergeCount={mergeList.length}
-            slimMergeCount={slimMergeCount}
-            loading={loadingList}
-            onSelect={selectChar}
-          />
-
-          <CorpusCoveragePanel
-            value={corpusText}
-            coverage={corpusCoverage}
-            disabled={!summaries.length}
-            onChange={setCorpusText}
-          />
+          {/* 分析入口：两个大按钮占一行 */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() => setShowDashboard(true)}
+              className="group border border-line bg-surface px-5 py-4 text-left transition-colors hover:border-accent"
+            >
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="font-serif text-base text-ink group-hover:text-accent transition-colors">
+                  合并疑难总览
+                </span>
+                <span aria-hidden className="font-serif text-ink-mute group-hover:text-accent transition-colors">→</span>
+              </div>
+              <div className="mt-1.5 font-sans text-xs leading-relaxed text-ink-mute">
+                OCR 高风险 {dashboard.highOcrCount} · 高语义歧义 {dashboard.highSemanticCount} · 四维 Top 10 排行
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowCorpus(true)}
+              className="group border border-line bg-surface px-5 py-4 text-left transition-colors hover:border-accent"
+            >
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="font-serif text-base text-ink group-hover:text-accent transition-colors">
+                  语料覆盖率
+                </span>
+                <span aria-hidden className="font-serif text-ink-mute group-hover:text-accent transition-colors">→</span>
+              </div>
+              <div className="mt-1.5 font-sans text-xs leading-relaxed text-ink-mute">
+                {corpusText.trim()
+                  ? `已分析 ${corpusCoverage.totalHan} 字 · 命中 ${corpusCoverage.matchedRecords} 字`
+                  : "粘贴古籍文本或 OCR 输出，统计命中字与风险字"}
+              </div>
+            </button>
+          </div>
 
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-10">
             <div>
@@ -352,7 +375,68 @@ export function EvolutionPanel() {
       )}
 
       {showInfo ? <DataSourceModal onClose={() => setShowInfo(false)} /> : null}
+      {showDashboard ? (
+        <OverlayModal onClose={() => setShowDashboard(false)} ariaLabel="合并疑难总览">
+          <DatabaseDashboard
+            dashboard={dashboard}
+            mergeCount={mergeList.length}
+            slimMergeCount={slimMergeCount}
+            loading={loadingList}
+            onSelect={(char) => {
+              selectChar(char);
+              setShowDashboard(false);
+            }}
+          />
+        </OverlayModal>
+      ) : null}
+      {showCorpus ? (
+        <OverlayModal onClose={() => setShowCorpus(false)} ariaLabel="语料覆盖率">
+          <CorpusCoveragePanel
+            value={corpusText}
+            coverage={corpusCoverage}
+            disabled={!summaries.length}
+            onChange={setCorpusText}
+          />
+        </OverlayModal>
+      ) : null}
     </section>
+  );
+}
+
+function OverlayModal({
+  children,
+  onClose,
+  ariaLabel,
+}: {
+  children: ReactNode;
+  onClose: () => void;
+  ariaLabel: string;
+}) {
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={ariaLabel}
+      onClick={onClose}
+    >
+      <div
+        className="relative max-h-[85vh] w-full max-w-4xl overflow-y-auto overscroll-contain border border-line bg-surface px-8 py-4"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <CornerBrackets />
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="关闭"
+          className="absolute right-4 top-4 z-10 border border-line bg-surface px-2.5 py-1 font-sans text-xs text-ink-mute transition-colors hover:border-accent hover:text-accent"
+        >
+          ✕
+        </button>
+        {children}
+      </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -747,8 +831,8 @@ function DatabaseDashboard({
   onSelect: (char: string) => void;
 }) {
   return (
-    <div className="mt-8 border-y border-line py-6">
-      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+    <div className="py-4">
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3 pr-12">
         <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute">
           合并疑难总览
         </div>
@@ -788,8 +872,8 @@ function CorpusCoveragePanel({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="mt-8 border-b border-line pb-6">
-      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
+    <div className="py-4">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3 pr-12">
         <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute">
           语料覆盖率
         </div>
