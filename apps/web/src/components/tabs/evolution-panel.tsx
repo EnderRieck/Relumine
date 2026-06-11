@@ -192,8 +192,8 @@ export function EvolutionPanel() {
       <div className="mt-8 flex border-b border-line">
         {(
           [
-            { key: "merge" as const, label: "壹 · 合并疑难", hint: `${mergeList.length} 字精览` },
-            { key: "grid" as const, label: "貳 · 通检", hint: `${stats?.grid_count ?? 0} 字全览` },
+            { key: "merge" as const, label: "壹 · 合并疑难", hint: `${mergeList.length} 字深度解析` },
+            { key: "grid" as const, label: "貳 · 通检", hint: `全库 ${stats?.total ?? 0} 字` },
           ]
         ).map(({ key, label, hint }) => (
           <button
@@ -213,6 +213,11 @@ export function EvolutionPanel() {
           </button>
         ))}
       </div>
+      <p className="mt-2 font-sans text-[11px] leading-relaxed text-ink-mute">
+        通检收录全部 {stats?.total ?? 0} 字（常用 {stats?.grid_count ?? 0} + 异体生僻{" "}
+        {stats?.archive_count ?? 0}）；合并疑难是其中 {mergeList.length}{" "}
+        个多对一合并字的深度解析子集，含 {stats?.handcrafted_count ?? 0} 个人工精修字，两馆字目有重叠。
+      </p>
 
       {hall === "merge" ? (
         <>
@@ -427,15 +432,18 @@ function CharGridHall({
             </button>
           ))}
         </div>
-        <label className="flex cursor-pointer items-center gap-2 font-sans text-xs text-ink-mute">
-          <input
-            type="checkbox"
-            checked={showArchive}
-            onChange={(event) => onShowArchive(event.target.checked)}
-            className="accent-[var(--accent,#a33)]"
-          />
-          含异体 / 生僻字（{stats?.archive_count ?? 0}）
-        </label>
+        <div className="flex items-center gap-4">
+          <span className="font-sans text-xs text-ink-mute">当前显示 {list.length} 字</span>
+          <label className="flex cursor-pointer items-center gap-2 font-sans text-xs text-ink-mute">
+            <input
+              type="checkbox"
+              checked={showArchive}
+              onChange={(event) => onShowArchive(event.target.checked)}
+              className="accent-[var(--accent,#a33)]"
+            />
+            含异体 / 生僻字（+{stats?.archive_count ?? 0}）
+          </label>
+        </div>
       </div>
 
       {/* 分组锚点 */}
