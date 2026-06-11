@@ -210,7 +210,7 @@ export function EvolutionPanel() {
           [
             { key: "merge" as const, numeral: "壹", label: "合并疑难", hint: `${mergeList.length} 字深度解析` },
             { key: "grid" as const, numeral: "貳", label: "通检", hint: `全库 ${stats?.total ?? 0} 字` },
-            { key: "cl" as const, numeral: "參", label: "计算语言学", hint: "基于数据库，从多个角度进行计算语言学分析" },
+            { key: "cl" as const, numeral: "參", label: "析微", hint: "基于数据库，从多个角度进行计算语言学分析" },
           ]
         ).map(({ key, numeral, label, hint }) => (
           <button
