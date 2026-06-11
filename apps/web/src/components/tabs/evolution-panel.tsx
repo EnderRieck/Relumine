@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -289,6 +290,7 @@ export function EvolutionPanel() {
                   </button>
                 </div>
               </div>
+              <div className="max-h-[60vh] overflow-y-auto border border-line">
               <div className="grid grid-cols-5 lg:grid-cols-4 gap-px bg-line">
                 {visibleMergeList.map((c, idx) => {
                   const isActive = c.simplified === active;
@@ -318,9 +320,12 @@ export function EvolutionPanel() {
                   );
                 })}
               </div>
+              </div>
             </div>
 
-            <DetailColumn record={record} loading={loadingRecord} />
+            <div className="lg:sticky lg:top-4 lg:self-start lg:max-h-[85vh] lg:overflow-y-auto lg:pr-2">
+              <DetailColumn record={record} loading={loadingRecord} />
+            </div>
           </div>
         </>
       ) : (
@@ -396,6 +401,7 @@ function CharGridHall({
   loadingRecord: boolean;
 }) {
   const groups = useMemo(() => buildGridGroups(list, groupAxis), [groupAxis, list]);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <div className="mt-6">
@@ -435,65 +441,70 @@ function CharGridHall({
       {/* 分组锚点 */}
       <div className="mt-4 flex flex-wrap gap-1.5">
         {groups.map((group) => (
-          <a
+          <button
             key={group.key}
-            href={`#grid-group-${group.key}`}
+            type="button"
+            onClick={() =>
+              scrollRef.current
+                ?.querySelector(`#grid-group-${group.key}`)
+                ?.scrollIntoView({ block: "start", behavior: "smooth" })
+            }
             className="border border-line px-2 py-1 font-serif text-xs text-ink-mute transition-colors hover:border-accent hover:text-accent"
           >
             {group.label.split(" ")[0]}
             <span className="ml-1 font-sans text-[10px]">{group.items.length}</span>
-          </a>
+          </button>
         ))}
       </div>
 
-      {groups.map((group) => (
-        <div key={group.key} id={`grid-group-${group.key}`} className="mt-6 scroll-mt-4">
-          <div className="mb-2 flex items-baseline gap-3 border-b border-line pb-1.5">
-            <span className="font-serif text-base text-ink">{group.label}</span>
-            <span className="font-sans text-xs text-ink-mute">{group.items.length} 字</span>
-          </div>
-          <div
-            className="grid gap-px bg-line"
-            style={{
-              gridTemplateColumns: "repeat(auto-fill, minmax(2.6rem, 1fr))",
-              contentVisibility: "auto",
-              containIntrinsicSize: `${Math.ceil(group.items.length / 18) * 2.7}rem`,
-            }}
-          >
-            {group.items.map((item) => (
-              <button
-                key={item.simplified}
-                type="button"
-                onMouseEnter={() => onHover(item.simplified)}
-                onClick={() => onSelect(item.simplified)}
-                title={`${item.simplified}${item.pinyin ? ` · ${item.pinyin}` : ""}${item.record_type === "merge" ? " · 多源合并" : ""}`}
-                className={cn(
-                  "group relative aspect-square bg-surface flex items-center justify-center font-serif text-xl transition-colors hover:bg-bg",
-                  item.simplified === active ? "bg-bg text-accent" : "text-ink",
-                )}
+      <div className="mt-5 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_400px] gap-8">
+        {/* 字阵：容器内滚动 */}
+        <div
+          ref={scrollRef}
+          className="max-h-[72vh] overflow-y-auto border border-line bg-surface pr-1"
+        >
+          {groups.map((group) => (
+            <div key={group.key} id={`grid-group-${group.key}`} className="px-3 pb-2 pt-4 scroll-mt-2">
+              <div className="mb-2 flex items-baseline gap-3 border-b border-line pb-1.5">
+                <span className="font-serif text-base text-ink">{group.label}</span>
+                <span className="font-sans text-xs text-ink-mute">{group.items.length} 字</span>
+              </div>
+              <div
+                className="grid gap-px bg-line"
+                style={{
+                  gridTemplateColumns: "repeat(auto-fill, minmax(2.6rem, 1fr))",
+                  contentVisibility: "auto",
+                  containIntrinsicSize: `${Math.ceil(group.items.length / 18) * 2.7}rem`,
+                }}
               >
-                {item.traditional}
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 hidden -translate-x-1/2 whitespace-nowrap border border-line bg-surface px-2 py-1 font-sans text-[10px] text-ink-soft shadow-sm group-hover:block"
-                >
-                  {item.simplified}
-                  {item.pinyin ? ` · ${item.pinyin}` : ""}
-                </span>
-                {item.record_type === "merge" ? (
-                  <span aria-hidden className="absolute right-1 top-1 h-1 w-1 bg-accent" />
-                ) : null}
-              </button>
-            ))}
-          </div>
+                {group.items.map((item) => (
+                  <button
+                    key={item.simplified}
+                    type="button"
+                    onMouseEnter={() => onHover(item.simplified)}
+                    onClick={() => onSelect(item.simplified)}
+                    title={`${item.simplified}${item.pinyin ? ` · ${item.pinyin}` : ""}${item.record_type === "merge" ? " · 多源合并" : ""}`}
+                    className={cn(
+                      "group relative aspect-square bg-surface flex items-center justify-center font-serif text-xl transition-colors hover:bg-bg",
+                      item.simplified === active ? "bg-bg text-accent" : "text-ink",
+                    )}
+                  >
+                    {item.traditional}
+                    {item.record_type === "merge" ? (
+                      <span aria-hidden className="absolute right-1 top-1 h-1 w-1 bg-accent" />
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
 
-      {active ? (
-        <div className="mt-10 border-t border-line pt-8">
+        {/* 详情：吸顶侧栏，自身滚动 */}
+        <div className="xl:sticky xl:top-4 xl:self-start xl:max-h-[72vh] xl:overflow-y-auto border-t xl:border-t-0 border-line pt-6 xl:pt-0 xl:pl-2">
           <DetailColumn record={record} loading={loadingRecord} />
         </div>
-      ) : null}
+      </div>
     </div>
   );
 }
@@ -590,7 +601,9 @@ const DATA_SOURCES = [
 ];
 
 function DataSourceModal({ onClose }: { onClose: () => void }) {
-  return (
+  // Portal to body: ancestors use transform animations, which would otherwise
+  // turn them into the containing block for this fixed-position overlay.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       role="dialog"
@@ -641,7 +654,8 @@ function DataSourceModal({ onClose }: { onClose: () => void }) {
           在其之上构建诠释层与人文层，而非简单拼接。
         </p>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -1345,7 +1359,7 @@ function escapeCsv(value: string | number) {
 }
 
 function isHanChar(ch: string) {
-  return /[\\u3400-\\u9fff\\uf900-\\ufaff]/.test(ch);
+  return /[㐀-鿿豈-﫿]/.test(ch);
 }
 
 function parseStrokeCount(raw?: string | null) {
