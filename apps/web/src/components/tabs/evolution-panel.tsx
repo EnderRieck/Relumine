@@ -966,17 +966,17 @@ function ClSectionTitle({
   subtitle?: string;
 }) {
   return (
-    <div className="mb-3 flex items-center gap-3">
+    <div className="mb-3 flex items-center gap-2.5">
       <span
         aria-hidden
-        className="flex h-9 w-9 shrink-0 items-center justify-center bg-accent font-serif text-lg leading-none text-white"
+        className="flex h-7 w-7 shrink-0 items-center justify-center bg-accent font-serif text-sm leading-none text-white"
       >
         {numeral}
       </span>
       <div className="min-w-0">
-        <div className="font-serif text-lg leading-tight text-ink">{title}</div>
+        <div className="font-serif text-base leading-tight text-ink">{title}</div>
         {subtitle ? (
-          <div className="mt-0.5 font-sans text-[11px] text-ink-mute">{subtitle}</div>
+          <div className="mt-0.5 font-sans text-[10px] text-ink-mute">{subtitle}</div>
         ) : null}
       </div>
     </div>
