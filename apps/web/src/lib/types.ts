@@ -29,6 +29,39 @@ export type CharSummary = {
   simplified: string;
   traditional: string;
   pinyin?: string | null;
+  record_type?: "merge" | "one_to_one" | null;
+  curation_level?: "handcrafted" | "auto_external" | "auto_slim" | string | null;
+  radical?: string | null;
+  simp_strokes?: number | null;
+  trad_strokes?: number | null;
+  stroke_reduction?: number | null;
+  frequency?: number;
+  frequency_tier?: string | null;
+  display_tier?: "grid" | "archive" | string | null;
+  ocr_risk_level?: string | null;
+  ocr_risk_score?: number | null;
+  semantic_level?: string | null;
+  avg_stroke_reduction?: number | null;
+  coverage_count?: number;
+  merges?: string | null;
+};
+
+export type EvolutionStats = {
+  total: number;
+  grid_count?: number;
+  archive_count?: number;
+  merge_count: number;
+  one_to_one_count: number;
+  handcrafted_count?: number;
+  auto_external_count?: number;
+  auto_slim_count?: number;
+  high_ocr_risk_count?: number;
+  high_semantic_count?: number;
+  high_frequency_count?: number;
+  avg_stroke_reduction?: number;
+  radical_groups?: Array<{ radical: string; count: number }>;
+  stroke_reduction_buckets?: Record<string, number>;
+  frequency_tiers?: Record<string, number>;
 };
 
 export type UnihanProfile = {

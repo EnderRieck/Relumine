@@ -31,8 +31,8 @@ class Settings(BaseSettings):
 
     opencc_profile: str = "t2s"
 
-    evolution_backend: str = "json"
-    evolution_path: Path = Path(__file__).parent / "data" / "relumine_char_db.v1.json"
+    evolution_backend: str = "sqlite"
+    evolution_path: Path = Path(__file__).parent / "data" / "relumine_char_db.v2.sqlite"
 
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 

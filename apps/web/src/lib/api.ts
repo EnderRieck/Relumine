@@ -64,9 +64,18 @@ export const api = {
   },
 
   evolution: {
-    async list(): Promise<CharSummary[]> {
+    async list(params?: { type?: "merge" | "one_to_one"; tier?: "grid" | "archive" }): Promise<CharSummary[]> {
+      const search = new URLSearchParams();
+      if (params?.type) search.set("type", params.type);
+      if (params?.tier) search.set("tier", params.tier);
+      const qs = search.toString();
       return jsonOrThrow<CharSummary[]>(
-        await fetch("/api/evolution", { cache: "no-store" }),
+        await fetch(`/api/evolution${qs ? `?${qs}` : ""}`, { cache: "no-store" }),
+      );
+    },
+    async stats(): Promise<import("@/lib/types").EvolutionStats> {
+      return jsonOrThrow<import("@/lib/types").EvolutionStats>(
+        await fetch("/api/evolution/stats", { cache: "no-store" }),
       );
     },
     async get(char: string): Promise<CharRecord> {

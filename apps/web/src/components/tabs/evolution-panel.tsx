@@ -1,46 +1,52 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 
 import { api, ApiError } from "@/lib/api";
-import type { CharRecord, CharSummary, CulturalComputation } from "@/lib/types";
+import type { CharRecord, CharSummary, CulturalComputation, EvolutionStats } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
 import { SectionMark } from "@/components/chinese/SectionMark";
 import { CornerBrackets } from "@/components/chinese/CornerBrackets";
 
-type FilterMode = "all" | "high_ocr" | "high_semantic" | "multi_source" | "ancient_reuse" | "handcrafted";
+type FilterMode = "all" | "high_ocr" | "high_semantic" | "multi_source" | "handcrafted";
 type SortMode = "default" | "frequency" | "ocr_risk" | "source_count" | "stroke_reduction";
+type Hall = "merge" | "grid";
+type GroupAxis = "radical" | "reduction" | "frequency";
 
 export function EvolutionPanel() {
-  const [list, setList] = useState<CharSummary[]>([]);
+  const [summaries, setSummaries] = useState<CharSummary[]>([]);
+  const [stats, setStats] = useState<EvolutionStats | null>(null);
+  const [hall, setHall] = useState<Hall>("merge");
   const [active, setActive] = useState<string | null>(null);
   const [record, setRecord] = useState<CharRecord | null>(null);
-  const [allRecords, setAllRecords] = useState<CharRecord[]>([]);
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
   const [sortMode, setSortMode] = useState<SortMode>("default");
+  const [groupAxis, setGroupAxis] = useState<GroupAxis>("radical");
+  const [showArchive, setShowArchive] = useState(false);
+  const [search, setSearch] = useState("");
   const [corpusText, setCorpusText] = useState("");
+  const [showInfo, setShowInfo] = useState(false);
   const [loadingList, setLoadingList] = useState(true);
   const [loadingRecord, setLoadingRecord] = useState(false);
-  const [loadingAllRecords, setLoadingAllRecords] = useState(false);
+
+  const recordCache = useRef(new Map<string, CharRecord>());
+  const activeRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    api.evolution
-      .list()
-      .then((l) => {
+    Promise.all([api.evolution.list(), api.evolution.stats()])
+      .then(([list, statsData]) => {
         if (cancelled) return;
-        setList(l);
-        setLoadingAllRecords(true);
-        if (l.length && active === null) {
-          setLoadingRecord(true);
-          setActive(l[0].simplified);
-        }
+        setSummaries(list);
+        setStats(statsData);
+        const firstMerge = list.find((item) => item.record_type === "merge") ?? list[0];
+        if (firstMerge) selectChar(firstMerge.simplified);
       })
       .catch((e) => {
-        const detail = e instanceof ApiError ? e.message : "加载失败";
+        const detail = e instanceof ApiError ? e.message : "字库加载失败";
         toast.error(detail);
       })
       .finally(() => !cancelled && setLoadingList(false));
@@ -50,70 +56,89 @@ export function EvolutionPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (!active) return;
-    let cancelled = false;
+  function prefetchChar(char: string) {
+    if (recordCache.current.has(char)) return;
     api.evolution
-      .get(active)
-      .then((r) => !cancelled && setRecord(r))
+      .get(char)
+      .then((r) => recordCache.current.set(char, r))
+      .catch(() => undefined);
+  }
+
+  function selectChar(char: string) {
+    activeRef.current = char;
+    setActive(char);
+    const cached = recordCache.current.get(char);
+    if (cached) {
+      setRecord(cached);
+      return;
+    }
+    setRecord(null);
+    setLoadingRecord(true);
+    api.evolution
+      .get(char)
+      .then((r) => {
+        recordCache.current.set(char, r);
+        if (activeRef.current === char) setRecord(r);
+      })
       .catch((e) => {
-        if (cancelled) return;
         const detail = e instanceof ApiError ? e.message : "加载失败";
         toast.error(detail);
       })
-      .finally(() => !cancelled && setLoadingRecord(false));
-    return () => {
-      cancelled = true;
-    };
-  }, [active]);
+      .finally(() => {
+        if (activeRef.current === char) setLoadingRecord(false);
+      });
+  }
 
-  useEffect(() => {
-    if (!list.length) return;
-    let cancelled = false;
-    Promise.all(list.map((item) => api.evolution.get(item.simplified)))
-      .then((records) => {
-        if (cancelled) return;
-        setAllRecords(records);
-      })
-      .catch((e) => {
-        if (cancelled) return;
-        const detail = e instanceof ApiError ? e.message : "文化计算数据加载失败";
-        toast.error(detail);
-      })
-      .finally(() => !cancelled && setLoadingAllRecords(false));
-    return () => {
-      cancelled = true;
-    };
-  }, [list]);
-
-  const recordsByChar = useMemo(
-    () => new Map(allRecords.map((item) => [item.simplified, item])),
-    [allRecords],
+  const mergeList = useMemo(
+    () => summaries.filter((item) => item.record_type === "merge" && item.curation_level !== "auto_slim"),
+    [summaries],
+  );
+  const slimMergeCount = useMemo(
+    () => summaries.filter((item) => item.record_type === "merge" && item.curation_level === "auto_slim").length,
+    [summaries],
+  );
+  const gridList = useMemo(
+    () => summaries.filter((item) => (showArchive ? true : item.display_tier === "grid")),
+    [showArchive, summaries],
   );
 
-  const visibleList = useMemo(
-    () => applyFilterAndSort(list, recordsByChar, filterMode, sortMode),
-    [filterMode, list, recordsByChar, sortMode],
+  const visibleMergeList = useMemo(
+    () => applyFilterAndSort(mergeList, filterMode, sortMode),
+    [filterMode, mergeList, sortMode],
   );
 
-  const dashboard = useMemo(() => buildDashboard(allRecords), [allRecords]);
+  const searchHits = useMemo(() => searchSummaries(summaries, search), [search, summaries]);
+  const dashboard = useMemo(() => buildDashboard(mergeList), [mergeList]);
   const corpusCoverage = useMemo(
-    () => analyzeCorpus(corpusText, allRecords),
-    [allRecords, corpusText],
+    () => analyzeCorpus(corpusText, summaries),
+    [corpusText, summaries],
   );
 
   return (
     <section className="relative rounded-[var(--radius)] border border-line bg-surface p-8 md:p-12 animate-ink-rise">
       <CornerBrackets />
-      <SectionMark title="形声流变" subtitle="一简 · 二简 · 多对一合并" />
+      <div className="flex items-start justify-between gap-4">
+        <SectionMark title="形声流变" subtitle="一简 · 多对一合并 · 全量通检" />
+        <button
+          type="button"
+          aria-label="数据来源说明"
+          onClick={() => setShowInfo(true)}
+          className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-line font-serif text-sm text-ink-mute transition-colors hover:border-accent hover:text-accent"
+        >
+          ⓘ
+        </button>
+      </div>
 
-      {/* ── CL 统计摘要 ── */}
+      {/* ── 规模与统计摘要 ── */}
       <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-px bg-line border border-line">
         {[
-          { label: "收录字数", value: loadingList ? "…" : String(list.length) },
-          { label: "外部数据库", value: "4 库" },
-          { label: "平均笔画削减", value: "6.5 笔" },
-          { label: "三库一致度", value: "94.1 %" },
+          { label: "收录字数", value: loadingList ? "…" : String(stats?.total ?? summaries.length) },
+          { label: "多源合并", value: loadingList ? "…" : String(stats?.merge_count ?? 0) },
+          { label: "人工精修", value: loadingList ? "…" : String(stats?.handcrafted_count ?? 0) },
+          {
+            label: "平均笔画削减",
+            value: stats?.avg_stroke_reduction != null ? `${stats.avg_stroke_reduction} 笔` : "…",
+          },
         ].map(({ label, value }) => (
           <div key={label} className="bg-surface px-4 py-3">
             <div className="text-[10px] font-sans tracking-[0.16em] uppercase text-ink-mute mb-1">
@@ -124,133 +149,503 @@ export function EvolutionPanel() {
         ))}
       </div>
 
-      <DatabaseDashboard
-        records={allRecords}
-        dashboard={dashboard}
-        loading={loadingAllRecords}
-        onSelect={(char) => {
-          setRecord(null);
-          setLoadingRecord(true);
-          setActive(char);
-        }}
-      />
-
-      <CorpusCoveragePanel
-        value={corpusText}
-        coverage={corpusCoverage}
-        disabled={!allRecords.length}
-        onChange={setCorpusText}
-      />
-
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-10">
-        <div>
-          <div className="mb-4 space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute">
-                字 · {loadingList ? "…" : visibleList.length}
-              </div>
-              <div className="text-xs font-sans text-ink-mute">
-                {allRecords.length ? `${allRecords.length} 条可分析` : "加载分析中"}
-              </div>
-            </div>
-            <label className="block">
-              <span className="mb-1 block text-[10px] font-sans tracking-[0.16em] uppercase text-ink-mute">
-                筛选
-              </span>
-              <select
-                value={filterMode}
-                onChange={(event) => setFilterMode(event.target.value as FilterMode)}
-                className="w-full border border-line bg-surface px-3 py-2 font-serif text-sm text-ink outline-none"
-              >
-                <option value="all">全部字</option>
-                <option value="high_ocr">OCR 高风险</option>
-                <option value="high_semantic">高语义歧义</option>
-                <option value="multi_source">多繁一简</option>
-                <option value="ancient_reuse">古字复用</option>
-                <option value="handcrafted">人工精修</option>
-              </select>
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-[10px] font-sans tracking-[0.16em] uppercase text-ink-mute">
-                排序
-              </span>
-              <select
-                value={sortMode}
-                onChange={(event) => setSortMode(event.target.value as SortMode)}
-                className="w-full border border-line bg-surface px-3 py-2 font-serif text-sm text-ink outline-none"
-              >
-                <option value="default">原始顺序</option>
-                <option value="frequency">字频从高到低</option>
-                <option value="ocr_risk">OCR 风险从高到低</option>
-                <option value="source_count">来源数从高到低</option>
-                <option value="stroke_reduction">笔画削减从高到低</option>
-              </select>
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => exportRecordsAsJson(allRecords)}
-                disabled={!allRecords.length}
-                className="border border-line px-3 py-2 font-sans text-xs tracking-[0.12em] text-ink-mute transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
-              >
-                导出 JSON
-              </button>
-              <button
-                type="button"
-                onClick={() => exportRecordsAsCsv(allRecords)}
-                disabled={!allRecords.length}
-                className="border border-line px-3 py-2 font-sans text-xs tracking-[0.12em] text-ink-mute transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
-              >
-                导出 CSV
-              </button>
-            </div>
-          </div>
-          <div className="grid grid-cols-5 lg:grid-cols-4 gap-px bg-line">
-            {visibleList.map((c, idx) => {
-              const isActive = c.simplified === active;
-              const detail = recordsByChar.get(c.simplified);
-              const isHighRisk = detail?.extensions.cultural_computation?.ocr_risk?.level === "高";
-              return (
+      {/* ── 全局检索 ── */}
+      <div className="mt-6">
+        <input
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="检索单字（繁简皆可，如：发 / 發 / 髮）"
+          className="w-full border border-line bg-surface px-4 py-2.5 font-serif text-sm text-ink outline-none placeholder:text-ink-mute/70"
+        />
+        {search.trim() ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {searchHits.length === 0 ? (
+              <span className="font-serif text-sm text-ink-mute">未检索到匹配字</span>
+            ) : (
+              searchHits.map((item) => (
                 <button
-                  key={c.simplified}
-                  onClick={() => {
-                    setRecord(null);
-                    setLoadingRecord(true);
-                    setActive(c.simplified);
-                  }}
+                  key={item.simplified}
+                  type="button"
+                  onMouseEnter={() => prefetchChar(item.simplified)}
+                  onClick={() => selectChar(item.simplified)}
                   className={cn(
-                    "relative aspect-square bg-surface flex items-center justify-center",
-                    "font-serif text-2xl text-ink transition-colors duration-200",
-                    "hover:bg-bg animate-ink-rise-soft",
-                    isActive && "bg-bg",
+                    "flex items-center gap-2 border border-line px-3 py-1.5 font-serif text-sm transition-colors hover:border-accent hover:text-accent",
+                    item.simplified === active ? "border-accent text-accent" : "text-ink-soft",
                   )}
-                  style={{ animationDelay: `${idx * 60}ms` }}
                 >
-                  {c.simplified}
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "absolute bottom-1.5 left-1.5 h-1 w-1 transition-opacity duration-200",
-                      isActive || isHighRisk ? "bg-accent opacity-100" : "opacity-0",
-                    )}
-                  />
+                  <span className="text-lg leading-none">{item.simplified}</span>
+                  <span className="text-ink-mute">{item.traditional}</span>
+                  {item.record_type === "merge" ? (
+                    <span className="border border-accent/50 px-1.5 py-0.5 text-[10px] font-sans tracking-[0.1em] text-accent">
+                      多源合并
+                    </span>
+                  ) : null}
                 </button>
-              );
-            })}
+              ))
+            )}
           </div>
-        </div>
-
-        <div>
-          {!record ? (
-            <div className="text-sm text-ink-mute">{loadingRecord ? "加载中…" : "选择一个字"}</div>
-          ) : (
-            <RecordView record={record} />
-          )}
-        </div>
+        ) : null}
       </div>
+
+      {/* ── 双馆切换 ── */}
+      <div className="mt-8 flex border-b border-line">
+        {(
+          [
+            { key: "merge" as const, label: "壹 · 合并疑难", hint: `${mergeList.length} 字精览` },
+            { key: "grid" as const, label: "貳 · 通检", hint: `${stats?.grid_count ?? 0} 字全览` },
+          ]
+        ).map(({ key, label, hint }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setHall(key)}
+            className={cn(
+              "relative px-5 py-3 font-serif text-sm tracking-[0.08em] transition-colors",
+              hall === key ? "text-ink" : "text-ink-mute hover:text-ink-soft",
+            )}
+          >
+            {label}
+            <span className="ml-2 font-sans text-[10px] text-ink-mute">{hint}</span>
+            {hall === key ? (
+              <span aria-hidden className="absolute inset-x-3 bottom-0 h-0.5 bg-accent" />
+            ) : null}
+          </button>
+        ))}
+      </div>
+
+      {hall === "merge" ? (
+        <>
+          <DatabaseDashboard
+            dashboard={dashboard}
+            mergeCount={mergeList.length}
+            slimMergeCount={slimMergeCount}
+            loading={loadingList}
+            onSelect={selectChar}
+          />
+
+          <CorpusCoveragePanel
+            value={corpusText}
+            coverage={corpusCoverage}
+            disabled={!summaries.length}
+            onChange={setCorpusText}
+          />
+
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-10">
+            <div>
+              <div className="mb-4 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute">
+                    字 · {loadingList ? "…" : visibleMergeList.length}
+                  </div>
+                </div>
+                <label className="block">
+                  <span className="mb-1 block text-[10px] font-sans tracking-[0.16em] uppercase text-ink-mute">
+                    筛选
+                  </span>
+                  <select
+                    value={filterMode}
+                    onChange={(event) => setFilterMode(event.target.value as FilterMode)}
+                    className="w-full border border-line bg-surface px-3 py-2 font-serif text-sm text-ink outline-none"
+                  >
+                    <option value="all">全部字</option>
+                    <option value="high_ocr">OCR 高风险</option>
+                    <option value="high_semantic">高语义歧义</option>
+                    <option value="multi_source">来源 ≥ 3</option>
+                    <option value="handcrafted">人工精修</option>
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-[10px] font-sans tracking-[0.16em] uppercase text-ink-mute">
+                    排序
+                  </span>
+                  <select
+                    value={sortMode}
+                    onChange={(event) => setSortMode(event.target.value as SortMode)}
+                    className="w-full border border-line bg-surface px-3 py-2 font-serif text-sm text-ink outline-none"
+                  >
+                    <option value="default">原始顺序</option>
+                    <option value="frequency">字频从高到低</option>
+                    <option value="ocr_risk">OCR 风险从高到低</option>
+                    <option value="source_count">来源数从高到低</option>
+                    <option value="stroke_reduction">笔画削减从高到低</option>
+                  </select>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => exportSummariesAsJson(summaries)}
+                    disabled={!summaries.length}
+                    className="border border-line px-3 py-2 font-sans text-xs tracking-[0.12em] text-ink-mute transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
+                  >
+                    导出 JSON
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => exportSummariesAsCsv(summaries)}
+                    disabled={!summaries.length}
+                    className="border border-line px-3 py-2 font-sans text-xs tracking-[0.12em] text-ink-mute transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
+                  >
+                    导出 CSV
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-5 lg:grid-cols-4 gap-px bg-line">
+                {visibleMergeList.map((c, idx) => {
+                  const isActive = c.simplified === active;
+                  const isHighRisk = c.ocr_risk_level === "高";
+                  return (
+                    <button
+                      key={c.simplified}
+                      onMouseEnter={() => prefetchChar(c.simplified)}
+                      onClick={() => selectChar(c.simplified)}
+                      className={cn(
+                        "relative aspect-square bg-surface flex items-center justify-center",
+                        "font-serif text-2xl text-ink transition-colors duration-200",
+                        "hover:bg-bg animate-ink-rise-soft",
+                        isActive && "bg-bg",
+                      )}
+                      style={{ animationDelay: `${Math.min(idx, 40) * 30}ms` }}
+                    >
+                      {c.simplified}
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "absolute bottom-1.5 left-1.5 h-1 w-1 transition-opacity duration-200",
+                          isActive || isHighRisk ? "bg-accent opacity-100" : "opacity-0",
+                        )}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <DetailColumn record={record} loading={loadingRecord} />
+          </div>
+        </>
+      ) : (
+        <CharGridHall
+          list={gridList}
+          stats={stats}
+          active={active}
+          groupAxis={groupAxis}
+          showArchive={showArchive}
+          onGroupAxis={setGroupAxis}
+          onShowArchive={setShowArchive}
+          onHover={prefetchChar}
+          onSelect={selectChar}
+          record={record}
+          loadingRecord={loadingRecord}
+        />
+      )}
+
+      {showInfo ? <DataSourceModal onClose={() => setShowInfo(false)} /> : null}
     </section>
   );
 }
+
+function DetailColumn({ record, loading }: { record: CharRecord | null; loading: boolean }) {
+  if (!record) {
+    return loading ? <RecordSkeleton /> : <div className="text-sm text-ink-mute">选择一个字</div>;
+  }
+  return <RecordView record={record} />;
+}
+
+function RecordSkeleton() {
+  return (
+    <div className="animate-pulse" aria-hidden>
+      <div className="flex items-baseline gap-6">
+        <div className="h-16 w-16 bg-line/60" />
+        <div className="h-12 w-12 bg-line/50" />
+        <div className="h-4 w-20 bg-line/40" />
+      </div>
+      <div className="mt-8 h-4 w-3/4 bg-line/40" />
+      <div className="mt-3 h-4 w-2/3 bg-line/40" />
+      <div className="mt-8 h-24 w-full bg-line/30" />
+    </div>
+  );
+}
+
+/* ── 通检馆：高密度字阵 ── */
+
+type GridGroup = { key: string; label: string; items: CharSummary[] };
+
+function CharGridHall({
+  list,
+  stats,
+  active,
+  groupAxis,
+  showArchive,
+  onGroupAxis,
+  onShowArchive,
+  onHover,
+  onSelect,
+  record,
+  loadingRecord,
+}: {
+  list: CharSummary[];
+  stats: EvolutionStats | null;
+  active: string | null;
+  groupAxis: GroupAxis;
+  showArchive: boolean;
+  onGroupAxis: (axis: GroupAxis) => void;
+  onShowArchive: (value: boolean) => void;
+  onHover: (char: string) => void;
+  onSelect: (char: string) => void;
+  record: CharRecord | null;
+  loadingRecord: boolean;
+}) {
+  const groups = useMemo(() => buildGridGroups(list, groupAxis), [groupAxis, list]);
+
+  return (
+    <div className="mt-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-1 border border-line p-0.5">
+          {(
+            [
+              { key: "radical" as const, label: "按部首" },
+              { key: "reduction" as const, label: "按笔画削减" },
+              { key: "frequency" as const, label: "按字频" },
+            ]
+          ).map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onGroupAxis(key)}
+              className={cn(
+                "px-3 py-1.5 font-sans text-xs tracking-[0.12em] transition-colors",
+                groupAxis === key ? "bg-bg text-ink" : "text-ink-mute hover:text-ink-soft",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <label className="flex cursor-pointer items-center gap-2 font-sans text-xs text-ink-mute">
+          <input
+            type="checkbox"
+            checked={showArchive}
+            onChange={(event) => onShowArchive(event.target.checked)}
+            className="accent-[var(--accent,#a33)]"
+          />
+          含异体 / 生僻字（{stats?.archive_count ?? 0}）
+        </label>
+      </div>
+
+      {/* 分组锚点 */}
+      <div className="mt-4 flex flex-wrap gap-1.5">
+        {groups.map((group) => (
+          <a
+            key={group.key}
+            href={`#grid-group-${group.key}`}
+            className="border border-line px-2 py-1 font-serif text-xs text-ink-mute transition-colors hover:border-accent hover:text-accent"
+          >
+            {group.label.split(" ")[0]}
+            <span className="ml-1 font-sans text-[10px]">{group.items.length}</span>
+          </a>
+        ))}
+      </div>
+
+      {groups.map((group) => (
+        <div key={group.key} id={`grid-group-${group.key}`} className="mt-6 scroll-mt-4">
+          <div className="mb-2 flex items-baseline gap-3 border-b border-line pb-1.5">
+            <span className="font-serif text-base text-ink">{group.label}</span>
+            <span className="font-sans text-xs text-ink-mute">{group.items.length} 字</span>
+          </div>
+          <div
+            className="grid gap-px bg-line"
+            style={{
+              gridTemplateColumns: "repeat(auto-fill, minmax(2.6rem, 1fr))",
+              contentVisibility: "auto",
+              containIntrinsicSize: `${Math.ceil(group.items.length / 18) * 2.7}rem`,
+            }}
+          >
+            {group.items.map((item) => (
+              <button
+                key={item.simplified}
+                type="button"
+                onMouseEnter={() => onHover(item.simplified)}
+                onClick={() => onSelect(item.simplified)}
+                title={`${item.simplified}${item.pinyin ? ` · ${item.pinyin}` : ""}${item.record_type === "merge" ? " · 多源合并" : ""}`}
+                className={cn(
+                  "group relative aspect-square bg-surface flex items-center justify-center font-serif text-xl transition-colors hover:bg-bg",
+                  item.simplified === active ? "bg-bg text-accent" : "text-ink",
+                )}
+              >
+                {item.traditional}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 hidden -translate-x-1/2 whitespace-nowrap border border-line bg-surface px-2 py-1 font-sans text-[10px] text-ink-soft shadow-sm group-hover:block"
+                >
+                  {item.simplified}
+                  {item.pinyin ? ` · ${item.pinyin}` : ""}
+                </span>
+                {item.record_type === "merge" ? (
+                  <span aria-hidden className="absolute right-1 top-1 h-1 w-1 bg-accent" />
+                ) : null}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {active ? (
+        <div className="mt-10 border-t border-line pt-8">
+          <DetailColumn record={record} loading={loadingRecord} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function buildGridGroups(list: CharSummary[], axis: GroupAxis): GridGroup[] {
+  if (axis === "radical") {
+    const byRadical = new Map<string, CharSummary[]>();
+    for (const item of list) {
+      const key = item.radical || "未知";
+      const bucket = byRadical.get(key);
+      if (bucket) bucket.push(item);
+      else byRadical.set(key, [item]);
+    }
+    return Array.from(byRadical.entries())
+      .sort(([a], [b]) => {
+        if (a === "未知") return 1;
+        if (b === "未知") return -1;
+        return a.codePointAt(0)! - b.codePointAt(0)!;
+      })
+      .map(([radical, items]) => ({
+        key: `r-${radical.codePointAt(0)?.toString(16) ?? "x"}`,
+        label: `${radical} 部`,
+        items: items.toSorted(
+          (a, b) => (a.simp_strokes ?? 99) - (b.simp_strokes ?? 99),
+        ),
+      }));
+  }
+
+  if (axis === "reduction") {
+    const buckets: Array<{ key: string; label: string; match: (v: number | null | undefined) => boolean }> = [
+      { key: "ge10", label: "削减 ≥10 笔", match: (v) => v != null && v >= 10 },
+      { key: "7to9", label: "削减 7–9 笔", match: (v) => v != null && v >= 7 && v <= 9 },
+      { key: "4to6", label: "削减 4–6 笔", match: (v) => v != null && v >= 4 && v <= 6 },
+      { key: "1to3", label: "削减 1–3 笔", match: (v) => v != null && v >= 1 && v <= 3 },
+      { key: "le0", label: "无削减 / 反增", match: (v) => v != null && v <= 0 },
+      { key: "unknown", label: "笔画未知", match: (v) => v == null },
+    ];
+    return buckets
+      .map(({ key, label, match }) => ({
+        key,
+        label,
+        items: list
+          .filter((item) => match(item.stroke_reduction))
+          .toSorted((a, b) => (b.stroke_reduction ?? -99) - (a.stroke_reduction ?? -99)),
+      }))
+      .filter((group) => group.items.length > 0);
+  }
+
+  const tiers = ["高频", "中频", "低频"];
+  return tiers
+    .map((tier) => ({
+      key: `f-${tier}`,
+      label: `${tier}用字`,
+      items: list
+        .filter((item) => (item.frequency_tier ?? "低频") === tier)
+        .toSorted((a, b) => (b.frequency ?? 0) - (a.frequency ?? 0)),
+    }))
+    .filter((group) => group.items.length > 0);
+}
+
+/* ── 数据来源弹窗 ── */
+
+const DATA_SOURCES = [
+  {
+    name: "Relumine v1（本项目）",
+    scale: "4,941 字 · 211 来源对",
+    contribution: "字形演化历程、简化文化解释、合并冲突标注、文化计算指标",
+    license: "项目内部",
+  },
+  {
+    name: "Unihan（Unicode Consortium）",
+    scale: "102,998 字",
+    contribution: "Unicode 码位、笔画数、读音、部首、官方变体字段",
+    license: "Unicode 数据文件",
+  },
+  {
+    name: "OpenCC（BYVoid）",
+    scale: "8,130 条",
+    contribution: "高精度繁简转换映射、一简多繁候选",
+    license: "Apache-2.0",
+  },
+  {
+    name: "CC-CEDICT",
+    scale: "125,002 词",
+    contribution: "词级繁简对齐、读音、英文释义、词频代理",
+    license: "CC BY-SA 4.0",
+  },
+  {
+    name: "CHISE IDS",
+    scale: "97,431 字",
+    contribution: "汉字结构分解（IDS 表达式）、部件可计算化",
+    license: "GPL-2.0+",
+  },
+];
+
+function DataSourceModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="数据来源说明"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto border border-line bg-surface p-8"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <CornerBrackets />
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="font-serif text-xl text-ink">数据来源</div>
+            <p className="mt-2 max-w-lg font-serif text-sm leading-[1.9] text-ink-soft">
+              Relumine 字库博采四个外部数据库之长，在其证据层之上叠加演化叙述与冲突标注，
+              构成「规模 + 可验证 + 文化解释」三层结构。
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="关闭"
+            className="border border-line px-2.5 py-1 font-sans text-xs text-ink-mute transition-colors hover:border-accent hover:text-accent"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="mt-6 space-y-4">
+          {DATA_SOURCES.map((source) => (
+            <div key={source.name} className="border-t border-line pt-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <span className="font-serif text-base text-ink">{source.name}</span>
+                <span className="font-sans text-xs text-ink-mute">{source.scale}</span>
+              </div>
+              <p className="mt-1 font-serif text-sm leading-[1.8] text-ink-soft">
+                {source.contribution}
+              </p>
+              <div className="mt-1 font-sans text-[10px] tracking-[0.12em] uppercase text-ink-mute">
+                {source.license}
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-6 border-t border-line pt-4 font-serif text-xs leading-[1.8] text-ink-mute">
+          外部数据库均不记录「为什么这样简化」与「合并带来的语义歧义」——Relumine
+          在其之上构建诠释层与人文层，而非简单拼接。
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ── 合并疑难馆：仪表盘 / 语料覆盖 ── */
 
 type DashboardItem = {
   simplified: string;
@@ -280,13 +675,15 @@ type CorpusCoverage = {
 };
 
 function DatabaseDashboard({
-  records,
   dashboard,
+  mergeCount,
+  slimMergeCount,
   loading,
   onSelect,
 }: {
-  records: CharRecord[];
   dashboard: DashboardData;
+  mergeCount: number;
+  slimMergeCount: number;
   loading: boolean;
   onSelect: (char: string) => void;
 }) {
@@ -294,17 +691,19 @@ function DatabaseDashboard({
     <div className="mt-8 border-y border-line py-6">
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
         <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute">
-          数据库总览
+          合并疑难总览
         </div>
         <div className="font-serif text-sm text-ink-mute">
-          {loading ? "分析指标加载中…" : `${records.length} 字 · 文化计算索引`}
+          {loading
+            ? "分析指标加载中…"
+            : `${mergeCount} 字精览 · 另有 ${slimMergeCount} 个合并字收录于通检`}
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line border border-line">
         <SummaryCell label="OCR 高风险" value={String(dashboard.highOcrCount)} />
         <SummaryCell label="高语义歧义" value={String(dashboard.highSemanticCount)} />
-        <SummaryCell label="多繁一简" value={String(dashboard.multiSourceCount)} />
+        <SummaryCell label="来源 ≥ 3" value={String(dashboard.multiSourceCount)} />
         <SummaryCell label="高频用字" value={String(dashboard.highFrequencyCount)} />
       </div>
 
@@ -412,23 +811,34 @@ function RankColumn({
   );
 }
 
+/* ── 单字详情（覆盖度分档降级） ── */
+
+function coverageCount(record: CharRecord): number {
+  const coverage = record.extensions.coverage ?? {};
+  return Object.values(coverage).filter(Boolean).length;
+}
+
 function RecordView({ record }: { record: CharRecord }) {
   const extensions = record.extensions ?? {};
   const external = extensions.external_profile;
   const unihan = external?.unihan;
   const sources = extensions.traditional_sources ?? [];
   const types = extensions.simplification_types ?? [];
-  const isAuto = extensions.curation_level === "auto_external";
+  const curation = extensions.curation_level;
+  const isAuto = curation === "auto_external";
+  const isSlim = curation === "auto_slim";
+  const covered = coverageCount(record);
+  const sparse = covered <= 1 || (isSlim && !record.pinyin);
+  const partial = !sparse && isSlim && covered <= 2;
   const strokeReduction = getStrokeReduction(record);
   const cultural = extensions.cultural_computation;
+  const variantWording = !record.pinyin ? "异体字" : "罕用字";
 
   return (
     <article key={record.simplified}>
       <header className="mb-8">
         <div className="flex flex-wrap items-baseline gap-x-6 gap-y-3">
-          <div
-            className="font-serif text-6xl tracking-[0.04em] text-ink animate-ink-rise"
-          >
+          <div className="font-serif text-6xl tracking-[0.04em] text-ink animate-ink-rise">
             {record.simplified}
           </div>
           <div
@@ -451,7 +861,9 @@ function RecordView({ record }: { record: CharRecord }) {
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <MetaPill>{isAuto ? "外部证据扩展" : "人工精修"}</MetaPill>
+          <MetaPill>
+            {curation === "handcrafted" ? "人工精修" : isAuto ? "外部证据扩展" : "全量收录"}
+          </MetaPill>
           {types.map((type) => (
             <MetaPill key={type}>{type}</MetaPill>
           ))}
@@ -474,97 +886,110 @@ function RecordView({ record }: { record: CharRecord }) {
         ) : null}
       </header>
 
-      {isAuto ? (
-        <div className="mb-6 border-l-2 border-accent-gold pl-4 font-serif text-sm leading-[1.9] text-ink-soft">
-          该字已接入外部数据库证据，历史演化时间线仍待人工考据补写。
+      {sparse ? (
+        <div className="border-l-2 border-line pl-4 font-serif text-sm leading-[1.9] text-ink-soft">
+          本字为{variantWording}，目前仅录得繁简对应关系
+          {record.merges.length > 0 ? `（${record.merges.join(" / ")} → ${record.simplified}）` : ""}
+          ，详细考据待补。
         </div>
-      ) : null}
-
-      {external ? (
-        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4 border-y border-line py-5">
-          <EvidenceStat label="Unihan" value={unihan?.mandarin || record.pinyin || "已收录"} />
-          <EvidenceStat label="CHISE IDS" value={external.chise_ids || "已收录"} />
-          <EvidenceStat
-            label="OpenCC"
-            value={(external.opencc_simplified_to_traditional ?? []).join(" / ") || "已映射"}
-          />
-        </div>
-      ) : null}
-
-      {cultural ? <CulturalComputationView computation={cultural} /> : null}
-
-      {sources.length > 0 ? (
-        <div className="mb-8">
-          <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute mb-3">
-            来源字证据
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-            {sources.map((source) => (
-              <SourceEvidence
-                key={`${record.simplified}-${source.char}`}
-                source={source}
-              />
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      {record.merges.length > 0 ? (
-        <div className="mb-6 inline-flex items-center gap-3 px-3 py-1.5 border border-accent/40 text-xs font-sans tracking-[0.16em] uppercase text-accent">
-          多对一合并：{record.merges.join(" / ")} → {record.simplified}
-        </div>
-      ) : null}
-
-      {record.stages.length > 0 ? (
-      <div className="relative pb-6">
-        {/* 时间轴竖线：从首个 bullet 顶部延伸到底部箭头 */}
-        <div
-          aria-hidden
-          className="absolute left-3 top-2 bottom-3 w-px bg-line origin-top animate-line-draw-y"
-          style={{ animationDelay: "240ms", animationDuration: "700ms" }}
-        />
-        {/* 流转箭头：竖线收尾，▼ 表演化方向 */}
-        <svg
-          aria-hidden
-          viewBox="0 0 12 10"
-          className="absolute left-3 -translate-x-1/2 bottom-0 w-3 h-2.5 text-accent-gold/60 animate-fade-in"
-          style={{ animationDelay: "900ms" }}
-        >
-          <path d="M 0 0 L 6 10 L 12 0 Z" fill="currentColor" />
-        </svg>
-
-        <ol className="relative">
-          {record.stages.map((s, i) => (
-            <li
-              key={i}
-              className="relative pl-12 pb-8 last:pb-0 animate-ink-rise-soft"
-              style={{ animationDelay: `${280 + i * 90}ms` }}
-            >
-              <span
-                aria-hidden
-                className="absolute left-2 top-2.5 block w-2 h-2 rounded-full bg-accent-gold ring-2 ring-bg animate-stamp-in"
-                style={{ animationDelay: `${320 + i * 90}ms` }}
-              />
-              <div className="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-x-6 gap-y-1">
-                <div>
-                  <div className="font-serif text-base text-ink">{s.era}</div>
-                </div>
-                <div>
-                  <div className="font-serif text-4xl tracking-[0.08em] text-ink leading-none">
-                    {s.form}
-                  </div>
-                  {s.note ? (
-                    <div className="mt-2 text-sm font-serif leading-[1.9] text-ink-soft">
-                      {s.note}
-                    </div>
-                  ) : null}
-                </div>
+      ) : (
+        <>
+          {isAuto ? (
+            <div className="mb-6 border-l-2 border-accent-gold pl-4 font-serif text-sm leading-[1.9] text-ink-soft">
+              该字已接入外部数据库证据，历史演化时间线仍待人工考据补写。
             </div>
-          </li>
-        ))}
-      </ol>
-      </div>
-      ) : null}
+          ) : null}
+
+          {external ? (
+            <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4 border-y border-line py-5">
+              <EvidenceStat label="Unihan" value={unihan?.mandarin || record.pinyin || "已收录"} />
+              {external.chise_ids ? (
+                <EvidenceStat label="CHISE IDS" value={external.chise_ids} />
+              ) : null}
+              <EvidenceStat
+                label="OpenCC"
+                value={(external.opencc_simplified_to_traditional ?? []).join(" / ") || "已映射"}
+              />
+            </div>
+          ) : null}
+
+          {cultural ? <CulturalComputationView computation={cultural} /> : null}
+
+          {sources.length > 0 && !isSlim ? (
+            <div className="mb-8">
+              <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute mb-3">
+                来源字证据
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+                {sources.map((source) => (
+                  <SourceEvidence key={`${record.simplified}-${source.char}`} source={source} />
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {record.merges.length > 0 ? (
+            <div className="mb-6 inline-flex items-center gap-3 px-3 py-1.5 border border-accent/40 text-xs font-sans tracking-[0.16em] uppercase text-accent">
+              多对一合并：{record.merges.join(" / ")} → {record.simplified}
+            </div>
+          ) : null}
+
+          {record.stages.length > 0 ? (
+            <div className="relative pb-6">
+              <div
+                aria-hidden
+                className="absolute left-3 top-2 bottom-3 w-px bg-line origin-top animate-line-draw-y"
+                style={{ animationDelay: "240ms", animationDuration: "700ms" }}
+              />
+              <svg
+                aria-hidden
+                viewBox="0 0 12 10"
+                className="absolute left-3 -translate-x-1/2 bottom-0 w-3 h-2.5 text-accent-gold/60 animate-fade-in"
+                style={{ animationDelay: "900ms" }}
+              >
+                <path d="M 0 0 L 6 10 L 12 0 Z" fill="currentColor" />
+              </svg>
+
+              <ol className="relative">
+                {record.stages.map((s, i) => (
+                  <li
+                    key={i}
+                    className="relative pl-12 pb-8 last:pb-0 animate-ink-rise-soft"
+                    style={{ animationDelay: `${280 + i * 90}ms` }}
+                  >
+                    <span
+                      aria-hidden
+                      className="absolute left-2 top-2.5 block w-2 h-2 rounded-full bg-accent-gold ring-2 ring-bg animate-stamp-in"
+                      style={{ animationDelay: `${320 + i * 90}ms` }}
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-x-6 gap-y-1">
+                      <div>
+                        <div className="font-serif text-base text-ink">{s.era}</div>
+                      </div>
+                      <div>
+                        <div className="font-serif text-4xl tracking-[0.08em] text-ink leading-none">
+                          {s.form}
+                        </div>
+                        {s.note ? (
+                          <div className="mt-2 text-sm font-serif leading-[1.9] text-ink-soft">
+                            {s.note}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ) : null}
+
+          {partial ? (
+            <div className="mt-2 font-serif text-xs leading-[1.8] text-ink-mute">
+              本字在现代语料中用例较少，部分分析维度暂缺。
+            </div>
+          ) : null}
+        </>
+      )}
 
       {record.notes ? (
         <footer className="mt-8 pt-6 border-t border-line">
@@ -693,9 +1118,9 @@ function SourceEvidence({ source }: { source: NonNullable<CharRecord["extensions
       ) : null}
       {examples.length > 0 ? (
         <div className="mt-3 space-y-1.5">
-          {examples.slice(0, 2).map((example) => (
+          {examples.slice(0, 2).map((example, index) => (
             <div
-              key={`${source.char}-${example.traditional}-${example.simplified}`}
+              key={`${source.char}-${example.traditional}-${example.simplified}-${index}`}
               className="font-serif text-sm leading-[1.7] text-ink-soft"
             >
               {example.traditional} → {example.simplified}
@@ -717,93 +1142,98 @@ function roleLabel(role?: string) {
   return "来源字";
 }
 
-function applyFilterAndSort(
-  list: CharSummary[],
-  recordsByChar: Map<string, CharRecord>,
-  filterMode: FilterMode,
-  sortMode: SortMode,
-) {
-  const filtered = list.filter((item) => {
-    const record = recordsByChar.get(item.simplified);
-    if (!record || filterMode === "all") return true;
-    const cultural = record.extensions.cultural_computation;
-    const tags = cultural?.cultural_tags ?? [];
-    const types = record.extensions.simplification_types ?? [];
+/* ── 摘要层工具函数 ── */
 
-    if (filterMode === "high_ocr") return cultural?.ocr_risk?.level === "高";
-    if (filterMode === "high_semantic") return cultural?.semantic_ambiguity?.level === "高";
-    if (filterMode === "multi_source") return getSourceCount(record) >= 2;
-    if (filterMode === "ancient_reuse") {
-      return tags.includes("古字复用") || types.some((type) => type.includes("古字复用"));
-    }
-    if (filterMode === "handcrafted") return record.extensions.curation_level === "handcrafted";
+function sourceCount(item: CharSummary) {
+  if (!item.merges) return 0;
+  return item.merges.split(" ").filter(Boolean).length;
+}
+
+function searchSummaries(summaries: CharSummary[], query: string): CharSummary[] {
+  const q = query.trim();
+  if (!q) return [];
+  const chars = Array.from(q).filter(isHanChar);
+  if (!chars.length) return [];
+  const charSet = new Set(chars);
+  return summaries
+    .filter(
+      (item) =>
+        charSet.has(item.simplified) ||
+        Array.from(item.traditional).some((ch) => charSet.has(ch)) ||
+        (item.merges ?? "").split(" ").some((ch) => charSet.has(ch)),
+    )
+    .slice(0, 30);
+}
+
+function applyFilterAndSort(list: CharSummary[], filterMode: FilterMode, sortMode: SortMode) {
+  const filtered = list.filter((item) => {
+    if (filterMode === "all") return true;
+    if (filterMode === "high_ocr") return item.ocr_risk_level === "高";
+    if (filterMode === "high_semantic") return item.semantic_level === "高";
+    if (filterMode === "multi_source") return sourceCount(item) >= 3;
+    if (filterMode === "handcrafted") return item.curation_level === "handcrafted";
     return true;
   });
 
   return [...filtered].sort((a, b) => {
-    if (sortMode === "default") return list.indexOf(a) - list.indexOf(b);
-    const recordA = recordsByChar.get(a.simplified);
-    const recordB = recordsByChar.get(b.simplified);
-    if (sortMode === "frequency") return getFrequency(recordB) - getFrequency(recordA);
-    if (sortMode === "ocr_risk") return getOcrScore(recordB) - getOcrScore(recordA);
-    if (sortMode === "source_count") return getSourceCount(recordB) - getSourceCount(recordA);
-    if (sortMode === "stroke_reduction") return getAverageStrokeReduction(recordB) - getAverageStrokeReduction(recordA);
+    if (sortMode === "default") return 0;
+    if (sortMode === "frequency") return (b.frequency ?? 0) - (a.frequency ?? 0);
+    if (sortMode === "ocr_risk") return (b.ocr_risk_score ?? 0) - (a.ocr_risk_score ?? 0);
+    if (sortMode === "source_count") return sourceCount(b) - sourceCount(a);
+    if (sortMode === "stroke_reduction")
+      return (b.avg_stroke_reduction ?? 0) - (a.avg_stroke_reduction ?? 0);
     return 0;
   });
 }
 
-function buildDashboard(records: CharRecord[]): DashboardData {
+function buildDashboard(list: CharSummary[]): DashboardData {
   return {
-    highOcrCount: records.filter((record) => record.extensions.cultural_computation?.ocr_risk?.level === "高").length,
-    highSemanticCount: records.filter(
-      (record) => record.extensions.cultural_computation?.semantic_ambiguity?.level === "高",
-    ).length,
-    multiSourceCount: records.filter((record) => getSourceCount(record) >= 2).length,
-    highFrequencyCount: records.filter(
-      (record) => record.extensions.cultural_computation?.frequency_profile?.tier === "高频",
-    ).length,
-    ocrTop: records
-      .toSorted((a, b) => getOcrScore(b) - getOcrScore(a))
+    highOcrCount: list.filter((item) => item.ocr_risk_level === "高").length,
+    highSemanticCount: list.filter((item) => item.semantic_level === "高").length,
+    multiSourceCount: list.filter((item) => sourceCount(item) >= 3).length,
+    highFrequencyCount: list.filter((item) => item.frequency_tier === "高频").length,
+    ocrTop: list
+      .toSorted((a, b) => (b.ocr_risk_score ?? 0) - (a.ocr_risk_score ?? 0))
       .slice(0, 10)
-      .map((record) => ({
-        simplified: record.simplified,
-        title: record.simplified,
-        detail: `${record.traditional} · ${getRiskLevel(record)}风险`,
-        value: `${getOcrScore(record)}分`,
+      .map((item) => ({
+        simplified: item.simplified,
+        title: item.simplified,
+        detail: `${item.traditional} · ${item.ocr_risk_level ?? "待算"}风险`,
+        value: `${item.ocr_risk_score ?? 0}分`,
       })),
-    semanticTop: records
-      .toSorted((a, b) => getSourceCount(b) - getSourceCount(a))
+    semanticTop: list
+      .toSorted((a, b) => sourceCount(b) - sourceCount(a))
       .slice(0, 10)
-      .map((record) => ({
-        simplified: record.simplified,
-        title: record.simplified,
-        detail: `${record.traditional} · ${getSourceCount(record)}个来源`,
-        value: record.extensions.cultural_computation?.semantic_ambiguity?.level ?? "待算",
+      .map((item) => ({
+        simplified: item.simplified,
+        title: item.simplified,
+        detail: `${item.traditional} · ${sourceCount(item)}个来源`,
+        value: item.semantic_level ?? "待算",
       })),
-    strokeTop: records
-      .toSorted((a, b) => getAverageStrokeReduction(b) - getAverageStrokeReduction(a))
+    strokeTop: list
+      .toSorted((a, b) => (b.avg_stroke_reduction ?? 0) - (a.avg_stroke_reduction ?? 0))
       .slice(0, 10)
-      .map((record) => ({
-        simplified: record.simplified,
-        title: record.simplified,
-        detail: `${record.traditional} · ${getSourceCount(record)}个来源`,
-        value: `${getAverageStrokeReduction(record)}笔`,
+      .map((item) => ({
+        simplified: item.simplified,
+        title: item.simplified,
+        detail: `${item.traditional} · ${sourceCount(item)}个来源`,
+        value: `${item.avg_stroke_reduction ?? 0}笔`,
       })),
-    frequencyTop: records
-      .toSorted((a, b) => getFrequency(b) - getFrequency(a))
+    frequencyTop: list
+      .toSorted((a, b) => (b.frequency ?? 0) - (a.frequency ?? 0))
       .slice(0, 10)
-      .map((record) => ({
-        simplified: record.simplified,
-        title: record.simplified,
-        detail: `${record.traditional} · ${record.extensions.cultural_computation?.frequency_profile?.tier ?? "待算"}`,
-        value: String(getFrequency(record)),
+      .map((item) => ({
+        simplified: item.simplified,
+        title: item.simplified,
+        detail: `${item.traditional} · ${item.frequency_tier ?? "待算"}`,
+        value: String(item.frequency ?? 0),
       })),
   };
 }
 
-function analyzeCorpus(text: string, records: CharRecord[]): CorpusCoverage {
+function analyzeCorpus(text: string, summaries: CharSummary[]): CorpusCoverage {
   const hanChars = Array.from(text).filter(isHanChar);
-  if (!text || !records.length) {
+  if (!text || !summaries.length) {
     return {
       totalHan: hanChars.length,
       matchedRecords: 0,
@@ -819,82 +1249,77 @@ function analyzeCorpus(text: string, records: CharRecord[]): CorpusCoverage {
     charCounts.set(ch, (charCounts.get(ch) ?? 0) + 1);
   }
 
-  const hits = records
-    .map((record) => {
+  const hits = summaries
+    .map((item) => {
       const chars = new Set([
-        record.simplified,
-        record.traditional,
-        ...(record.extensions.traditional_sources ?? []).map((source) => source.char),
+        item.simplified,
+        ...Array.from(item.traditional),
+        ...(item.merges ?? "").split(" ").filter(Boolean),
       ]);
       const count = Array.from(chars).reduce((sum, ch) => sum + (charCounts.get(ch) ?? 0), 0);
-      return { record, count };
+      return { item, count };
     })
-    .filter((item) => item.count > 0)
+    .filter((entry) => entry.count > 0)
     .sort((a, b) => b.count - a.count);
 
-  const highRiskHits = hits.filter(
-    ({ record }) => record.extensions.cultural_computation?.ocr_risk?.level === "高",
-  ).length;
+  const highRiskHits = hits.filter(({ item }) => item.ocr_risk_level === "高").length;
 
   return {
     totalHan: hanChars.length,
     matchedRecords: hits.length,
-    hitEvents: hits.reduce((sum, item) => sum + item.count, 0),
+    hitEvents: hits.reduce((sum, entry) => sum + entry.count, 0),
     highRiskHits,
-    coveragePct: records.length ? (hits.length / records.length) * 100 : 0,
-    topHits: hits.slice(0, 10).map(({ record, count }) => ({
-      simplified: record.simplified,
-      title: record.simplified,
-      detail: record.traditional,
+    coveragePct: summaries.length ? (hits.length / summaries.length) * 100 : 0,
+    topHits: hits.slice(0, 10).map(({ item, count }) => ({
+      simplified: item.simplified,
+      title: item.simplified,
+      detail: item.traditional,
       value: `${count}次`,
     })),
   };
 }
 
-function exportRecordsAsJson(records: CharRecord[]) {
-  if (!records.length) return;
+function exportSummariesAsJson(summaries: CharSummary[]) {
+  if (!summaries.length) return;
   downloadText(
     "relumine_char_db_frontend_export.json",
-    JSON.stringify(records, null, 2),
+    JSON.stringify(summaries, null, 2),
     "application/json;charset=utf-8",
   );
 }
 
-function exportRecordsAsCsv(records: CharRecord[]) {
-  if (!records.length) return;
-  const rows = records.map((record) => {
-    const cultural = record.extensions.cultural_computation;
-    return [
-      record.simplified,
-      record.traditional,
-      record.pinyin ?? "",
-      record.extensions.curation_level ?? "",
-      getSourceCount(record),
-      cultural?.semantic_ambiguity?.level ?? "",
-      cultural?.ocr_risk?.level ?? "",
-      cultural?.ocr_risk?.score ?? 0,
-      cultural?.frequency_profile?.tier ?? "",
-      cultural?.frequency_profile?.rank_in_database ?? "",
-      cultural?.frequency_profile?.cc_cedict_occurrences ?? 0,
-      cultural?.stroke_profile?.average_reduction ?? 0,
-      (cultural?.cultural_tags ?? []).join(";"),
-    ];
-  });
+function exportSummariesAsCsv(summaries: CharSummary[]) {
+  if (!summaries.length) return;
   const header = [
     "simplified",
     "traditional",
     "pinyin",
+    "record_type",
     "curation_level",
-    "source_count",
-    "semantic_level",
+    "radical",
+    "stroke_reduction",
+    "frequency",
+    "frequency_tier",
     "ocr_risk_level",
     "ocr_risk_score",
-    "frequency_tier",
-    "frequency_rank",
-    "cc_cedict_occurrences",
-    "average_stroke_reduction",
-    "cultural_tags",
+    "semantic_level",
+    "merges",
   ];
+  const rows = summaries.map((item) => [
+    item.simplified,
+    item.traditional,
+    item.pinyin ?? "",
+    item.record_type ?? "",
+    item.curation_level ?? "",
+    item.radical ?? "",
+    item.stroke_reduction ?? "",
+    item.frequency ?? 0,
+    item.frequency_tier ?? "",
+    item.ocr_risk_level ?? "",
+    item.ocr_risk_score ?? "",
+    item.semantic_level ?? "",
+    item.merges ?? "",
+  ]);
   downloadText(
     "relumine_char_db_frontend_export.csv",
     [header, ...rows].map((row) => row.map(escapeCsv).join(",")).join("\n"),
@@ -919,30 +1344,8 @@ function escapeCsv(value: string | number) {
   return /[",\n]/.test(raw) ? `"${raw.replaceAll('"', '""')}"` : raw;
 }
 
-function getSourceCount(record?: CharRecord) {
-  return record?.extensions.cultural_computation?.semantic_ambiguity?.source_count
-    ?? record?.extensions.traditional_sources?.length
-    ?? 0;
-}
-
-function getOcrScore(record?: CharRecord) {
-  return record?.extensions.cultural_computation?.ocr_risk?.score ?? 0;
-}
-
-function getRiskLevel(record?: CharRecord) {
-  return record?.extensions.cultural_computation?.ocr_risk?.level ?? "待算";
-}
-
-function getFrequency(record?: CharRecord) {
-  return record?.extensions.cultural_computation?.frequency_profile?.cc_cedict_occurrences ?? 0;
-}
-
-function getAverageStrokeReduction(record?: CharRecord) {
-  return record?.extensions.cultural_computation?.stroke_profile?.average_reduction ?? 0;
-}
-
 function isHanChar(ch: string) {
-  return /[\u3400-\u9fff\uf900-\ufaff]/.test(ch);
+  return /[\\u3400-\\u9fff\\uf900-\\ufaff]/.test(ch);
 }
 
 function parseStrokeCount(raw?: string | null) {

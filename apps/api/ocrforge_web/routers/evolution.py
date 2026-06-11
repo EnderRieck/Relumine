@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ocrforge_web.schemas import CharRecord, CharSummary
 from ocrforge_web.services.evolution_repo import EvolutionRepository, get_repo
@@ -9,8 +9,17 @@ router = APIRouter(tags=["evolution"])
 
 
 @router.get("/evolution", response_model=list[CharSummary])
-def list_evolution(repo: EvolutionRepository = Depends(get_repo)) -> list[CharSummary]:
-    return repo.list_characters()
+def list_evolution(
+    type: str | None = Query(default=None, pattern="^(merge|one_to_one)$"),
+    tier: str | None = Query(default=None, pattern="^(grid|archive)$"),
+    repo: EvolutionRepository = Depends(get_repo),
+) -> list[CharSummary]:
+    return repo.list_characters(record_type=type, tier=tier)
+
+
+@router.get("/evolution/stats")
+def evolution_stats(repo: EvolutionRepository = Depends(get_repo)) -> dict:
+    return repo.stats()
 
 
 @router.get("/evolution/{char}", response_model=CharRecord)
