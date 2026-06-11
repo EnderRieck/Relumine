@@ -46,6 +46,52 @@ export type CharSummary = {
   merges?: string | null;
 };
 
+export type ReductionSummary = {
+  char_count: number;
+  with_strokes: number;
+  mean: number;
+  median: number;
+  max: number;
+  min: number;
+  buckets: Record<string, number>;
+};
+
+export type ClAnalysis = {
+  stroke_reduction: { full: ReductionSummary; curated: ReductionSummary };
+  least_effort: {
+    char_count: number;
+    pearson_logfreq: number;
+    spearman: number;
+    deciles: Array<{
+      decile: number;
+      freq_range: [number, number];
+      mean_reduction: number;
+      char_count: number;
+    }>;
+    note?: string;
+  };
+  homophony: {
+    group_count: number;
+    distribution: Record<string, number>;
+    examples: Record<string, Array<{ simplified: string; sources: string[] }>>;
+    note?: string;
+  };
+  ocr_confusion: {
+    glyphs_with_ids: number;
+    pair_count: number;
+    top_pairs: Array<{
+      a: string;
+      b: string;
+      a_simplified: string;
+      b_simplified: string;
+      similarity: number;
+      strokes: [number, number];
+      shared_components: string[];
+    }>;
+    note?: string;
+  };
+};
+
 export type EvolutionStats = {
   total: number;
   grid_count?: number;

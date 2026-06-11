@@ -78,6 +78,11 @@ export const api = {
         await fetch("/api/evolution/stats", { cache: "no-store" }),
       );
     },
+    async clAnalysis(): Promise<import("@/lib/types").ClAnalysis> {
+      return jsonOrThrow<import("@/lib/types").ClAnalysis>(
+        await fetch("/api/evolution/cl-analysis", { cache: "no-store" }),
+      );
+    },
     async get(char: string): Promise<CharRecord> {
       return jsonOrThrow<CharRecord>(
         await fetch(`/api/evolution/${encodeURIComponent(char)}`, { cache: "no-store" }),

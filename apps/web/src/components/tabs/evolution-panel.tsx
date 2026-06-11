@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { toast } from "sonner";
 
 import { api, ApiError } from "@/lib/api";
-import type { CharRecord, CharSummary, CulturalComputation, EvolutionStats } from "@/lib/types";
+import type { CharRecord, CharSummary, ClAnalysis, CulturalComputation, EvolutionStats } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
 import { SectionMark } from "@/components/chinese/SectionMark";
@@ -32,6 +32,21 @@ export function EvolutionPanel() {
   const [showInfo, setShowInfo] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showCorpus, setShowCorpus] = useState(false);
+  const [showCl, setShowCl] = useState(false);
+  const [clData, setClData] = useState<ClAnalysis | null>(null);
+
+  function openClAnalysis() {
+    setShowCl(true);
+    if (clData) return;
+    api.evolution
+      .clAnalysis()
+      .then(setClData)
+      .catch((e) => {
+        const detail = e instanceof ApiError ? e.message : "分析数据加载失败";
+        toast.error(detail);
+        setShowCl(false);
+      });
+  }
   const [loadingList, setLoadingList] = useState(true);
   const [loadingRecord, setLoadingRecord] = useState(false);
 
@@ -225,8 +240,8 @@ export function EvolutionPanel() {
 
       {hall === "merge" ? (
         <>
-          {/* 分析入口：两个大按钮占一行 */}
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* 分析入口：三个大按钮占一行 */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button
               type="button"
               onClick={() => setShowDashboard(true)}
@@ -257,6 +272,21 @@ export function EvolutionPanel() {
                 {corpusText.trim()
                   ? `已分析 ${corpusCoverage.totalHan} 字 · 命中 ${corpusCoverage.matchedRecords} 字`
                   : "粘贴古籍文本或 OCR 输出，统计命中字与风险字"}
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={openClAnalysis}
+              className="group border border-line bg-surface px-5 py-4 text-left transition-colors hover:border-accent"
+            >
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="font-serif text-base text-ink group-hover:text-accent transition-colors">
+                  计算语言学分析
+                </span>
+                <span aria-hidden className="font-serif text-ink-mute group-hover:text-accent transition-colors">→</span>
+              </div>
+              <div className="mt-1.5 font-sans text-xs leading-relaxed text-ink-mute">
+                省力原则 · 同音替代 · OCR 混淆预测 · 全库笔画统计
               </div>
             </button>
           </div>
@@ -397,6 +427,14 @@ export function EvolutionPanel() {
             disabled={!summaries.length}
             onChange={setCorpusText}
           />
+        </OverlayModal>
+      ) : null}
+      {showCl ? (
+        <OverlayModal onClose={() => setShowCl(false)} ariaLabel="计算语言学分析">
+          <ClAnalysisView data={clData} onSelect={(char) => {
+            selectChar(char);
+            setShowCl(false);
+          }} />
         </OverlayModal>
       ) : null}
     </section>
@@ -785,6 +823,139 @@ function DataSourceModal({ onClose }: { onClose: () => void }) {
       </div>
     </div>,
     document.body,
+  );
+}
+
+/* ── 计算语言学分析弹窗 ── */
+
+function ClAnalysisView({
+  data,
+  onSelect,
+}: {
+  data: ClAnalysis | null;
+  onSelect: (char: string) => void;
+}) {
+  if (!data) {
+    return <div className="py-10 text-center font-serif text-sm text-ink-mute">分析数据加载中…</div>;
+  }
+  const { stroke_reduction: reduction, least_effort: leastEffort, homophony, ocr_confusion: confusion } = data;
+  const bucketOrder = ["≤0", "1–3", "4–6", "7–9", "≥10", "未知"];
+  const maxBucket = Math.max(...bucketOrder.map((key) => reduction.full.buckets[key] ?? 0), 1);
+  const maxDecile = Math.max(...leastEffort.deciles.map((d) => d.mean_reduction), 1);
+  const homophonyOrder = ["完全同音", "声同调异", "部分同音", "非同音", "读音缺失"];
+
+  return (
+    <div className="py-4 space-y-8">
+      <div className="pr-12">
+        <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute">
+          计算语言学分析 · 全库 {reduction.full.char_count} 字
+        </div>
+      </div>
+
+      {/* 1. 笔画削减分布 */}
+      <section>
+        <div className="mb-1 font-serif text-base text-ink">壹 · 笔画削减分布：全库 vs 精选</div>
+        <p className="mb-3 font-sans text-xs leading-relaxed text-ink-mute">
+          全库平均削减 {reduction.full.mean} 笔（中位数 {reduction.full.median}），精选 100 字平均{" "}
+          {reduction.curated.mean} 笔——精选层系统性偏向大幅简化的字，这正是其作为「疑难样本」的取样特征。
+        </p>
+        <div className="space-y-1.5">
+          {bucketOrder.map((key) => {
+            const full = reduction.full.buckets[key] ?? 0;
+            return (
+              <div key={key} className="grid grid-cols-[4rem_1fr_5rem] items-center gap-3">
+                <span className="font-sans text-xs text-ink-mute text-right">{key} 笔</span>
+                <div className="h-4 bg-bg">
+                  <div className="h-full bg-accent/60" style={{ width: `${(full / maxBucket) * 100}%` }} />
+                </div>
+                <span className="font-sans text-xs text-ink-soft">{full} 字</span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 2. 省力原则 */}
+      <section className="border-t border-line pt-6">
+        <div className="mb-1 font-serif text-base text-ink">貳 · 省力原则检验：字频 × 笔画削减</div>
+        <p className="mb-3 font-sans text-xs leading-relaxed text-ink-mute">
+          假设：高频字简化得更狠（Zipf 省力原则）。实测 Spearman 相关系数{" "}
+          <span className="text-accent">{leastEffort.spearman}</span>（log 频率 Pearson{" "}
+          {leastEffort.pearson_logfreq}，n={leastEffort.char_count}）——方向为正但效应较弱：
+          高频字确实平均削减更多，但简化方案并非只按频率行事，类推简化等系统性规则覆盖了大量低频字。
+        </p>
+        <div className="space-y-1">
+          {leastEffort.deciles.map((decile) => (
+            <div key={decile.decile} className="grid grid-cols-[5.5rem_1fr_4.5rem] items-center gap-3">
+              <span className="font-sans text-xs text-ink-mute text-right">
+                频率第 {decile.decile} 档
+              </span>
+              <div className="h-3.5 bg-bg">
+                <div
+                  className="h-full bg-accent-gold/70"
+                  style={{ width: `${(decile.mean_reduction / maxDecile) * 100}%` }}
+                />
+              </div>
+              <span className="font-sans text-xs text-ink-soft">{decile.mean_reduction} 笔</span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 font-sans text-[10px] text-ink-mute">
+          档位按字频升序十等分（第 10 档最高频）；条长为该档平均笔画削减。
+        </p>
+      </section>
+
+      {/* 3. 同音替代 */}
+      <section className="border-t border-line pt-6">
+        <div className="mb-1 font-serif text-base text-ink">參 · 同音替代量化：{homophony.group_count} 组多对一合并</div>
+        <p className="mb-3 font-sans text-xs leading-relaxed text-ink-mute">
+          按 Unihan 读音逐组比对合并来源与简体是否同音——「同音替代」不是少数案例，而是多对一合并的主导机制。
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {homophonyOrder.map((key) =>
+            homophony.distribution[key] ? (
+              <span key={key} className="border border-line px-3 py-1.5 font-serif text-sm text-ink-soft">
+                {key} <span className="ml-1 font-sans text-xs text-accent">{homophony.distribution[key]}</span>
+              </span>
+            ) : null,
+          )}
+        </div>
+        {homophony.examples["声同调异"]?.length || homophony.examples["非同音"]?.length ? (
+          <div className="mt-3 font-serif text-sm leading-[1.9] text-ink-soft">
+            非严格同音例：
+            {[...(homophony.examples["声同调异"] ?? []), ...(homophony.examples["非同音"] ?? [])]
+              .slice(0, 4)
+              .map((example) => `${example.sources.join("、")} → ${example.simplified}`)
+              .join("；")}
+          </div>
+        ) : null}
+      </section>
+
+      {/* 4. OCR 混淆预测 */}
+      <section className="border-t border-line pt-6">
+        <div className="mb-1 font-serif text-base text-ink">肆 · OCR 混淆对预测（IDS 结构相似度）</div>
+        <p className="mb-3 font-sans text-xs leading-relaxed text-ink-mute">
+          对 {confusion.glyphs_with_ids} 个繁体字形两两计算 CHISE IDS 结构编辑距离，预测古籍 OCR
+          中易互认错的字对（共 {confusion.pair_count} 对候选，下为相似度最高的部分）。
+          真实 OCR 错误对账验证待 GPU 评测恢复后补做。
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {confusion.top_pairs.slice(0, 30).map((pair) => (
+            <button
+              key={`${pair.a}-${pair.b}`}
+              type="button"
+              onClick={() => onSelect(pair.a_simplified || pair.a)}
+              className="flex items-center justify-between gap-2 border border-line px-3 py-2 text-left transition-colors hover:border-accent"
+            >
+              <span className="font-serif text-xl text-ink">
+                {pair.a} <span className="text-ink-mute">⇄</span> {pair.b}
+              </span>
+              <span className="font-sans text-[10px] text-accent">{(pair.similarity * 100).toFixed(0)}%</span>
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
 
