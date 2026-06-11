@@ -290,7 +290,7 @@ export function EvolutionPanel() {
                   </button>
                 </div>
               </div>
-              <div className="max-h-[60vh] overflow-y-auto border border-line">
+              <div className="max-h-[60vh] overflow-y-auto overscroll-contain border border-line">
               <div className="grid grid-cols-5 lg:grid-cols-4 gap-px bg-line">
                 {visibleMergeList.map((c, idx) => {
                   const isActive = c.simplified === active;
@@ -323,7 +323,7 @@ export function EvolutionPanel() {
               </div>
             </div>
 
-            <div className="lg:sticky lg:top-4 lg:self-start lg:max-h-[85vh] lg:overflow-y-auto lg:pr-2">
+            <div className="lg:sticky lg:top-4 lg:self-start lg:max-h-[85vh] lg:overflow-y-auto lg:overscroll-contain lg:pr-2">
               <DetailColumn record={record} loading={loadingRecord} />
             </div>
           </div>
@@ -461,7 +461,7 @@ function CharGridHall({
         {/* 字阵：容器内滚动 */}
         <div
           ref={scrollRef}
-          className="max-h-[72vh] overflow-y-auto border border-line bg-surface pr-1"
+          className="max-h-[72vh] overflow-y-auto overscroll-contain border border-line bg-surface pr-1"
         >
           {groups.map((group) => (
             <div key={group.key} id={`grid-group-${group.key}`} className="px-3 pb-2 pt-4 scroll-mt-2">
@@ -501,7 +501,7 @@ function CharGridHall({
         </div>
 
         {/* 详情：吸顶侧栏，自身滚动 */}
-        <div className="xl:sticky xl:top-4 xl:self-start xl:max-h-[72vh] xl:overflow-y-auto border-t xl:border-t-0 border-line pt-6 xl:pt-0 xl:pl-2">
+        <div className="xl:sticky xl:top-4 xl:self-start xl:max-h-[72vh] xl:overflow-y-auto xl:overscroll-contain border-t xl:border-t-0 border-line pt-6 xl:pt-0 xl:pl-2">
           <DetailColumn record={record} loading={loadingRecord} />
         </div>
       </div>
@@ -569,33 +569,53 @@ function buildGridGroups(list: CharSummary[], axis: GroupAxis): GridGroup[] {
 
 const DATA_SOURCES = [
   {
-    name: "Relumine v1（本项目）",
-    scale: "4,941 字 · 211 来源对",
-    contribution: "字形演化历程、简化文化解释、合并冲突标注、文化计算指标",
+    name: "Relumine 字库",
+    org: "本项目自建",
+    logo: "重",
+    accent: true,
+    scale: "4,941 字 · 211 组繁简来源对",
+    description:
+      "在下面四个外部数据库之上整合而成。除了记录“繁体 X 对应简体 Y”，还标注每个字是怎么简化的（草书楷化、古字复用、多对一合并等）、合并造成了哪些语义混淆，并为每个字算出 OCR 风险、语义歧义度等指标。其中 10 个典型字带人工考据的演化时间轴。",
     license: "项目内部",
   },
   {
-    name: "Unihan（Unicode Consortium）",
+    name: "Unihan",
+    org: "Unicode Consortium",
+    logo: "U",
+    accent: false,
     scale: "102,998 字",
-    contribution: "Unicode 码位、笔画数、读音、部首、官方变体字段",
-    license: "Unicode 数据文件",
+    description:
+      "Unicode 官方的汉字属性数据库，收录了几乎所有能编码的汉字。我们从中取每个字的笔画数、部首、普通话读音、英文释义，以及官方标注的繁简变体关系，作为最权威的基础属性来源。",
+    license: "Unicode License",
   },
   {
-    name: "OpenCC（BYVoid）",
-    scale: "8,130 条",
-    contribution: "高精度繁简转换映射、一简多繁候选",
+    name: "OpenCC",
+    org: "开源项目（BYVoid）",
+    logo: "OC",
+    accent: false,
+    scale: "8,130 条单字映射",
+    description:
+      "目前最常用的开源繁简转换工具，其词典是社区多年人工维护的成果。我们用它的简↔繁单字映射表确定全量字库的收录范围——哪些字算繁简对应、一个简体字对应几个繁体，都以它为基准。",
     license: "Apache-2.0",
   },
   {
     name: "CC-CEDICT",
-    scale: "125,002 词",
-    contribution: "词级繁简对齐、读音、英文释义、词频代理",
+    org: "社区维护词典",
+    logo: "CC",
+    accent: false,
+    scale: "125,002 个词条",
+    description:
+      "开放的中英词典，每个词条同时给出繁体、简体写法和英文释义。我们把它当作“真实用词”的证据库：一对繁简映射在多少个词里出现过，既用来验证映射是否可靠，也作为字频的代理指标。",
     license: "CC BY-SA 4.0",
   },
   {
     name: "CHISE IDS",
-    scale: "97,431 字",
-    contribution: "汉字结构分解（IDS 表达式）、部件可计算化",
+    org: "CHISE 项目（京都大学）",
+    logo: "IDS",
+    accent: false,
+    scale: "97,431 字的结构分解",
+    description:
+      "把每个汉字拆解成部件组合的结构数据库（如“湖 = 氵 + 胡”）。我们用它对比简化前后的部件变化——哪些部件被省掉、哪些被替换，是计算字形差异和 OCR 混淆风险的依据。",
     license: "GPL-2.0+",
   },
 ];
@@ -612,7 +632,7 @@ function DataSourceModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto border border-line bg-surface p-8"
+        className="relative max-h-[85vh] w-full max-w-3xl overflow-y-auto overscroll-contain border border-line bg-surface p-8"
         onClick={(event) => event.stopPropagation()}
       >
         <CornerBrackets />
@@ -620,8 +640,7 @@ function DataSourceModal({ onClose }: { onClose: () => void }) {
           <div>
             <div className="font-serif text-xl text-ink">数据来源</div>
             <p className="mt-2 max-w-lg font-serif text-sm leading-[1.9] text-ink-soft">
-              Relumine 字库博采四个外部数据库之长，在其证据层之上叠加演化叙述与冲突标注，
-              构成「规模 + 可验证 + 文化解释」三层结构。
+              本字库由四个公开数据库整合而成，各取所长，再加上项目自己的标注和计算。
             </p>
           </div>
           <button
@@ -633,26 +652,42 @@ function DataSourceModal({ onClose }: { onClose: () => void }) {
             ✕
           </button>
         </div>
-        <div className="mt-6 space-y-4">
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {DATA_SOURCES.map((source) => (
-            <div key={source.name} className="border-t border-line pt-3">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="font-serif text-base text-ink">{source.name}</span>
-                <span className="font-sans text-xs text-ink-mute">{source.scale}</span>
+            <div
+              key={source.name}
+              className={cn(
+                "border p-4",
+                source.accent ? "border-accent/50 sm:col-span-2" : "border-line",
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden
+                  className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center border font-serif text-base",
+                    source.accent
+                      ? "border-accent bg-accent/10 text-accent"
+                      : "border-line bg-bg text-ink-soft",
+                  )}
+                >
+                  {source.logo}
+                </span>
+                <div className="min-w-0">
+                  <div className="font-serif text-base leading-tight text-ink">{source.name}</div>
+                  <div className="mt-0.5 font-sans text-[11px] text-ink-mute">{source.org}</div>
+                </div>
               </div>
-              <p className="mt-1 font-serif text-sm leading-[1.8] text-ink-soft">
-                {source.contribution}
+              <div className="mt-3 font-sans text-xs text-ink-mute">{source.scale}</div>
+              <p className="mt-2 font-serif text-sm leading-[1.8] text-ink-soft">
+                {source.description}
               </p>
-              <div className="mt-1 font-sans text-[10px] tracking-[0.12em] uppercase text-ink-mute">
+              <div className="mt-2 font-sans text-[10px] tracking-[0.12em] uppercase text-ink-mute">
                 {source.license}
               </div>
             </div>
           ))}
         </div>
-        <p className="mt-6 border-t border-line pt-4 font-serif text-xs leading-[1.8] text-ink-mute">
-          外部数据库均不记录「为什么这样简化」与「合并带来的语义歧义」——Relumine
-          在其之上构建诠释层与人文层，而非简单拼接。
-        </p>
       </div>
     </div>,
     document.body,
