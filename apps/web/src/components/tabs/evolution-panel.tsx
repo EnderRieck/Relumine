@@ -225,7 +225,7 @@ export function EvolutionPanel() {
             <span
               aria-hidden
               className={cn(
-                "flex h-8 w-8 shrink-0 items-center justify-center font-serif text-base leading-none transition-colors",
+                "flex h-6.5 w-6.5 shrink-0 items-center justify-center font-serif text-sm leading-none transition-colors",
                 hall === key
                   ? "bg-accent text-white"
                   : "border border-line text-ink-mute",
@@ -234,10 +234,10 @@ export function EvolutionPanel() {
               {numeral}
             </span>
             <span className="text-left">
-              <span className={cn("block font-serif text-base leading-tight", hall === key && "text-ink")}>
+              <span className={cn("block font-serif text-sm leading-tight", hall === key && "text-ink")}>
                 {label}
               </span>
-              <span className="block font-sans text-[10px] text-ink-mute">{hint}</span>
+              <span className="block font-sans text-[9px] text-ink-mute">{hint}</span>
             </span>
             {hall === key ? (
               <span aria-hidden className="absolute inset-x-2 bottom-0 h-0.5 bg-accent" />
