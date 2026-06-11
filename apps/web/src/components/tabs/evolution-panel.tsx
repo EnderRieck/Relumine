@@ -845,16 +845,17 @@ function ClAnalysisView({
   const homophonyOrder = ["完全同音", "声同调异", "部分同音", "非同音", "读音缺失"];
 
   return (
-    <div className="py-4 space-y-8">
+    <div className="py-4">
       <div className="pr-12">
         <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute">
           计算语言学分析 · 全库 {reduction.full.char_count} 字
         </div>
       </div>
 
+      <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* 1. 笔画削减分布 */}
-      <section>
-        <div className="mb-1 font-serif text-base text-ink">壹 · 笔画削减分布：全库 vs 精选</div>
+      <section className="border border-line p-5">
+        <ClSectionTitle numeral="壹" title="笔画削减分布" subtitle="全库 vs 精选" />
         <p className="mb-3 font-sans text-xs leading-relaxed text-ink-mute">
           全库平均削减 {reduction.full.mean} 笔（中位数 {reduction.full.median}），精选 100 字平均{" "}
           {reduction.curated.mean} 笔——精选层系统性偏向大幅简化的字，这正是其作为「疑难样本」的取样特征。
@@ -876,8 +877,8 @@ function ClAnalysisView({
       </section>
 
       {/* 2. 省力原则 */}
-      <section className="border-t border-line pt-6">
-        <div className="mb-1 font-serif text-base text-ink">貳 · 省力原则检验：字频 × 笔画削减</div>
+      <section className="border border-line p-5">
+        <ClSectionTitle numeral="貳" title="省力原则检验" subtitle="字频 × 笔画削减" />
         <p className="mb-3 font-sans text-xs leading-relaxed text-ink-mute">
           假设：高频字简化得更狠（Zipf 省力原则）。实测 Spearman 相关系数{" "}
           <span className="text-accent">{leastEffort.spearman}</span>（log 频率 Pearson{" "}
@@ -906,8 +907,8 @@ function ClAnalysisView({
       </section>
 
       {/* 3. 同音替代 */}
-      <section className="border-t border-line pt-6">
-        <div className="mb-1 font-serif text-base text-ink">參 · 同音替代量化：{homophony.group_count} 组多对一合并</div>
+      <section className="border border-line p-5">
+        <ClSectionTitle numeral="參" title="同音替代量化" subtitle={`${homophony.group_count} 组多对一合并`} />
         <p className="mb-3 font-sans text-xs leading-relaxed text-ink-mute">
           按 Unihan 读音逐组比对合并来源与简体是否同音——「同音替代」不是少数案例，而是多对一合并的主导机制。
         </p>
@@ -932,14 +933,14 @@ function ClAnalysisView({
       </section>
 
       {/* 4. OCR 混淆预测 */}
-      <section className="border-t border-line pt-6">
-        <div className="mb-1 font-serif text-base text-ink">肆 · OCR 混淆对预测（IDS 结构相似度）</div>
+      <section className="border border-line p-5">
+        <ClSectionTitle numeral="肆" title="OCR 混淆对预测" subtitle="IDS 结构相似度" />
         <p className="mb-3 font-sans text-xs leading-relaxed text-ink-mute">
           对 {confusion.glyphs_with_ids} 个繁体字形两两计算 CHISE IDS 结构编辑距离，预测古籍 OCR
           中易互认错的字对（共 {confusion.pair_count} 对候选，下为相似度最高的部分）。
           真实 OCR 错误对账验证待 GPU 评测恢复后补做。
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {confusion.top_pairs.slice(0, 30).map((pair) => (
             <button
               key={`${pair.a}-${pair.b}`}
@@ -955,6 +956,34 @@ function ClAnalysisView({
           ))}
         </div>
       </section>
+      </div>
+    </div>
+  );
+}
+
+function ClSectionTitle({
+  numeral,
+  title,
+  subtitle,
+}: {
+  numeral: string;
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <div className="mb-3 flex items-center gap-3">
+      <span
+        aria-hidden
+        className="flex h-9 w-9 shrink-0 items-center justify-center bg-accent font-serif text-lg leading-none text-white"
+      >
+        {numeral}
+      </span>
+      <div className="min-w-0">
+        <div className="font-serif text-lg leading-tight text-ink">{title}</div>
+        {subtitle ? (
+          <div className="mt-0.5 font-sans text-[11px] text-ink-mute">{subtitle}</div>
+        ) : null}
+      </div>
     </div>
   );
 }
