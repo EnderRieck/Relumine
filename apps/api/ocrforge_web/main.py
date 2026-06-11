@@ -25,7 +25,10 @@ async def lifespan(app: FastAPI):
         ocr_service = None  # noqa: F841
 
     if ocr_service is not None and getattr(ocr_service, "startup", None):
-        await ocr_service.startup(settings)
+        try:
+            await ocr_service.startup(settings)
+        except Exception as e:
+            logger.warning("OCR backend unavailable, OCR tab disabled: %s", e)
 
     yield
 
