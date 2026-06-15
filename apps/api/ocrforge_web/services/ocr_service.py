@@ -27,7 +27,7 @@ _WAITING_LOCK = asyncio.Lock()
 
 
 def is_loaded() -> bool:
-    return _MODULE is not None or _BACKEND == "vision"
+    return _MODULE is not None or _BACKEND in {"remote", "vision"}
 
 
 def queue_depth() -> int:

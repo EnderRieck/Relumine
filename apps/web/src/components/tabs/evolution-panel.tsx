@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
@@ -50,36 +50,7 @@ export function EvolutionPanel() {
   const recordCache = useRef(new Map<string, CharRecord>());
   const activeRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([api.evolution.list(), api.evolution.stats()])
-      .then(([list, statsData]) => {
-        if (cancelled) return;
-        setSummaries(list);
-        setStats(statsData);
-        const firstMerge = list.find((item) => item.record_type === "merge") ?? list[0];
-        if (firstMerge) selectChar(firstMerge.simplified);
-      })
-      .catch((e) => {
-        const detail = e instanceof ApiError ? e.message : "字库加载失败";
-        toast.error(detail);
-      })
-      .finally(() => !cancelled && setLoadingList(false));
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function prefetchChar(char: string) {
-    if (recordCache.current.has(char)) return;
-    api.evolution
-      .get(char)
-      .then((r) => recordCache.current.set(char, r))
-      .catch(() => undefined);
-  }
-
-  function selectChar(char: string) {
+  const selectChar = useCallback((char: string) => {
     activeRef.current = char;
     setActive(char);
     const cached = recordCache.current.get(char);
@@ -102,6 +73,34 @@ export function EvolutionPanel() {
       .finally(() => {
         if (activeRef.current === char) setLoadingRecord(false);
       });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([api.evolution.list(), api.evolution.stats()])
+      .then(([list, statsData]) => {
+        if (cancelled) return;
+        setSummaries(list);
+        setStats(statsData);
+        const firstMerge = list.find((item) => item.record_type === "merge") ?? list[0];
+        if (firstMerge) selectChar(firstMerge.simplified);
+      })
+      .catch((e) => {
+        const detail = e instanceof ApiError ? e.message : "字库加载失败";
+        toast.error(detail);
+      })
+      .finally(() => !cancelled && setLoadingList(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [selectChar]);
+
+  function prefetchChar(char: string) {
+    if (recordCache.current.has(char)) return;
+    api.evolution
+      .get(char)
+      .then((r) => recordCache.current.set(char, r))
+      .catch(() => undefined);
   }
 
   const mergeList = useMemo(
