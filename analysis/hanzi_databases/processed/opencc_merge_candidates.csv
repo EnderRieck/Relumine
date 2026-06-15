@@ -94,8 +94,8 @@ simplified,traditional_candidates,retained_traditional_candidates,excluded_tradi
 梁,梁 樑,梁 樑,,2,2,87,2,2,2,pass,,yes,no,呂梁->吕梁 | 上樑->上梁
 席,席 蓆,席 蓆,,2,2,85,2,2,2,pass,,yes,no,主席->主席 | 涼蓆->凉席
 升,升 昇,升 昇,,2,2,83,2,2,2,pass,,yes,no,上升->上升 | 昇平->升平
+闲,閒 閑,閒 閑,,2,2,83,2,2,2,pass,閑 閒,yes,no,休閒->休闲 | 偷閑->偷闲
 采,採 采 寀,採 采,寀,3,2,82,2,3,3,pass,埰 採 采,yes,no,可採->可采 | 丰采->丰采
-闲,閒 閑,閒 閑,,2,2,82,2,2,2,pass,閑 閒,yes,no,休閒->休闲 | 偷閑->偷闲
 厂,廠 厂,廠 厂,,2,2,81,2,2,2,pass,厂 廠,yes,no,出廠->出厂 | 厂字旁->厂字旁
 朱,朱 硃,朱 硃,,2,2,81,2,2,2,pass,朱 硃,yes,no,朱䴉->朱鹮 | 硃砂->朱砂
 扎,扎 紮,扎 紮,,2,2,80,2,2,2,pass,,yes,no,包扎->包扎 | 包紮->包扎
@@ -225,7 +225,7 @@ simplified,traditional_candidates,retained_traditional_candidates,excluded_tradi
 余,餘 余,餘 余,,2,2,137,2,2,2,pass,余 餘,yes,yes,其餘->其余 | 余月->余月
 杰,傑 杰,傑 杰,,2,2,61,2,2,2,pass,傑 杰,yes,yes,人傑->人杰 | 周杰倫->周杰伦
 酸,酸 痠,酸,痠,2,1,259,1,2,2,review,,yes,no,乙酸->乙酸
-果,果 菓,果,菓,2,1,216,1,2,2,review,,yes,no,乾果->干果
+果,果 菓,果,菓,2,1,217,1,2,2,review,,yes,no,乾果->干果
 种,種 种,種,种,2,1,161,1,2,2,review,种 種,yes,no,一種->一种
 极,極 极,極,极,2,1,148,1,2,2,review,极 極,yes,no,偏極->偏极
 党,黨 党,黨,党,2,1,142,1,2,2,review,党 黨,yes,no,一黨->一党

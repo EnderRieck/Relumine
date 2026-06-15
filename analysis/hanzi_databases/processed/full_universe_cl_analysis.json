@@ -1,0 +1,1986 @@
+{
+ "schema_version": "relumine-cl-analysis-v1",
+ "generated_from": "relumine_char_db.v2.json",
+ "stroke_reduction": {
+  "full": {
+   "char_count": 4941,
+   "with_strokes": 4941,
+   "mean": 4.27,
+   "median": 3,
+   "max": 26,
+   "min": -5,
+   "buckets": {
+    "≤0": 1056,
+    "1–3": 1507,
+    "4–6": 1210,
+    "7–9": 728,
+    "≥10": 440,
+    "未知": 0
+   }
+  },
+  "curated": {
+   "char_count": 100,
+   "with_strokes": 100,
+   "mean": 6.45,
+   "median": 6,
+   "max": 21,
+   "min": -2,
+   "buckets": {
+    "≤0": 6,
+    "1–3": 24,
+    "4–6": 21,
+    "7–9": 30,
+    "≥10": 19,
+    "未知": 0
+   }
+  }
+ },
+ "least_effort": {
+  "char_count": 3051,
+  "pearson_logfreq": 0.1804,
+  "spearman": 0.1849,
+  "deciles": [
+   {
+    "decile": 1,
+    "freq_range": [
+     1,
+     1
+    ],
+    "mean_reduction": 4.17,
+    "char_count": 305
+   },
+   {
+    "decile": 2,
+    "freq_range": [
+     1,
+     1
+    ],
+    "mean_reduction": 3.82,
+    "char_count": 305
+   },
+   {
+    "decile": 3,
+    "freq_range": [
+     1,
+     2
+    ],
+    "mean_reduction": 4.68,
+    "char_count": 305
+   },
+   {
+    "decile": 4,
+    "freq_range": [
+     2,
+     3
+    ],
+    "mean_reduction": 4.9,
+    "char_count": 305
+   },
+   {
+    "decile": 5,
+    "freq_range": [
+     3,
+     6
+    ],
+    "mean_reduction": 4.78,
+    "char_count": 305
+   },
+   {
+    "decile": 6,
+    "freq_range": [
+     6,
+     13
+    ],
+    "mean_reduction": 5.04,
+    "char_count": 305
+   },
+   {
+    "decile": 7,
+    "freq_range": [
+     13,
+     26
+    ],
+    "mean_reduction": 5.43,
+    "char_count": 305
+   },
+   {
+    "decile": 8,
+    "freq_range": [
+     26,
+     54
+    ],
+    "mean_reduction": 5.77,
+    "char_count": 305
+   },
+   {
+    "decile": 9,
+    "freq_range": [
+     54,
+     122
+    ],
+    "mean_reduction": 5.31,
+    "char_count": 305
+   },
+   {
+    "decile": 10,
+    "freq_range": [
+     122,
+     1620
+    ],
+    "mean_reduction": 6.17,
+    "char_count": 306
+   }
+  ],
+  "note": "频率为 CC-CEDICT 词条出现次数代理；仅含频率>0 且笔画可比的字。"
+ },
+ "homophony": {
+  "group_count": 147,
+  "distribution": {
+   "声同调异": 12,
+   "完全同音": 123,
+   "部分同音": 10,
+   "非同音": 1,
+   "读音缺失": 1
+  },
+  "examples": {
+   "声同调异": [
+    {
+     "simplified": "发(fā)",
+     "sources": [
+      "發(fā)",
+      "髮(fà/fǎ)"
+     ]
+    },
+    {
+     "simplified": "干(gàn)",
+     "sources": [
+      "幹(gàn)",
+      "乾(qián/gān)"
+     ]
+    },
+    {
+     "simplified": "向(xiàng)",
+     "sources": [
+      "嚮(xiàng)",
+      "曏(xiǎng)"
+     ]
+    },
+    {
+     "simplified": "别(bié)",
+     "sources": [
+      "別(bié)",
+      "彆(biè)"
+     ]
+    },
+    {
+     "simplified": "恶(è)",
+     "sources": [
+      "惡(è)",
+      "噁(ě)"
+     ]
+    },
+    {
+     "simplified": "凫(fú)",
+     "sources": [
+      "鳧(fú)",
+      "鳬(fǔ)"
+     ]
+    }
+   ],
+   "完全同音": [
+    {
+     "simplified": "台(tái)",
+     "sources": [
+      "臺(tái)",
+      "檯(tái)",
+      "颱(tái)"
+     ]
+    },
+    {
+     "simplified": "蒙(méng)",
+     "sources": [
+      "矇(méng)",
+      "濛(méng)",
+      "懞(méng)"
+     ]
+    },
+    {
+     "simplified": "复(fù)",
+     "sources": [
+      "復(fù)",
+      "複(fù)",
+      "覆(fù)"
+     ]
+    },
+    {
+     "simplified": "系(xì)",
+     "sources": [
+      "係(xì)",
+      "繫(xì)"
+     ]
+    },
+    {
+     "simplified": "苏(sū)",
+     "sources": [
+      "蘇(sū)",
+      "甦(sū)",
+      "囌(sū)"
+     ]
+    },
+    {
+     "simplified": "胡(hú)",
+     "sources": [
+      "鬍(hú)",
+      "衚(hú)"
+     ]
+    }
+   ],
+   "部分同音": [
+    {
+     "simplified": "只(zhǐ)",
+     "sources": [
+      "隻(zhī)",
+      "祇(qí)"
+     ]
+    },
+    {
+     "simplified": "么(me)",
+     "sources": [
+      "麼(me)",
+      "麽(mó)"
+     ]
+    },
+    {
+     "simplified": "参(cān)",
+     "sources": [
+      "參(cān)",
+      "蔘(shēn)"
+     ]
+    },
+    {
+     "simplified": "壳(ké)",
+     "sources": [
+      "殼(ké)",
+      "殻(qiào)"
+     ]
+    },
+    {
+     "simplified": "纤(xiān)",
+     "sources": [
+      "纖(xiān)",
+      "縴(qiàn)"
+     ]
+    },
+    {
+     "simplified": "绣(xiù)",
+     "sources": [
+      "繡(xiù)",
+      "綉(tòu)"
+     ]
+    }
+   ],
+   "非同音": [
+    {
+     "simplified": "锫(péi)",
+     "sources": [
+      "錇(póu)",
+      "鉳(běi)"
+     ]
+    }
+   ]
+  },
+  "note": "按 Unihan kMandarin 读音比对每组多对一合并：来源字与简体是否同音，是检验「同音替代」机制占比的数据驱动版本。"
+ },
+ "ocr_confusion": {
+  "glyphs_with_ids": 3817,
+  "pair_count": 80422,
+  "top_pairs": [
+   {
+    "a": "後",
+    "b": "從",
+    "a_simplified": "后",
+    "b_simplified": "从",
+    "similarity": 0.833,
+    "strokes": [
+     9,
+     11
+    ],
+    "shared_components": [
+     "彳"
+    ]
+   },
+   {
+    "a": "屨",
+    "b": "屩",
+    "a_simplified": "屦",
+    "b_simplified": "屩",
+    "similarity": 0.8,
+    "strokes": [
+     17,
+     18
+    ],
+    "shared_components": [
+     "尸",
+     "彳"
+    ]
+   },
+   {
+    "a": "潁",
+    "b": "熲",
+    "a_simplified": "颍",
+    "b_simplified": "颎",
+    "similarity": 0.8,
+    "strokes": [
+     15,
+     15
+    ],
+    "shared_components": [
+     "匕",
+     "頁"
+    ]
+   },
+   {
+    "a": "潁",
+    "b": "穎",
+    "a_simplified": "颍",
+    "b_simplified": "颖",
+    "similarity": 0.8,
+    "strokes": [
+     15,
+     16
+    ],
+    "shared_components": [
+     "匕",
+     "頁"
+    ]
+   },
+   {
+    "a": "熲",
+    "b": "穎",
+    "a_simplified": "颎",
+    "b_simplified": "颖",
+    "similarity": 0.8,
+    "strokes": [
+     15,
+     16
+    ],
+    "shared_components": [
+     "匕",
+     "頁"
+    ]
+   },
+   {
+    "a": "飭",
+    "b": "飾",
+    "a_simplified": "饬",
+    "b_simplified": "饰",
+    "similarity": 0.8,
+    "strokes": [
+     12,
+     13
+    ],
+    "shared_components": [
+     "飠",
+     "𠂉"
+    ]
+   },
+   {
+    "a": "彥",
+    "b": "產",
+    "a_simplified": "彦",
+    "b_simplified": "产",
+    "similarity": 0.75,
+    "strokes": [
+     9,
+     11
+    ],
+    "shared_components": [
+     "文"
+    ]
+   },
+   {
+    "a": "烏",
+    "b": "鳥",
+    "a_simplified": "乌",
+    "b_simplified": "鸟",
+    "similarity": 0.75,
+    "strokes": [
+     10,
+     11
+    ],
+    "shared_components": [
+     "灬"
+    ]
+   },
+   {
+    "a": "無",
+    "b": "鳥",
+    "a_simplified": "无",
+    "b_simplified": "鸟",
+    "similarity": 0.75,
+    "strokes": [
+     12,
+     11
+    ],
+    "shared_components": [
+     "灬"
+    ]
+   },
+   {
+    "a": "貿",
+    "b": "賓",
+    "a_simplified": "贸",
+    "b_simplified": "宾",
+    "similarity": 0.75,
+    "strokes": [
+     12,
+     14
+    ],
+    "shared_components": [
+     "貝"
+    ]
+   },
+   {
+    "a": "賓",
+    "b": "賫",
+    "a_simplified": "宾",
+    "b_simplified": "赍",
+    "similarity": 0.714,
+    "strokes": [
+     14,
+     15
+    ],
+    "shared_components": [
+     "貝"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "僅",
+    "a_simplified": "㑮",
+    "b_simplified": "仅",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "傴",
+    "a_simplified": "㑮",
+    "b_simplified": "伛",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "偵",
+    "a_simplified": "㑮",
+    "b_simplified": "侦",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     11
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "側",
+    "a_simplified": "㑮",
+    "b_simplified": "侧",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     11
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "倫",
+    "a_simplified": "㑮",
+    "b_simplified": "伦",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "俥",
+    "a_simplified": "㑮",
+    "b_simplified": "伡",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "偑",
+    "a_simplified": "㑮",
+    "b_simplified": "㐽",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     11
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "俱",
+    "a_simplified": "㑮",
+    "b_simplified": "俱",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "傑",
+    "a_simplified": "㑮",
+    "b_simplified": "杰",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "俔",
+    "a_simplified": "㑮",
+    "b_simplified": "伣",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "傭",
+    "a_simplified": "㑮",
+    "b_simplified": "佣",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "個",
+    "a_simplified": "㑮",
+    "b_simplified": "个",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "們",
+    "a_simplified": "㑮",
+    "b_simplified": "们",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "傖",
+    "a_simplified": "㑮",
+    "b_simplified": "伧",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "㑶",
+    "a_simplified": "㑮",
+    "b_simplified": "㐹",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "㑳",
+    "a_simplified": "㑮",
+    "b_simplified": "㑇",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "傢",
+    "a_simplified": "㑮",
+    "b_simplified": "家",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "偉",
+    "a_simplified": "㑮",
+    "b_simplified": "伟",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     11
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "僂",
+    "a_simplified": "㑮",
+    "b_simplified": "偻",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "俓",
+    "a_simplified": "㑮",
+    "b_simplified": "俓",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "俠",
+    "a_simplified": "㑮",
+    "b_simplified": "侠",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "倲",
+    "a_simplified": "㑮",
+    "b_simplified": "㑈",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "債",
+    "a_simplified": "㑮",
+    "b_simplified": "债",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "借",
+    "a_simplified": "㑮",
+    "b_simplified": "借",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "俁",
+    "a_simplified": "㑮",
+    "b_simplified": "俣",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "備",
+    "a_simplified": "㑮",
+    "b_simplified": "备",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "傌",
+    "a_simplified": "㑮",
+    "b_simplified": "㐷",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "侷",
+    "a_simplified": "㑮",
+    "b_simplified": "局",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "倖",
+    "a_simplified": "㑮",
+    "b_simplified": "幸",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "像",
+    "a_simplified": "㑮",
+    "b_simplified": "像",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "倀",
+    "a_simplified": "㑮",
+    "b_simplified": "伥",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "傾",
+    "a_simplified": "㑮",
+    "b_simplified": "倾",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "侶",
+    "a_simplified": "㑮",
+    "b_simplified": "侣",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "㑯",
+    "a_simplified": "㑮",
+    "b_simplified": "㑔",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     11
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "傯",
+    "a_simplified": "㑮",
+    "b_simplified": "偬",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "傷",
+    "a_simplified": "㑮",
+    "b_simplified": "伤",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "俬",
+    "a_simplified": "㑮",
+    "b_simplified": "私",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "倆",
+    "a_simplified": "㑮",
+    "b_simplified": "俩",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "傳",
+    "a_simplified": "㑮",
+    "b_simplified": "传",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "偽",
+    "a_simplified": "㑮",
+    "b_simplified": "伪",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     11
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "係",
+    "a_simplified": "㑮",
+    "b_simplified": "系",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "倈",
+    "a_simplified": "㑮",
+    "b_simplified": "俫",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "琿",
+    "a_simplified": "㑮",
+    "b_simplified": "珲",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "軍"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "揮",
+    "a_simplified": "㑮",
+    "b_simplified": "挥",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "軍"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "暉",
+    "a_simplified": "㑮",
+    "b_simplified": "晖",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "軍"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "渾",
+    "a_simplified": "㑮",
+    "b_simplified": "浑",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "軍"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "腪",
+    "a_simplified": "㑮",
+    "b_simplified": "腪",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "軍"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "堚",
+    "a_simplified": "㑮",
+    "b_simplified": "堚",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "軍"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "煇",
+    "a_simplified": "㑮",
+    "b_simplified": "煇",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "軍"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "媈",
+    "a_simplified": "㑮",
+    "b_simplified": "媈",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "軍"
+    ]
+   },
+   {
+    "a": "㑮",
+    "b": "惲",
+    "a_simplified": "㑮",
+    "b_simplified": "恽",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "軍"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "僅",
+    "a_simplified": "㑔",
+    "b_simplified": "仅",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "傴",
+    "a_simplified": "㑔",
+    "b_simplified": "伛",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "偵",
+    "a_simplified": "㑔",
+    "b_simplified": "侦",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     11
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "側",
+    "a_simplified": "㑔",
+    "b_simplified": "侧",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     11
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "倫",
+    "a_simplified": "㑔",
+    "b_simplified": "伦",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "俥",
+    "a_simplified": "㑔",
+    "b_simplified": "伡",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "偑",
+    "a_simplified": "㑔",
+    "b_simplified": "㐽",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     11
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "俱",
+    "a_simplified": "㑔",
+    "b_simplified": "俱",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "傑",
+    "a_simplified": "㑔",
+    "b_simplified": "杰",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "俔",
+    "a_simplified": "㑔",
+    "b_simplified": "伣",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "傭",
+    "a_simplified": "㑔",
+    "b_simplified": "佣",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "個",
+    "a_simplified": "㑔",
+    "b_simplified": "个",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "們",
+    "a_simplified": "㑔",
+    "b_simplified": "们",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "傖",
+    "a_simplified": "㑔",
+    "b_simplified": "伧",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "㑶",
+    "a_simplified": "㑔",
+    "b_simplified": "㐹",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "㑳",
+    "a_simplified": "㑔",
+    "b_simplified": "㑇",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "傢",
+    "a_simplified": "㑔",
+    "b_simplified": "家",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "偉",
+    "a_simplified": "㑔",
+    "b_simplified": "伟",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     11
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "僂",
+    "a_simplified": "㑔",
+    "b_simplified": "偻",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "俓",
+    "a_simplified": "㑔",
+    "b_simplified": "俓",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "俠",
+    "a_simplified": "㑔",
+    "b_simplified": "侠",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "倲",
+    "a_simplified": "㑔",
+    "b_simplified": "㑈",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "債",
+    "a_simplified": "㑔",
+    "b_simplified": "债",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "借",
+    "a_simplified": "㑔",
+    "b_simplified": "借",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "俁",
+    "a_simplified": "㑔",
+    "b_simplified": "俣",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "備",
+    "a_simplified": "㑔",
+    "b_simplified": "备",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "傌",
+    "a_simplified": "㑔",
+    "b_simplified": "㐷",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "侷",
+    "a_simplified": "㑔",
+    "b_simplified": "局",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "倖",
+    "a_simplified": "㑔",
+    "b_simplified": "幸",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "像",
+    "a_simplified": "㑔",
+    "b_simplified": "像",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "倀",
+    "a_simplified": "㑔",
+    "b_simplified": "伥",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "傾",
+    "a_simplified": "㑔",
+    "b_simplified": "倾",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "侶",
+    "a_simplified": "㑔",
+    "b_simplified": "侣",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "傯",
+    "a_simplified": "㑔",
+    "b_simplified": "偬",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "傷",
+    "a_simplified": "㑔",
+    "b_simplified": "伤",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "俬",
+    "a_simplified": "㑔",
+    "b_simplified": "私",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "倆",
+    "a_simplified": "㑔",
+    "b_simplified": "俩",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "傳",
+    "a_simplified": "㑔",
+    "b_simplified": "传",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "偽",
+    "a_simplified": "㑔",
+    "b_simplified": "伪",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     11
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "係",
+    "a_simplified": "㑔",
+    "b_simplified": "系",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     9
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "倈",
+    "a_simplified": "㑔",
+    "b_simplified": "俫",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     10
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "須",
+    "a_simplified": "㑔",
+    "b_simplified": "须",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "頂",
+    "a_simplified": "㑔",
+    "b_simplified": "顶",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     11
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "頓",
+    "a_simplified": "㑔",
+    "b_simplified": "顿",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "項",
+    "a_simplified": "㑔",
+    "b_simplified": "项",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "預",
+    "a_simplified": "㑔",
+    "b_simplified": "预",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "煩",
+    "a_simplified": "㑔",
+    "b_simplified": "烦",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "頏",
+    "a_simplified": "㑔",
+    "b_simplified": "颃",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "頊",
+    "a_simplified": "㑔",
+    "b_simplified": "顼",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "頌",
+    "a_simplified": "㑔",
+    "b_simplified": "颂",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "頇",
+    "a_simplified": "㑔",
+    "b_simplified": "顸",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "順",
+    "a_simplified": "㑔",
+    "b_simplified": "顺",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     12
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "頒",
+    "a_simplified": "㑔",
+    "b_simplified": "颁",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "頑",
+    "a_simplified": "㑔",
+    "b_simplified": "顽",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "䪴",
+    "a_simplified": "㑔",
+    "b_simplified": "䪴",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "頎",
+    "a_simplified": "㑔",
+    "b_simplified": "颀",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑯",
+    "b": "頍",
+    "a_simplified": "㑔",
+    "b_simplified": "𫠆",
+    "similarity": 0.667,
+    "strokes": [
+     11,
+     13
+    ],
+    "shared_components": [
+     "頁"
+    ]
+   },
+   {
+    "a": "㑳",
+    "b": "僅",
+    "a_simplified": "㑇",
+    "b_simplified": "仅",
+    "similarity": 0.667,
+    "strokes": [
+     12,
+     13
+    ],
+    "shared_components": [
+     "亻"
+    ]
+   }
+  ],
+  "note": "基于 CHISE IDS 结构编辑距离的混淆对预测（相似度≥0.6 且笔画差≤2）。真实 OCR 错误验证待 GPU 评测恢复后进行。"
+ }
+}

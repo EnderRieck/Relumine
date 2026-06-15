@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo_banner.png" alt="古籍重光 Logo" width="360" />
+</p>
+
 # 古籍重光 · Relumine
 
 > 让沉睡在古籍里的繁体汉字重见光明 —— 从识别，到溯源，到文化计算。

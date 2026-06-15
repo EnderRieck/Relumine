@@ -49,6 +49,21 @@ class CharSummary(BaseModel):
     simplified: str
     traditional: str
     pinyin: str | None = None
+    record_type: str | None = None  # "merge" | "one_to_one"
+    curation_level: str | None = None  # "handcrafted" | "auto_external" | "auto_slim"
+    radical: str | None = None
+    simp_strokes: int | None = None
+    trad_strokes: int | None = None
+    stroke_reduction: int | None = None
+    frequency: int = 0
+    frequency_tier: str | None = None
+    display_tier: str | None = None  # "grid" | "archive"
+    ocr_risk_level: str | None = None
+    ocr_risk_score: int | None = None
+    semantic_level: str | None = None
+    avg_stroke_reduction: float | None = None
+    coverage_count: int = 0
+    merges: str | None = None  # space-joined traditional source chars
 
 
 class CharRecord(BaseModel):
