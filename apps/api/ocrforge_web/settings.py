@@ -45,6 +45,16 @@ class Settings(BaseSettings):
     llm_timeout: float = 120.0
     culture_db_path: Path = Path(__file__).parent / "data" / "culture_graph.sqlite"
 
+    # --- agent harness ---
+    # Model used by the chat agent. Falls back to llm_model when unset; override
+    # (e.g. "deepseek-chat") if the default model lacks function-calling support.
+    agent_model: str | None = None
+    brave_api_key: str | None = None
+    brave_endpoint: str = "https://api.search.brave.com/res/v1/web/search"
+    agent_enable_browser: bool = True
+    agent_max_steps: int = 12
+    agent_session_ttl: float = 3600.0
+
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
     ocr_warmup: bool = True

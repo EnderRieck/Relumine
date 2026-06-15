@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { api, ApiError } from "@/lib/api";
 import type { CharRecord, CharSummary, ClAnalysis, CulturalComputation, EvolutionStats } from "@/lib/types";
 import { cn } from "@/lib/cn";
+import { useRegisterSnapshot, useRegisterAction } from "@/lib/agent-bridge";
+import { useOverlayGutter } from "@/components/agent/agent-shell";
 
 import { SectionMark } from "@/components/chinese/SectionMark";
 import { CornerBrackets } from "@/components/chinese/CornerBrackets";
@@ -95,6 +97,49 @@ export function EvolutionPanel() {
     };
   }, [selectChar]);
 
+  // ----- Agent bridge: read & operate the evolution panel -----
+  useRegisterSnapshot("evolution", () => ({
+    hall,
+    search,
+    activeChar: active,
+    recordSimplified: record?.simplified ?? null,
+    corpusText,
+  }));
+  useRegisterAction("set_evolution_search", (args) => {
+    const query = String(args.query ?? "");
+    setSearch(query);
+    return { ok: true, query };
+  });
+  useRegisterAction("select_character", (args) => {
+    const char = String(args.char ?? "").trim().slice(0, 1);
+    if (!char) return { error: "char is required" };
+    if (hall === "cl") setHall("merge");
+    selectChar(char);
+    return { ok: true, char };
+  });
+  useRegisterAction("open_merge_dashboard", () => {
+    if (hall === "cl") setHall("merge");
+    setShowDashboard(true);
+    return { ok: true };
+  });
+  useRegisterAction("analyze_corpus_coverage", (args) => {
+    const text = String(args.text ?? "");
+    if (!text.trim()) return { error: "text is required" };
+    setCorpusText(text);
+    setShowCorpus(true);
+    // Compute synchronously so the agent gets the numbers back immediately.
+    const cov = analyzeCorpus(text, summaries);
+    return {
+      ok: true,
+      totalHan: cov.totalHan,
+      matchedRecords: cov.matchedRecords,
+      hitEvents: cov.hitEvents,
+      highRiskHits: cov.highRiskHits,
+      coveragePct: Number(cov.coveragePct.toFixed(2)),
+      topHits: cov.topHits,
+    };
+  });
+
   function prefetchChar(char: string) {
     if (recordCache.current.has(char)) return;
     api.evolution
@@ -132,7 +177,7 @@ export function EvolutionPanel() {
     <section className="relative rounded-[var(--radius)] border border-line bg-surface p-8 md:p-12 animate-ink-rise">
       <CornerBrackets />
       <div className="flex items-start justify-between gap-4">
-        <SectionMark title="形声流变" subtitle="一简 · 多对一合并 · 全量通检" />
+        <SectionMark title="形声流变" subtitle="综合4大数据库，解析各繁体字简化详细历程" />
         <button
           type="button"
           aria-label="数据来源说明"
@@ -447,9 +492,14 @@ function OverlayModal({
   onClose: () => void;
   ariaLabel: string;
 }) {
+  const gutter = useOverlayGutter();
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className={cn(
+        "fixed top-0 right-0 bottom-0 left-0 z-50 flex items-center justify-center bg-black/40 p-4",
+        gutter.className,
+      )}
+      style={gutter.style}
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
@@ -752,9 +802,14 @@ const DATA_SOURCES = [
 function DataSourceModal({ onClose }: { onClose: () => void }) {
   // Portal to body: ancestors use transform animations, which would otherwise
   // turn them into the containing block for this fixed-position overlay.
+  const gutter = useOverlayGutter();
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className={cn(
+        "fixed top-0 right-0 bottom-0 left-0 z-50 flex items-center justify-center bg-black/40 p-4",
+        gutter.className,
+      )}
+      style={gutter.style}
       role="dialog"
       aria-modal="true"
       aria-label="数据来源说明"

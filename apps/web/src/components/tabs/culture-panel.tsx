@@ -18,6 +18,7 @@ import { CornerBrackets } from "@/components/chinese/CornerBrackets";
 import { SectionMark } from "@/components/chinese/SectionMark";
 import { api, ApiError } from "@/lib/api";
 import { cn } from "@/lib/cn";
+import { useRegisterSnapshot, useRegisterAction } from "@/lib/agent-bridge";
 import type {
   CulturalEntity,
   CulturalRelation,
@@ -119,6 +120,25 @@ export function CulturePanel() {
       setPending(false);
     }
   }
+
+  // ----- Agent bridge: read & operate the culture (史脉) panel -----
+  useRegisterSnapshot("culture", () => ({
+    text,
+    title,
+    hasAnalysis: !!analysis,
+    entityCount: analysis?.entities.length ?? 0,
+    relationCount: analysis?.relations.length ?? 0,
+  }));
+  useRegisterAction("set_culture_text", (args) => {
+    const next = String(args.text ?? "");
+    setText(next);
+    if (typeof args.title === "string") setTitle(args.title);
+    return { ok: true };
+  });
+  useRegisterAction("run_culture_analysis", async () => {
+    await runAnalysis();
+    return { ok: true };
+  });
 
   async function openHistory(id: string) {
     try {

@@ -11,6 +11,10 @@ CultureCourse 演示用 Web 后端：
 | `POST /api/culture/analyze` | DeepSeek 古籍实体与关系抽取 |
 | `GET  /api/culture/analyses` | 已保存的史脉分析 |
 | `PATCH /api/culture/analyses/{id}/review` | 人工确认或驳回实体/关系 |
+| `POST /api/agent/chat` | 智能助手对话（SSE 流式，复用 DeepSeek，支持工具调用） |
+| `POST /api/agent/continue` | 客户端工具执行结果回传、续跑对话 |
+| `GET  /api/agent/health` | 助手各能力（DeepSeek / Brave / 浏览器 / 技能）就绪状态 |
+| `GET  /api/agent/skills` | 列出可用技能 |
 | `GET  /api/healthz` | 服务健康 + 模型加载状态 |
 
 ## 启动
@@ -46,6 +50,35 @@ cp apps/api/.env.example apps/api/.env
 史脉分析使用 JSON 输出模式，从古籍原文中抽取实体和关系。结果写入本地
 `ocrforge_web/data/culture_graph.sqlite`，并保存原文证据、置信度与人工审校状态。
 
+### Agent 智能助手（侧边栏）
+
+复用同一套 DeepSeek 配置（`OCRFORGE_WEB_LLM_*`）。前端右侧"智能助手"侧边栏调用
+`POST /api/agent/chat`（SSE 流式）。Agent Harness（`ocrforge_web/agent/`）管理上下文、
+工具与技能：
+
+- **服务端工具**：`search_characters` / `get_character_detail` / `get_database_stats` /
+  `get_cl_analysis` / `convert_text` / `list_culture_analyses` / `get_culture_analysis`
+  （复用现有只读仓储与 OpenCC）、`web_search`（Brave）、`browse_page`（Playwright 无头）。
+- **客户端工具**：`get_page_context` 读取页面快照；`switch_tab` / `set_convert_input` /
+  `run_convert` / `set_evolution_search` / `select_character` / `set_culture_text` /
+  `run_culture_analysis` 直接操作前端界面（经 SSE `client_tool_call` 事件 → 前端执行 →
+  `/api/agent/continue` 回填续跑）。
+- **技能**：`ocrforge_web/agent/skills/builtin/*/SKILL.md`（带 frontmatter），通过
+  `list_skills` / `run_skill` 渐进披露。内置 `char-deep-dive`、`web-lookup`。
+
+可选能力的额外配置：
+
+```bash
+# 联网搜索（Brave Search API）
+OCRFORGE_WEB_BRAVE_API_KEY=...
+# 无头浏览器（默认开启），首次需安装内核：
+pixi run playwright install chromium
+# 默认模型若不支持 function-calling，可切换：
+OCRFORGE_WEB_AGENT_MODEL=deepseek-chat
+```
+
+会话保存在进程内存中（重启即失），不落库。
+
 ## 配置
 
 环境变量前缀 `OCRFORGE_WEB_`，详见 `settings.py`：
@@ -66,6 +99,11 @@ cp apps/api/.env.example apps/api/.env
 | `OCRFORGE_WEB_LLM_MODEL` | `deepseek-v4-flash` | 史脉抽取模型 |
 | `OCRFORGE_WEB_LLM_TIMEOUT` | `120` | 大模型请求超时，单位秒 |
 | `OCRFORGE_WEB_CULTURE_DB_PATH` | `data/culture_graph.sqlite` | 史脉审校数据库 |
+| `OCRFORGE_WEB_AGENT_MODEL` | _(unset)_ | 助手模型，缺省回退 `LLM_MODEL` |
+| `OCRFORGE_WEB_BRAVE_API_KEY` | _(unset)_ | Brave 搜索 Key，启用 `web_search` |
+| `OCRFORGE_WEB_AGENT_ENABLE_BROWSER` | `true` | 是否启用 Playwright 无头浏览器工具 |
+| `OCRFORGE_WEB_AGENT_MAX_STEPS` | `12` | 单轮对话最多工具调用步数 |
+| `OCRFORGE_WEB_AGENT_SESSION_TTL` | `3600` | 内存会话存活秒数 |
 | `OCRFORGE_WEB_OCR_WARMUP` | `true` | 启动时是否跑一次 1×1 warm-up |
 | `OCRFORGE_WEB_SKIP_OCR` | _(unset)_ | 设为 `1` 可跳过模型加载（用于纯前端联调） |
 

@@ -5,6 +5,8 @@ import { Toaster } from "sonner";
 import "./globals.css";
 import { BgPattern } from "@/components/chinese/BgPattern";
 import { HuiwenKnot } from "@/components/chinese/HuiwenKnot";
+import { PageBridgeProvider } from "@/lib/agent-bridge";
+import { AgentShell } from "@/components/agent/agent-shell";
 
 const songti = Noto_Serif_SC({
   variable: "--font-song",
@@ -38,8 +40,10 @@ export default function RootLayout({
         {/* 浮雕级回纹暗纹 —— 不参与文档流，固定不滚 */}
         <BgPattern />
 
-        <div className="relative z-10 min-h-screen flex flex-col">
-          <header className="border-b border-line bg-bg/70 backdrop-blur-[2px]">
+        <PageBridgeProvider>
+         <AgentShell>
+          <div className="relative z-10 min-h-screen flex flex-col">
+            <header className="border-b border-line bg-bg/70 backdrop-blur-[2px]">
             <div className="mx-auto max-w-[1480px] px-6 md:px-10 h-16 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Image
@@ -73,7 +77,9 @@ export default function RootLayout({
               </div>
             </div>
           </footer>
-        </div>
+          </div>
+         </AgentShell>
+        </PageBridgeProvider>
 
         <Toaster
           position="top-center"

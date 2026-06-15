@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { api, ApiError } from "@/lib/api";
 import type { Collision, ConvertResponse, Direction } from "@/lib/types";
 import { cn } from "@/lib/cn";
+import { useRegisterSnapshot, useRegisterAction } from "@/lib/agent-bridge";
 
 import { SectionMark } from "@/components/chinese/SectionMark";
 import { GoldRule } from "@/components/chinese/GoldRule";
@@ -24,22 +25,45 @@ export function ConvertPanel() {
   const [result, setResult] = useState<ConvertResponse | null>(null);
   const [pending, setPending] = useState(false);
 
-  async function run() {
+  async function run(): Promise<ConvertResponse | undefined> {
     if (!input.trim()) {
       toast.message("先输入文字再转换");
-      return;
+      return undefined;
     }
     setPending(true);
     try {
       const res = await api.convert(input, direction);
       setResult(res);
+      return res;
     } catch (e) {
       const detail = e instanceof ApiError ? e.message : "转换失败";
       toast.error(detail);
+      return undefined;
     } finally {
       setPending(false);
     }
   }
+
+  // ----- Agent bridge: let the assistant read & operate this panel -----
+  useRegisterSnapshot("convert", () => ({
+    direction,
+    input,
+    result: result?.result ?? null,
+    collisionCount: result?.collisions.length ?? 0,
+  }));
+  useRegisterAction("set_convert_input", (args) => {
+    const text = String(args.text ?? "");
+    setInput(text);
+    if (args.direction === "t2s" || args.direction === "s2t") {
+      setDirection(args.direction);
+    }
+    setResult(null);
+    return { ok: true, input: text };
+  });
+  useRegisterAction("run_convert", async () => {
+    const res = await run();
+    return res ? { ok: true, result: res.result } : { error: "无输入或转换失败" };
+  });
 
   function loadExample(ex: (typeof EXAMPLES)[number]) {
     setDirection(ex.dir);

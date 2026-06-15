@@ -7,6 +7,7 @@ import { Network } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import type { OcrResponse } from "@/lib/types";
 import { cn } from "@/lib/cn";
+import { useRegisterSnapshot } from "@/lib/agent-bridge";
 
 import { SectionMark } from "@/components/chinese/SectionMark";
 import { GoldRule } from "@/components/chinese/GoldRule";
@@ -28,6 +29,16 @@ export function OcrPanel() {
     () => (file ? URL.createObjectURL(file) : null),
     [file],
   );
+
+  // ----- Agent bridge: expose OCR panel state (read-only) -----
+  useRegisterSnapshot("ocr", () => ({
+    fileName: file?.name ?? null,
+    mode,
+    ocrText: result?.text ?? null,
+    simplifiedText,
+    charCount: result?.char_count ?? 0,
+    queueDepth,
+  }));
 
   useEffect(
     () => () => {

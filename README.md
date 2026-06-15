@@ -85,7 +85,36 @@ GET  /api/evolution/{char}   # 单字完整演化记录（stages / merges / note
 GET  /api/culture/status     # DeepSeek 是否已配置
 POST /api/culture/analyze    # 古籍实体、关系、今译和时间线
 PATCH /api/culture/analyses/{id}/review  # 确认或驳回抽取结果
+POST /api/agent/chat         # 智能助手对话（SSE 流式，复用 DeepSeek，支持工具调用）
+POST /api/agent/continue     # 客户端工具执行结果回传、续跑对话
+GET  /api/agent/health       # 助手各能力（DeepSeek / Brave / 浏览器 / 技能）状态
+GET  /api/agent/skills       # 列出可用技能
 ```
+
+> 右侧"智能助手"侧边栏复用同一套 DeepSeek 配置，可读写页面、查字库、联网搜索、看网页、跑技能。详见 [`apps/api/README.md`](apps/api/README.md#agent-智能助手侧边栏)。
+
+### 本地启动（Windows + pixi）
+
+需要**两个终端**，各跑一个、保持不关。前端会把 `/api/*` 自动代理到后端（`apps/web/src/app/api/[...path]/route.ts`），所以浏览器只需访问一个地址。
+
+```bash
+# 终端 1 · 后端 API（端口 7860）
+cd apps/api
+pixi run python -m uvicorn ocrforge_web.main:app --host 127.0.0.1 --port 7860
+#   改了后端代码想自动重载：在末尾加 --reload
+
+# 终端 2 · 前端 Web（端口 3000）
+cd apps/web
+npm install        # 仅首次：安装依赖
+npm run dev
+```
+
+启动后打开 **http://localhost:3000**。
+
+- **配置 Key**：`cp apps/api/.env.example apps/api/.env`，填入 `OCRFORGE_WEB_LLM_API_KEY`（DeepSeek，史脉与助手共用）；可选 `OCRFORGE_WEB_BRAVE_API_KEY`（助手联网搜索）。改完需**重启后端**才生效。
+- **无头浏览器**（助手看网页）首次需装内核：`cd apps/api && pixi run playwright install chromium`。
+- **OCR tab** 依赖 PaddleOCR-VL checkpoint；本地无 checkpoint 时该 tab 不可用（`/api/healthz` 的 `model_loaded=false`），其余功能不受影响。
+- 公网演示（cloudflared 临时隧道、tmux 多服务）见 [`apps/RUN.md`](apps/RUN.md)。
 
 ---
 

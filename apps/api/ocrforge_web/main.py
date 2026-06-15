@@ -35,6 +35,14 @@ async def lifespan(app: FastAPI):
     if ocr_service is not None and getattr(ocr_service, "shutdown", None):
         await ocr_service.shutdown()
 
+    # Close the agent's headless browser if it was started.
+    try:
+        from ocrforge_web.agent.tools.browser import get_browser_manager
+
+        await get_browser_manager().close()
+    except Exception as e:  # noqa: BLE001 - best-effort cleanup
+        logger.warning("agent browser cleanup failed: %s", e)
+
 
 app = FastAPI(title="古籍重光 API", version=__version__, lifespan=lifespan)
 
@@ -60,7 +68,7 @@ def healthz() -> HealthResponse:
 def _include_routers() -> None:
     from importlib import import_module
 
-    for mod_name in ("convert", "evolution", "ocr", "culture"):
+    for mod_name in ("convert", "evolution", "ocr", "culture", "agent"):
         try:
             mod = import_module(f"ocrforge_web.routers.{mod_name}")
         except ModuleNotFoundError:

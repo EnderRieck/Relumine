@@ -1,3 +1,9 @@
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+
+# local secrets
+.env
+
+# agent harness — generated screenshots
+ocrforge_web/data/agent_cache/
