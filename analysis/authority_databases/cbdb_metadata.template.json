@@ -1,0 +1,6 @@
+{
+  "source": "China Biographical Database",
+  "project": "https://cbdb.hsites.harvard.edu/",
+  "release_metadata": "https://github.com/cbdb-project/cbdb_sqlite/blob/master/latest.json",
+  "usage": "Local academic entity linking only. The database file is not redistributed by Relumine."
+}

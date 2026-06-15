@@ -121,6 +121,14 @@ export const api = {
         }),
       );
     },
+    async linkAuthorities(id: string): Promise<CultureAnalysis> {
+      return jsonOrThrow<CultureAnalysis>(
+        await fetch(
+          `/api/culture/analyses/${encodeURIComponent(id)}/link-authorities`,
+          { method: "POST" },
+        ),
+      );
+    },
     async review(
       id: string,
       changes: {

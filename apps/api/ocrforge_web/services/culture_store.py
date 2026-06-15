@@ -46,6 +46,7 @@ class CultureStore:
                     confidence REAL NOT NULL,
                     evidence TEXT NOT NULL,
                     status TEXT NOT NULL,
+                    authority_json TEXT NOT NULL DEFAULT '[]',
                     PRIMARY KEY (document_id, local_id),
                     FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
                 );
@@ -68,6 +69,14 @@ class CultureStore:
                 CREATE INDEX IF NOT EXISTS idx_relations_type ON relations(type);
                 """
             )
+            columns = {
+                row["name"]
+                for row in connection.execute("PRAGMA table_info(entities)").fetchall()
+            }
+            if "authority_json" not in columns:
+                connection.execute(
+                    "ALTER TABLE entities ADD COLUMN authority_json TEXT NOT NULL DEFAULT '[]'"
+                )
 
     def save(self, analysis: CultureAnalysis) -> CultureAnalysis:
         import json
@@ -93,8 +102,8 @@ class CultureStore:
                 """
                 INSERT INTO entities
                     (document_id, local_id, name, normalized_name, type, aliases_json,
-                     description, confidence, evidence, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     description, confidence, evidence, status, authority_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     (
@@ -108,6 +117,10 @@ class CultureStore:
                         entity.confidence,
                         entity.evidence,
                         entity.status,
+                        json.dumps(
+                            [match.model_dump() for match in entity.authority_matches],
+                            ensure_ascii=False,
+                        ),
                     )
                     for entity in analysis.entities
                 ],
@@ -175,6 +188,7 @@ class CultureStore:
                     "confidence": row["confidence"],
                     "evidence": row["evidence"],
                     "status": row["status"],
+                    "authority_matches": json.loads(row["authority_json"] or "[]"),
                 }
                 for row in entity_rows
             ],
@@ -240,6 +254,38 @@ class CultureStore:
                 [
                     (status, analysis_id, local_id)
                     for local_id, status in request.relation_statuses.items()
+                ],
+            )
+        return self.get(analysis_id)
+
+    def replace_entities(
+        self, analysis_id: str, entities: list
+    ) -> CultureAnalysis | None:
+        import json
+
+        with self._connect() as connection:
+            exists = connection.execute(
+                "SELECT 1 FROM documents WHERE id = ?", (analysis_id,)
+            ).fetchone()
+            if exists is None:
+                return None
+            connection.executemany(
+                """
+                UPDATE entities
+                SET normalized_name = ?, authority_json = ?
+                WHERE document_id = ? AND local_id = ?
+                """,
+                [
+                    (
+                        entity.normalized_name,
+                        json.dumps(
+                            [match.model_dump() for match in entity.authority_matches],
+                            ensure_ascii=False,
+                        ),
+                        analysis_id,
+                        entity.id,
+                    )
+                    for entity in entities
                 ],
             )
         return self.get(analysis_id)

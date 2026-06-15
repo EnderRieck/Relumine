@@ -37,6 +37,7 @@ env/
 
 # Local cultural-graph review data
 /apps/api/ocrforge_web/data/culture_graph.sqlite*
+/apps/api/ocrforge_web/data/authority/
 
 # OS / editor
 .DS_Store

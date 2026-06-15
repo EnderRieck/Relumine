@@ -52,8 +52,10 @@ export function AgentShell({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    setOpen(window.localStorage.getItem(STORAGE_KEY) === "1");
+    queueMicrotask(() => {
+      setMounted(true);
+      setOpen(window.localStorage.getItem(STORAGE_KEY) === "1");
+    });
   }, []);
 
   useEffect(() => {

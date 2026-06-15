@@ -114,21 +114,23 @@ export function usePageBridge(): BridgeValue {
 export function useRegisterSnapshot(id: string, fn: SnapshotFn) {
   const ctx = useContext(BridgeCtx);
   const fnRef = useRef(fn);
-  fnRef.current = fn;
+  useEffect(() => {
+    fnRef.current = fn;
+  }, [fn]);
   useEffect(() => {
     if (!ctx) return;
     return ctx.registerSnapshot(id, () => fnRef.current());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ctx, id]);
 }
 
 export function useRegisterAction(name: string, fn: ActionFn) {
   const ctx = useContext(BridgeCtx);
   const fnRef = useRef(fn);
-  fnRef.current = fn;
+  useEffect(() => {
+    fnRef.current = fn;
+  }, [fn]);
   useEffect(() => {
     if (!ctx) return;
     return ctx.registerAction(name, (args) => fnRef.current(args));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ctx, name]);
 }

@@ -99,6 +99,22 @@ EntityType = Literal[
 ReviewStatus = Literal["proposed", "confirmed", "rejected"]
 
 
+class AuthorityMatch(BaseModel):
+    source: Literal["CBDB", "CHGIS"]
+    authority_id: str
+    canonical_name: str
+    match_type: Literal["exact", "alias", "prefix"]
+    confidence: float = Field(ge=0, le=1)
+    source_url: str
+    label: str | None = None
+    years: str | None = None
+    parent_name: str | None = None
+    feature_type: str | None = None
+    longitude: float | None = None
+    latitude: float | None = None
+    metadata: dict = Field(default_factory=dict)
+
+
 class CulturalEntity(BaseModel):
     id: str
     name: str
@@ -109,6 +125,7 @@ class CulturalEntity(BaseModel):
     confidence: float = Field(default=0.5, ge=0, le=1)
     evidence: str
     status: ReviewStatus = "proposed"
+    authority_matches: list[AuthorityMatch] = Field(default_factory=list)
 
 
 class CulturalRelation(BaseModel):
@@ -158,3 +175,5 @@ class CultureReviewRequest(BaseModel):
 class CultureStatusResponse(BaseModel):
     configured: bool
     model: str
+    cbdb_available: bool = False
+    chgis_available: bool = False

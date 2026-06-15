@@ -68,7 +68,7 @@ export function AgentChat() {
 
   useEffect(() => {
     fetchAgentHealth().then(setHealth);
-    setSuggestions(pickSuggestions(3)); // client-only to avoid hydration mismatch
+    queueMicrotask(() => setSuggestions(pickSuggestions(3)));
   }, []);
 
   // "问问助手" selection popup drops the quoted text into the composer.
@@ -392,8 +392,9 @@ function ChatItemView({ item }: { item: ChatItem }) {
     );
   }
   if (item.kind === "asset") {
-    // eslint-disable-next-line @next/next/no-img-element
     return (
+      // Agent screenshots use runtime blob/data URLs that next/image cannot optimize.
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={item.url}
         alt="agent screenshot"

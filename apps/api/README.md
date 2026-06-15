@@ -99,6 +99,21 @@ OCRFORGE_WEB_AGENT_MODEL=deepseek-chat
 | `OCRFORGE_WEB_LLM_MODEL` | `deepseek-v4-flash` | 史脉抽取模型 |
 | `OCRFORGE_WEB_LLM_TIMEOUT` | `120` | 大模型请求超时，单位秒 |
 | `OCRFORGE_WEB_CULTURE_DB_PATH` | `data/culture_graph.sqlite` | 史脉审校数据库 |
+| `OCRFORGE_WEB_CBDB_PATH` | `data/authority/cbdb/cbdb.sqlite3` | CBDB 本地 SQLite |
+| `OCRFORGE_WEB_CHGIS_API_URL` | `https://chgis.hudci.org/tgaz/placename` | CHGIS Temporal Gazetteer API |
+| `OCRFORGE_WEB_AUTHORITY_TIMEOUT` | `15` | 权威库请求超时，单位秒 |
+
+## CBDB / CHGIS 权威对齐
+
+下载并校验最新版 CBDB：
+
+```bash
+python analysis/authority_databases/download_cbdb.py
+```
+
+人物实体会与 CBDB 的规范姓名、异名、生卒年和索引年对齐。地点实体通过
+CHGIS 官方只读 Temporal Gazetteer API 检索，保存历史有效年代、类型、上级政区、
+经纬度与来源链接。CHGIS 原始数据禁止再分发，因此项目不会提交其数据包。
 | `OCRFORGE_WEB_AGENT_MODEL` | _(unset)_ | 助手模型，缺省回退 `LLM_MODEL` |
 | `OCRFORGE_WEB_BRAVE_API_KEY` | _(unset)_ | Brave 搜索 Key，启用 `web_search` |
 | `OCRFORGE_WEB_AGENT_ENABLE_BROWSER` | `true` | 是否启用 Playwright 无头浏览器工具 |

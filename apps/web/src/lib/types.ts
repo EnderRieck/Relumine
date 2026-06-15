@@ -236,6 +236,23 @@ export type CulturalEntity = {
   confidence: number;
   evidence: string;
   status: ReviewStatus;
+  authority_matches: AuthorityMatch[];
+};
+
+export type AuthorityMatch = {
+  source: "CBDB" | "CHGIS";
+  authority_id: string;
+  canonical_name: string;
+  match_type: "exact" | "alias" | "prefix";
+  confidence: number;
+  source_url: string;
+  label?: string | null;
+  years?: string | null;
+  parent_name?: string | null;
+  feature_type?: string | null;
+  longitude?: number | null;
+  latitude?: number | null;
+  metadata: Record<string, unknown>;
 };
 
 export type CulturalRelation = {
@@ -275,4 +292,6 @@ export type CultureAnalysisSummary = {
 export type CultureStatus = {
   configured: boolean;
   model: string;
+  cbdb_available: boolean;
+  chgis_available: boolean;
 };

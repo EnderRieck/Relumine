@@ -52,7 +52,7 @@ OCR 只是入口。最终目标是一套支撑**文化计算（cultural computin
 | 壹 · **繁简通译** | 繁⇄简转换 + 合并冲突检测 | ② 繁简映射 | 在 OpenCC 转换基础上，自动标出"多对一"的简化合并点——如 `后 ← 後/后`、`发 ← 發/髮`、`干 ← 乾/幹/干`，把简化造成的语义歧义显式暴露出来 |
 | 貳 · **古籍识读** | 古籍影像 OCR | ① OCR | 上传刻本/写本影像，调用**以古籍微调的 PaddleOCR-VL** 模型转写为文本，返回字数与推理延迟；单卡串行队列、可查看排队深度 |
 | 參 · **形声流变** | 单字繁简演化时间轴 | ② 繁简映射 | 按 `甲骨→金文→小篆→隶书→楷书(繁)→一简(1956)` 展示典型字的字形流变、合并关系与考据注记，是繁简映射数据库的可视化窗口 |
-| 肆 · **史脉** | 古籍实体关系图谱 | ③ 语义对齐 | 调用 DeepSeek 抽取人物、地点、官职、时间和事件，生成今译、关系图和时间线；每条关系保留原文证据与置信度，并支持人工确认或驳回 |
+| 肆 · **史脉** | 古籍实体关系图谱 | ③ 语义对齐 | 调用 DeepSeek 抽取人物、地点、官职、时间和事件，再以 CBDB 校验人物、CHGIS 对齐历史地名与坐标；生成今译、关系图、空间分布和时间线，并保留原文证据与人工审校状态 |
 
 产品定位一句话（取自首页）：
 
@@ -84,6 +84,7 @@ GET  /api/evolution          # 列出已收录的演化字
 GET  /api/evolution/{char}   # 单字完整演化记录（stages / merges / notes）
 GET  /api/culture/status     # DeepSeek 是否已配置
 POST /api/culture/analyze    # 古籍实体、关系、今译和时间线
+POST /api/culture/analyses/{id}/link-authorities # CBDB/CHGIS 重新对齐
 PATCH /api/culture/analyses/{id}/review  # 确认或驳回抽取结果
 POST /api/agent/chat         # 智能助手对话（SSE 流式，复用 DeepSeek，支持工具调用）
 POST /api/agent/continue     # 客户端工具执行结果回传、续跑对话

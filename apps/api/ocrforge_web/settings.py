@@ -44,6 +44,15 @@ class Settings(BaseSettings):
     llm_model: str = "deepseek-v4-flash"
     llm_timeout: float = 120.0
     culture_db_path: Path = Path(__file__).parent / "data" / "culture_graph.sqlite"
+    cbdb_path: Path = (
+        Path(__file__).parent
+        / "data"
+        / "authority"
+        / "cbdb"
+        / "cbdb.sqlite3"
+    )
+    chgis_api_url: str = "https://chgis.hudci.org/tgaz/placename"
+    authority_timeout: float = 15.0
 
     # --- agent harness ---
     # Model used by the chat agent. Falls back to llm_model when unset; override

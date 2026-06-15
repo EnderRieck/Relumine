@@ -5,9 +5,13 @@ import {
   Check,
   ChevronRight,
   Clock3,
+  Database,
+  ExternalLink,
   FileSearch,
   LoaderCircle,
+  MapPin,
   Network,
+  RefreshCw,
   RotateCcw,
   Sparkles,
   X,
@@ -85,7 +89,14 @@ export function CulturePanel() {
         setService(nextStatus);
         setHistory(items);
       })
-      .catch(() => setService({ configured: false, model: "DeepSeek" }));
+      .catch(() =>
+        setService({
+          configured: false,
+          model: "DeepSeek",
+          cbdb_available: false,
+          chgis_available: false,
+        }),
+      );
   }, []);
 
   async function runAnalysis() {
@@ -180,8 +191,32 @@ export function CulturePanel() {
     }
   }
 
+  async function linkAuthorities() {
+    if (!analysis) return;
+    setPending(true);
+    try {
+      const updated = await api.culture.linkAuthorities(analysis.id);
+      setAnalysis(updated);
+      setSelectedEntity((current) =>
+        current
+          ? updated.entities.find((entity) => entity.id === current.id) ?? null
+          : null,
+      );
+      const matched = updated.entities.filter(
+        (entity) => entity.authority_matches.length > 0,
+      ).length;
+      toast.success(`权威库对齐完成 · ${matched} 个实体命中`);
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "权威库对齐失败");
+    } finally {
+      setPending(false);
+    }
+  }
+
   const confirmed = analysis
-    ? analysis.relations.filter((item) => item.status === "confirmed").length
+    ? [...analysis.entities, ...analysis.relations].filter(
+        (item) => item.status === "confirmed",
+      ).length
     : 0;
 
   return (
@@ -192,16 +227,13 @@ export function CulturePanel() {
           title="史脉"
           subtitle="古籍实体抽取 · 人物关系 · 证据审校"
         />
-        <div className="flex items-center gap-2 text-xs font-sans text-ink-mute">
-          <span
-            className={cn(
-              "h-2 w-2",
-              service?.configured ? "bg-[#356859]" : "bg-accent",
-            )}
+        <div className="flex flex-wrap items-center gap-3 text-xs font-sans text-ink-mute">
+          <ServiceBadge
+            ready={Boolean(service?.configured)}
+            label={service?.configured ? service.model : "DeepSeek"}
           />
-          {service?.configured
-            ? `${service.model} 已接入`
-            : "DeepSeek 尚未配置"}
+          <ServiceBadge ready={Boolean(service?.cbdb_available)} label="CBDB" />
+          <ServiceBadge ready={Boolean(service?.chgis_available)} label="CHGIS" />
         </div>
       </div>
 
@@ -279,17 +311,39 @@ export function CulturePanel() {
         <div className="min-w-0 border border-line">
           {analysis ? (
             <>
-              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line p-5">
-                <div>
+              <div className="flex flex-wrap items-start justify-between gap-5 border-b border-line p-5">
+                <div className="min-w-[240px] flex-1">
                   <h2 className="font-serif text-xl text-ink">{analysis.title}</h2>
                   <p className="mt-2 max-w-2xl text-sm leading-7 text-ink-soft">
                     {analysis.summary}
                   </p>
                 </div>
-                <div className="flex gap-5 font-sans text-xs text-ink-mute">
-                  <Metric value={analysis.entities.length} label="实体" />
-                  <Metric value={analysis.relations.length} label="关系" />
-                  <Metric value={confirmed} label="已确认" />
+                <div className="flex flex-wrap items-center justify-end gap-5">
+                  <div className="flex gap-5 font-sans text-xs text-ink-mute">
+                    <Metric value={analysis.entities.length} label="实体" />
+                    <Metric value={analysis.relations.length} label="关系" />
+                    <Metric
+                      value={
+                        analysis.entities.filter(
+                          (entity) => entity.authority_matches.length > 0,
+                        ).length
+                      }
+                      label="权威命中"
+                    />
+                    <Metric value={confirmed} label="审校确认" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={linkAuthorities}
+                    disabled={pending}
+                    className="inline-flex h-9 items-center gap-2 border border-line px-3 font-sans text-xs text-ink-soft hover:border-accent hover:text-accent disabled:opacity-50"
+                  >
+                    <RefreshCw
+                      className={cn("h-3.5 w-3.5", pending && "animate-spin")}
+                      aria-hidden
+                    />
+                    重新对齐
+                  </button>
                 </div>
               </div>
 
@@ -314,6 +368,7 @@ export function CulturePanel() {
                   onReview={review}
                 />
               </div>
+              <AuthorityOverview analysis={analysis} />
             </>
           ) : (
             <div className="flex min-h-[540px] flex-col items-center justify-center px-8 text-center">
@@ -347,6 +402,15 @@ function Metric({ value, label }: { value: number; label: string }) {
       <div className="font-serif text-lg text-ink">{value}</div>
       <div className="mt-1 text-[10px] tracking-wider">{label}</div>
     </div>
+  );
+}
+
+function ServiceBadge({ ready, label }: { ready: boolean; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className={cn("h-2 w-2", ready ? "bg-[#356859]" : "bg-accent")} />
+      {label} {ready ? "已接入" : "未安装"}
+    </span>
   );
 }
 
@@ -575,6 +639,17 @@ function RelationGraph({
                 stroke={ENTITY_COLORS[entity.type]}
                 strokeWidth={active ? 3 : confirmed ? 2.5 : hub ? 2.2 : 1.6}
               />
+              {entity.authority_matches.length > 0 ? (
+                <g transform={`translate(${radius - 5} ${-radius + 5})`}>
+                  <circle r="8" fill="#356859" stroke="#fffdf9" strokeWidth="2" />
+                  <path
+                    d="M -3 0 L -1 3 L 4 -3"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="1.8"
+                  />
+                </g>
+              ) : null}
               <circle
                 cy={-radius + 8}
                 r="3.5"
@@ -675,6 +750,39 @@ function EvidencePanel({
               {entity?.description ?? relation?.interpretation}
             </p>
           ) : null}
+          {entity?.authority_matches.length ? (
+            <div className="mt-4 space-y-2">
+              {entity.authority_matches.map((match) => (
+                <a
+                  key={`${match.source}-${match.authority_id}`}
+                  href={match.source_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block border border-line bg-bg/40 p-3 outline-none hover:border-accent-gold focus-visible:border-[#356859] focus-visible:ring-1 focus-visible:ring-[#356859]"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-sans text-[#356859]">
+                      <Database className="h-3.5 w-3.5" aria-hidden />
+                      {match.source} · {match.authority_id}
+                    </span>
+                    <ExternalLink className="h-3.5 w-3.5 text-ink-mute" aria-hidden />
+                  </div>
+                  <div className="mt-2 text-sm text-ink">
+                    {match.canonical_name}
+                    {match.feature_type ? ` · ${match.feature_type}` : ""}
+                  </div>
+                  <div className="mt-1 text-[11px] font-sans text-ink-mute">
+                    {[match.years, match.parent_name].filter(Boolean).join(" · ") ||
+                      `${Math.round(match.confidence * 100)}% 匹配`}
+                  </div>
+                </a>
+              ))}
+            </div>
+          ) : entity && (entity.type === "person" || entity.type === "place") ? (
+            <div className="mt-4 text-xs font-sans text-ink-mute">
+              未在 {entity.type === "person" ? "CBDB" : "CHGIS"} 中找到可确认记录
+            </div>
+          ) : null}
         </div>
         <div className="border-l-2 border-accent-gold pl-4">
           <div className="text-[10px] font-sans tracking-wider text-ink-mute">
@@ -728,6 +836,233 @@ function EvidencePanel({
         </div>
       </div>
     </aside>
+  );
+}
+
+function AuthorityOverview({ analysis }: { analysis: CultureAnalysis }) {
+  const matched = analysis.entities.filter(
+    (entity) => entity.authority_matches.length > 0,
+  );
+  const places = matched.flatMap((entity) =>
+    entity.authority_matches
+      .filter(
+        (match) =>
+          match.source === "CHGIS" &&
+          match.longitude != null &&
+          match.latitude != null,
+      )
+      .slice(0, 1)
+      .map((match) => ({ entity, match })),
+  );
+  if (!matched.length) return null;
+
+  return (
+    <div className="grid gap-px border-t border-line bg-line lg:grid-cols-[0.9fr_1.1fr]">
+      <article className="bg-surface p-6">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs font-sans tracking-wider text-ink-mute">
+            <Database className="h-4 w-4" aria-hidden />
+            权威库对齐
+          </div>
+          <span className="text-[10px] font-sans text-ink-mute">
+            {matched.length} / {analysis.entities.length} 实体命中
+          </span>
+        </div>
+        <div className="mt-4 divide-y divide-line/70 border-y border-line/70">
+          {matched.map((entity) => {
+            const match = entity.authority_matches[0];
+            return (
+              <a
+                key={entity.id}
+                href={match.source_url}
+                target="_blank"
+                rel="noreferrer"
+                className="grid grid-cols-[minmax(76px,0.7fr)_minmax(110px,1fr)_auto] items-center gap-3 py-3 outline-none hover:text-accent focus-visible:bg-bg"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm text-ink">
+                    {entity.name}
+                  </span>
+                  {match.canonical_name !== entity.name ? (
+                    <span className="mt-0.5 block truncate text-[10px] font-sans text-ink-mute">
+                      规范名 {match.canonical_name}
+                    </span>
+                  ) : null}
+                </span>
+                <span className="min-w-0 text-[10px] font-sans text-ink-mute">
+                  <span className="block truncate">
+                    {match.years ?? match.parent_name ?? "年代未载"}
+                  </span>
+                  <span className="mt-0.5 block truncate">
+                    {match.match_type === "exact" ? "精确匹配" : "异名匹配"} ·{" "}
+                    {Math.round(match.confidence * 100)}%
+                  </span>
+                </span>
+                <span className="inline-flex items-center gap-1 text-[10px] font-sans text-[#356859]">
+                  {match.source} {match.authority_id}
+                  <ExternalLink className="h-3 w-3" aria-hidden />
+                </span>
+              </a>
+            );
+          })}
+        </div>
+      </article>
+      <article className="bg-surface p-6">
+        <div className="flex items-center gap-2 text-xs font-sans tracking-wider text-ink-mute">
+          <MapPin className="h-4 w-4" aria-hidden />
+          CHGIS 历史地点
+        </div>
+        {places.length ? (
+          <HistoricalPlaceMap places={places} />
+        ) : (
+          <p className="mt-4 text-sm text-ink-mute">本段没有带坐标的 CHGIS 匹配。</p>
+        )}
+      </article>
+    </div>
+  );
+}
+
+function HistoricalPlaceMap({
+  places,
+}: {
+  places: Array<{
+    entity: CulturalEntity;
+    match: CulturalEntity["authority_matches"][number];
+  }>;
+}) {
+  const longitudes = places.map((item) => item.match.longitude as number);
+  const latitudes = places.map((item) => item.match.latitude as number);
+  const minLongitude = Math.min(...longitudes);
+  const maxLongitude = Math.max(...longitudes);
+  const minLatitude = Math.min(...latitudes);
+  const maxLatitude = Math.max(...latitudes);
+  const singlePoint = places.length === 1;
+  const x = (value: number) =>
+    singlePoint
+      ? 250
+      : 72 +
+        ((value - minLongitude) / Math.max(maxLongitude - minLongitude, 1)) * 350;
+  const y = (value: number) =>
+    singlePoint
+      ? 105
+      : 166 -
+        ((value - minLatitude) / Math.max(maxLatitude - minLatitude, 1)) * 112;
+  const plotted = places.map((item) => ({
+    ...item,
+    x: x(item.match.longitude as number),
+    y: y(item.match.latitude as number),
+  }));
+  const longitudeLabels = singlePoint
+    ? [minLongitude]
+    : [minLongitude, (minLongitude + maxLongitude) / 2, maxLongitude];
+  const latitudeLabels = singlePoint
+    ? [minLatitude]
+    : [minLatitude, (minLatitude + maxLatitude) / 2, maxLatitude];
+
+  return (
+    <svg
+      viewBox="0 0 500 210"
+      className="mt-3 h-52 w-full border border-line bg-[#fbfaf7]"
+      role="img"
+      aria-label="CHGIS历史地点分布"
+    >
+      {[54, 110, 166].map((lineY) => (
+        <line
+          key={`horizontal-${lineY}`}
+          x1="58"
+          y1={lineY}
+          x2="442"
+          y2={lineY}
+          stroke="#e3ded5"
+          strokeWidth="1"
+          strokeDasharray="3 5"
+        />
+      ))}
+      {[72, 247, 422].map((lineX) => (
+        <line
+          key={`vertical-${lineX}`}
+          x1={lineX}
+          y1="38"
+          x2={lineX}
+          y2="180"
+          stroke="#e3ded5"
+          strokeWidth="1"
+          strokeDasharray="3 5"
+        />
+      ))}
+      {plotted.length > 1 ? (
+        <polyline
+          points={plotted.map((point) => `${point.x},${point.y}`).join(" ")}
+          fill="none"
+          stroke="#8aa99e"
+          strokeWidth="1.5"
+          strokeDasharray="4 5"
+        />
+      ) : null}
+      {longitudeLabels.map((value, index) => (
+        <text
+          key={`longitude-${value}`}
+          x={singlePoint ? 250 : [72, 247, 422][index]}
+          y="198"
+          textAnchor="middle"
+          fontSize="8"
+          fill="#9a958d"
+        >
+          {value.toFixed(1)}°E
+        </text>
+      ))}
+      {latitudeLabels.map((value, index) => (
+        <text
+          key={`latitude-${value}`}
+          x="50"
+          y={(singlePoint ? 105 : [166, 110, 54][index]) + 3}
+          textAnchor="end"
+          fontSize="8"
+          fill="#9a958d"
+        >
+          {value.toFixed(1)}°N
+        </text>
+      ))}
+      {plotted.map(({ entity, match, x: pointX, y: pointY }, index) => {
+        const labelOnLeft = pointX > 335;
+        const labelX = labelOnLeft ? -10 : 10;
+        return (
+        <g
+          key={`${entity.id}-${match.authority_id}`}
+          transform={`translate(${pointX} ${pointY})`}
+        >
+          <circle r="10" fill="#fffdf9" stroke="#356859" strokeWidth="1.5" />
+          <text
+            y="3"
+            textAnchor="middle"
+            fontSize="8"
+            fontFamily="sans-serif"
+            fill="#356859"
+          >
+            {index + 1}
+          </text>
+          <text
+            x={labelX}
+            y="-2"
+            textAnchor={labelOnLeft ? "end" : "start"}
+            fontSize="11"
+            fill="#1a1a1a"
+          >
+            {entity.name}
+          </text>
+          <text
+            x={labelX}
+            y="12"
+            textAnchor={labelOnLeft ? "end" : "start"}
+            fontSize="8"
+            fill="#8a8680"
+          >
+            {match.years ?? match.authority_id}
+          </text>
+        </g>
+        );
+      })}
+    </svg>
   );
 }
 
