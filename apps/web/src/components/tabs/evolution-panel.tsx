@@ -132,11 +132,12 @@ export function EvolutionPanel() {
     return {
       ok: true,
       totalHan: cov.totalHan,
-      matchedRecords: cov.matchedRecords,
-      hitEvents: cov.hitEvents,
-      highRiskHits: cov.highRiskHits,
+      distinctHan: cov.distinctHan,
+      coveredChars: cov.coveredChars,
       coveragePct: Number(cov.coveragePct.toFixed(2)),
+      highRiskHits: cov.highRiskHits,
       topHits: cov.topHits,
+      uncovered: cov.uncovered,
     };
   });
 
@@ -327,8 +328,8 @@ export function EvolutionPanel() {
               </div>
               <div className="mt-1.5 font-sans text-xs leading-relaxed text-ink-mute">
                 {corpusText.trim()
-                  ? `已分析 ${corpusCoverage.totalHan} 字 · 命中 ${corpusCoverage.matchedRecords} 字`
-                  : "粘贴古籍文本或 OCR 输出，统计命中字与风险字"}
+                  ? `已分析 ${corpusCoverage.distinctHan} 个不同字 · 库内覆盖 ${corpusCoverage.coveredChars} 字 · ${corpusCoverage.coveragePct.toFixed(0)}%`
+                  : "粘贴古籍文本或 OCR 输出，统计有多少字被繁简库覆盖"}
               </div>
             </button>
           </div>
@@ -1058,12 +1059,13 @@ type DashboardData = {
 };
 
 type CorpusCoverage = {
-  totalHan: number;
-  matchedRecords: number;
-  hitEvents: number;
-  highRiskHits: number;
-  coveragePct: number;
-  topHits: DashboardItem[];
+  totalHan: number; // 文本汉字总数（含重复）
+  distinctHan: number; // 文本中不同汉字数
+  coveredChars: number; // 其中被繁简库覆盖的不同字数
+  coveragePct: number; // coveredChars / distinctHan * 100
+  highRiskHits: number; // 被覆盖字中 OCR 高风险的字数
+  topHits: DashboardItem[]; // 高频被覆盖字
+  uncovered: string[]; // 未被库覆盖的字（样本）
 };
 
 function DatabaseDashboard({
@@ -1127,32 +1129,54 @@ function CorpusCoveragePanel({
           语料覆盖率
         </div>
         <div className="font-serif text-sm text-ink-mute">
-          命中 {coverage.matchedRecords} 字 · {coverage.coveragePct.toFixed(1)}%
+          覆盖 {coverage.coveredChars}/{coverage.distinctHan} 字 · {coverage.coveragePct.toFixed(1)}%
         </div>
       </div>
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
         disabled={disabled}
-        placeholder="粘贴古籍文本或 OCR 输出，自动统计本数据库命中字、风险字和覆盖率。"
+        placeholder="粘贴古籍文本或 OCR 输出，统计文本里有多少不同的字被繁简库收录（覆盖率），及高风险字、库外字。"
         className="min-h-28 w-full resize-y border border-line bg-surface px-4 py-3 font-serif text-sm leading-[1.8] text-ink outline-none placeholder:text-ink-mute/70 disabled:opacity-40"
       />
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-px bg-line border border-line">
         <SummaryCell label="汉字总数" value={String(coverage.totalHan)} />
-        <SummaryCell label="命中次数" value={String(coverage.hitEvents)} />
-        <SummaryCell label="命中字数" value={String(coverage.matchedRecords)} />
-        <SummaryCell label="高风险命中" value={String(coverage.highRiskHits)} />
+        <SummaryCell label="不同字" value={String(coverage.distinctHan)} />
+        <SummaryCell label="库内覆盖" value={String(coverage.coveredChars)} />
+        <SummaryCell label="高风险" value={String(coverage.highRiskHits)} />
       </div>
       {coverage.topHits.length > 0 ? (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {coverage.topHits.map((item) => (
-            <span
-              key={item.simplified}
-              className="border border-line px-2.5 py-1 font-serif text-sm text-ink-soft"
-            >
-              {item.title} · {item.value}
-            </span>
-          ))}
+        <div className="mt-4">
+          <div className="mb-2 text-[10px] font-sans tracking-[0.16em] uppercase text-ink-mute">
+            高频覆盖字
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {coverage.topHits.map((item) => (
+              <span
+                key={item.simplified}
+                className="border border-line px-2.5 py-1 font-serif text-sm text-ink-soft"
+              >
+                {item.title} · {item.value}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {coverage.uncovered.length > 0 ? (
+        <div className="mt-4">
+          <div className="mb-2 text-[10px] font-sans tracking-[0.16em] uppercase text-ink-mute">
+            库外字 · 未收录
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {coverage.uncovered.map((ch, i) => (
+              <span
+                key={`${ch}-${i}`}
+                className="border border-dashed border-line px-2.5 py-1 font-serif text-sm text-ink-mute"
+              >
+                {ch}
+              </span>
+            ))}
+          </div>
         </div>
       ) : null}
     </div>
@@ -1625,49 +1649,64 @@ function buildDashboard(list: CharSummary[]): DashboardData {
 
 function analyzeCorpus(text: string, summaries: CharSummary[]): CorpusCoverage {
   const hanChars = Array.from(text).filter(isHanChar);
-  if (!text || !summaries.length) {
+  const totalHan = hanChars.length;
+
+  // Distinct chars in the text and their frequencies.
+  const counts = new Map<string, number>();
+  for (const ch of hanChars) counts.set(ch, (counts.get(ch) ?? 0) + 1);
+  const distinctHan = counts.size;
+
+  if (!distinctHan || !summaries.length) {
     return {
-      totalHan: hanChars.length,
-      matchedRecords: 0,
-      hitEvents: 0,
-      highRiskHits: 0,
+      totalHan,
+      distinctHan,
+      coveredChars: 0,
       coveragePct: 0,
+      highRiskHits: 0,
       topHits: [],
+      uncovered: [],
     };
   }
 
-  const charCounts = new Map<string, number>();
-  for (const ch of hanChars) {
-    charCounts.set(ch, (charCounts.get(ch) ?? 0) + 1);
+  // Build the库's traditional inventory (繁体字形 + 合并来源 + 繁简同形字)
+  // and a per-char OCR-risk lookup, so we can ask: is THIS text char covered?
+  const known = new Set<string>();
+  const riskOf = new Map<string, string>();
+  for (const item of summaries) {
+    const chars = [
+      ...Array.from(item.traditional ?? ""),
+      ...(item.merges ?? "").split(" ").filter(Boolean),
+    ];
+    if (item.simplified && item.simplified === item.traditional) {
+      chars.push(item.simplified); // unchanged 繁简同形字
+    }
+    for (const ch of chars) {
+      known.add(ch);
+      if (item.ocr_risk_level && !riskOf.has(ch)) riskOf.set(ch, item.ocr_risk_level);
+    }
   }
 
-  const hits = summaries
-    .map((item) => {
-      const chars = new Set([
-        item.simplified,
-        ...Array.from(item.traditional),
-        ...(item.merges ?? "").split(" ").filter(Boolean),
-      ]);
-      const count = Array.from(chars).reduce((sum, ch) => sum + (charCounts.get(ch) ?? 0), 0);
-      return { item, count };
-    })
-    .filter((entry) => entry.count > 0)
-    .sort((a, b) => b.count - a.count);
-
-  const highRiskHits = hits.filter(({ item }) => item.ocr_risk_level === "高").length;
+  const covered: { ch: string; count: number }[] = [];
+  const uncovered: string[] = [];
+  for (const [ch, count] of counts) {
+    if (known.has(ch)) covered.push({ ch, count });
+    else uncovered.push(ch);
+  }
+  covered.sort((a, b) => b.count - a.count);
 
   return {
-    totalHan: hanChars.length,
-    matchedRecords: hits.length,
-    hitEvents: hits.reduce((sum, entry) => sum + entry.count, 0),
-    highRiskHits,
-    coveragePct: summaries.length ? (hits.length / summaries.length) * 100 : 0,
-    topHits: hits.slice(0, 10).map(({ item, count }) => ({
-      simplified: item.simplified,
-      title: item.simplified,
-      detail: item.traditional,
+    totalHan,
+    distinctHan,
+    coveredChars: covered.length,
+    coveragePct: distinctHan ? (covered.length / distinctHan) * 100 : 0,
+    highRiskHits: covered.filter(({ ch }) => riskOf.get(ch) === "高").length,
+    topHits: covered.slice(0, 10).map(({ ch, count }) => ({
+      simplified: ch,
+      title: ch,
+      detail: "",
       value: `${count}次`,
     })),
+    uncovered: uncovered.slice(0, 24),
   };
 }
 

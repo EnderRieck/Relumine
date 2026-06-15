@@ -100,8 +100,9 @@ def client_tools() -> list[Tool]:
         ),
         _client_tool(
             "analyze_corpus_coverage",
-            "在'形声流变'页的『语料覆盖率』里粘贴一段古籍文本或 OCR 输出，统计命中字与风险字，"
-            "并打开结果面板。返回覆盖统计供你解读。",
+            "在'形声流变'页的『语料覆盖率』里粘贴一段古籍文本或 OCR 输出，统计文本里有多少不同的字"
+            "被繁简库覆盖（coveredChars/distinctHan, coveragePct）、其中 OCR 高风险字数(highRiskHits)、"
+            "以及未被收录的『库外字』(uncovered)，并打开结果面板。返回统计供你解读。",
             {
                 "type": "object",
                 "properties": {"text": {"type": "string", "description": "待统计的语料文本"}},
