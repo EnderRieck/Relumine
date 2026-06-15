@@ -2,11 +2,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ConvertPanel } from "@/components/tabs/convert-panel";
 import { OcrPanel } from "@/components/tabs/ocr-panel";
 import { EvolutionPanel } from "@/components/tabs/evolution-panel";
+import { CulturePanel } from "@/components/tabs/culture-panel";
 import { YuweiOrnament } from "@/components/chinese/YuweiOrnament";
 
 export default function HomePage() {
   return (
-    <div className="mx-auto max-w-6xl px-6 md:px-10 py-10 md:py-14">
+    <div className="mx-auto max-w-[1480px] px-6 md:px-10 py-10 md:py-14">
       <div className="mb-10 md:mb-14 flex flex-col items-start">
         <div className="inline-flex flex-col items-stretch">
           <h1
@@ -33,6 +34,7 @@ export default function HomePage() {
           <TabsTrigger value="convert" ordinal="壹" label="繁简通译" />
           <TabsTrigger value="ocr" ordinal="貳" label="古籍识读" />
           <TabsTrigger value="evolution" ordinal="參" label="形声流变" />
+          <TabsTrigger value="culture" ordinal="肆" label="史脉" />
         </TabsList>
 
         <TabsContent value="convert">
@@ -43,6 +45,9 @@ export default function HomePage() {
         </TabsContent>
         <TabsContent value="evolution">
           <EvolutionPanel />
+        </TabsContent>
+        <TabsContent value="culture">
+          <CulturePanel />
         </TabsContent>
       </Tabs>
     </div>

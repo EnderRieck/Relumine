@@ -1,6 +1,6 @@
 # ocrforge-web · FastAPI 后端
 
-CultureCourse 演示用 Web 后端，提供三个端点：
+CultureCourse 演示用 Web 后端：
 
 | 路径 | 用途 |
 |------|------|
@@ -8,6 +8,9 @@ CultureCourse 演示用 Web 后端，提供三个端点：
 | `POST /api/ocr` | 上传图片 → OCR 识别文本 |
 | `GET  /api/evolution` | 字形演化数据库 |
 | `GET  /api/evolution/{char}` | 单字详情 |
+| `POST /api/culture/analyze` | DeepSeek 古籍实体与关系抽取 |
+| `GET  /api/culture/analyses` | 已保存的史脉分析 |
+| `PATCH /api/culture/analyses/{id}/review` | 人工确认或驳回实体/关系 |
 | `GET  /api/healthz` | 服务健康 + 模型加载状态 |
 
 ## 启动
@@ -32,6 +35,17 @@ conda run -n base uvicorn ocrforge_web.main:app \
 
 远程接口需要兼容当前格式：接收 `multipart/form-data` 的 `file` 字段，返回 JSON，例如 `{"text": "识别结果"}`。
 
+### DeepSeek 史脉分析
+
+复制示例配置并填入自己的 Key，`.env` 已被 Git 忽略：
+
+```bash
+cp apps/api/.env.example apps/api/.env
+```
+
+史脉分析使用 JSON 输出模式，从古籍原文中抽取实体和关系。结果写入本地
+`ocrforge_web/data/culture_graph.sqlite`，并保存原文证据、置信度与人工审校状态。
+
 ## 配置
 
 环境变量前缀 `OCRFORGE_WEB_`，详见 `settings.py`：
@@ -45,8 +59,13 @@ conda run -n base uvicorn ocrforge_web.main:app \
 | `OCRFORGE_WEB_OCR_BACKEND` | `auto` | `auto` / `paddle` / `vision` |
 | `OCRFORGE_WEB_REMOTE_OCR_URL` | _(unset)_ | 队友/云服务器 OCR 接口地址，设置后可转发图片 |
 | `OCRFORGE_WEB_REMOTE_OCR_TIMEOUT` | `120` | 远程 OCR 请求超时时间，单位秒 |
-| `OCRFORGE_WEB_EVOLUTION_BACKEND` | `json` | `json` / `sqlite`（后者未实现，仅占位） |
-| `OCRFORGE_WEB_EVOLUTION_PATH` | `data/relumine_char_db.v1.json` | 演化数据文件 |
+| `OCRFORGE_WEB_EVOLUTION_BACKEND` | `sqlite` | `json` / `sqlite` |
+| `OCRFORGE_WEB_EVOLUTION_PATH` | `data/relumine_char_db.v2.sqlite` | 演化数据文件 |
+| `OCRFORGE_WEB_LLM_API_KEY` | _(unset)_ | DeepSeek API Key |
+| `OCRFORGE_WEB_LLM_BASE_URL` | `https://api.deepseek.com` | DeepSeek 兼容接口地址 |
+| `OCRFORGE_WEB_LLM_MODEL` | `deepseek-v4-flash` | 史脉抽取模型 |
+| `OCRFORGE_WEB_LLM_TIMEOUT` | `120` | 大模型请求超时，单位秒 |
+| `OCRFORGE_WEB_CULTURE_DB_PATH` | `data/culture_graph.sqlite` | 史脉审校数据库 |
 | `OCRFORGE_WEB_OCR_WARMUP` | `true` | 启动时是否跑一次 1×1 warm-up |
 | `OCRFORGE_WEB_SKIP_OCR` | _(unset)_ | 设为 `1` 可跳过模型加载（用于纯前端联调） |
 

@@ -25,7 +25,10 @@ async def lifespan(app: FastAPI):
         ocr_service = None  # noqa: F841
 
     if ocr_service is not None and getattr(ocr_service, "startup", None):
-        await ocr_service.startup(settings)
+        try:
+            await ocr_service.startup(settings)
+        except Exception as e:
+            logger.warning("OCR backend unavailable, OCR tab disabled: %s", e)
 
     yield
 
@@ -57,7 +60,7 @@ def healthz() -> HealthResponse:
 def _include_routers() -> None:
     from importlib import import_module
 
-    for mod_name in ("convert", "evolution", "ocr"):
+    for mod_name in ("convert", "evolution", "ocr", "culture"):
         try:
             mod = import_module(f"ocrforge_web.routers.{mod_name}")
         except ModuleNotFoundError:

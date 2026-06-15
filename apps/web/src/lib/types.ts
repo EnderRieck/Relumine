@@ -29,6 +29,85 @@ export type CharSummary = {
   simplified: string;
   traditional: string;
   pinyin?: string | null;
+  record_type?: "merge" | "one_to_one" | null;
+  curation_level?: "handcrafted" | "auto_external" | "auto_slim" | string | null;
+  radical?: string | null;
+  simp_strokes?: number | null;
+  trad_strokes?: number | null;
+  stroke_reduction?: number | null;
+  frequency?: number;
+  frequency_tier?: string | null;
+  display_tier?: "grid" | "archive" | string | null;
+  ocr_risk_level?: string | null;
+  ocr_risk_score?: number | null;
+  semantic_level?: string | null;
+  avg_stroke_reduction?: number | null;
+  coverage_count?: number;
+  merges?: string | null;
+};
+
+export type ReductionSummary = {
+  char_count: number;
+  with_strokes: number;
+  mean: number;
+  median: number;
+  max: number;
+  min: number;
+  buckets: Record<string, number>;
+};
+
+export type ClAnalysis = {
+  stroke_reduction: { full: ReductionSummary; curated: ReductionSummary };
+  least_effort: {
+    char_count: number;
+    pearson_logfreq: number;
+    spearman: number;
+    deciles: Array<{
+      decile: number;
+      freq_range: [number, number];
+      mean_reduction: number;
+      char_count: number;
+    }>;
+    note?: string;
+  };
+  homophony: {
+    group_count: number;
+    distribution: Record<string, number>;
+    examples: Record<string, Array<{ simplified: string; sources: string[] }>>;
+    note?: string;
+  };
+  ocr_confusion: {
+    glyphs_with_ids: number;
+    pair_count: number;
+    top_pairs: Array<{
+      a: string;
+      b: string;
+      a_simplified: string;
+      b_simplified: string;
+      similarity: number;
+      strokes: [number, number];
+      shared_components: string[];
+    }>;
+    note?: string;
+  };
+};
+
+export type EvolutionStats = {
+  total: number;
+  grid_count?: number;
+  archive_count?: number;
+  merge_count: number;
+  one_to_one_count: number;
+  handcrafted_count?: number;
+  auto_external_count?: number;
+  auto_slim_count?: number;
+  high_ocr_risk_count?: number;
+  high_semantic_count?: number;
+  high_frequency_count?: number;
+  avg_stroke_reduction?: number;
+  radical_groups?: Array<{ radical: string; count: number }>;
+  stroke_reduction_buckets?: Record<string, number>;
+  frequency_tiers?: Record<string, number>;
 };
 
 export type UnihanProfile = {
@@ -133,4 +212,67 @@ export type HealthResponse = {
   ok: boolean;
   model_loaded: boolean;
   version: string;
+};
+
+export type EntityType =
+  | "person"
+  | "place"
+  | "office"
+  | "time"
+  | "event"
+  | "work"
+  | "organization"
+  | "other";
+
+export type ReviewStatus = "proposed" | "confirmed" | "rejected";
+
+export type CulturalEntity = {
+  id: string;
+  name: string;
+  normalized_name?: string | null;
+  type: EntityType;
+  aliases: string[];
+  description?: string | null;
+  confidence: number;
+  evidence: string;
+  status: ReviewStatus;
+};
+
+export type CulturalRelation = {
+  id: string;
+  source: string;
+  target: string;
+  type: string;
+  evidence: string;
+  confidence: number;
+  time?: string | null;
+  place?: string | null;
+  interpretation?: string | null;
+  status: ReviewStatus;
+};
+
+export type CultureAnalysis = {
+  id: string;
+  title: string;
+  source_text: string;
+  summary: string;
+  modern_translation: string;
+  entities: CulturalEntity[];
+  relations: CulturalRelation[];
+  model: string;
+  created_at: string;
+};
+
+export type CultureAnalysisSummary = {
+  id: string;
+  title: string;
+  summary: string;
+  entity_count: number;
+  relation_count: number;
+  created_at: string;
+};
+
+export type CultureStatus = {
+  configured: boolean;
+  model: string;
 };

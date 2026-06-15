@@ -1,10 +1,14 @@
 import type {
   CharRecord,
   CharSummary,
+  CultureAnalysis,
+  CultureAnalysisSummary,
+  CultureStatus,
   ConvertResponse,
   Direction,
   HealthResponse,
   OcrResponse,
+  ReviewStatus,
 } from "@/lib/types";
 
 class ApiError extends Error {
@@ -64,14 +68,75 @@ export const api = {
   },
 
   evolution: {
-    async list(): Promise<CharSummary[]> {
+    async list(params?: { type?: "merge" | "one_to_one"; tier?: "grid" | "archive" }): Promise<CharSummary[]> {
+      const search = new URLSearchParams();
+      if (params?.type) search.set("type", params.type);
+      if (params?.tier) search.set("tier", params.tier);
+      const qs = search.toString();
       return jsonOrThrow<CharSummary[]>(
-        await fetch("/api/evolution", { cache: "no-store" }),
+        await fetch(`/api/evolution${qs ? `?${qs}` : ""}`, { cache: "no-store" }),
+      );
+    },
+    async stats(): Promise<import("@/lib/types").EvolutionStats> {
+      return jsonOrThrow<import("@/lib/types").EvolutionStats>(
+        await fetch("/api/evolution/stats", { cache: "no-store" }),
+      );
+    },
+    async clAnalysis(): Promise<import("@/lib/types").ClAnalysis> {
+      return jsonOrThrow<import("@/lib/types").ClAnalysis>(
+        await fetch("/api/evolution/cl-analysis", { cache: "no-store" }),
       );
     },
     async get(char: string): Promise<CharRecord> {
       return jsonOrThrow<CharRecord>(
         await fetch(`/api/evolution/${encodeURIComponent(char)}`, { cache: "no-store" }),
+      );
+    },
+  },
+
+  culture: {
+    async status(): Promise<CultureStatus> {
+      return jsonOrThrow<CultureStatus>(
+        await fetch("/api/culture/status", { cache: "no-store" }),
+      );
+    },
+    async analyze(text: string, title?: string): Promise<CultureAnalysis> {
+      return jsonOrThrow<CultureAnalysis>(
+        await fetch("/api/culture/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, title: title || null }),
+        }),
+      );
+    },
+    async list(): Promise<CultureAnalysisSummary[]> {
+      return jsonOrThrow<CultureAnalysisSummary[]>(
+        await fetch("/api/culture/analyses", { cache: "no-store" }),
+      );
+    },
+    async get(id: string): Promise<CultureAnalysis> {
+      return jsonOrThrow<CultureAnalysis>(
+        await fetch(`/api/culture/analyses/${encodeURIComponent(id)}`, {
+          cache: "no-store",
+        }),
+      );
+    },
+    async review(
+      id: string,
+      changes: {
+        entity_statuses?: Record<string, ReviewStatus>;
+        relation_statuses?: Record<string, ReviewStatus>;
+      },
+    ): Promise<CultureAnalysis> {
+      return jsonOrThrow<CultureAnalysis>(
+        await fetch(`/api/culture/analyses/${encodeURIComponent(id)}/review`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            entity_statuses: changes.entity_statuses ?? {},
+            relation_statuses: changes.relation_statuses ?? {},
+          }),
+        }),
       );
     },
   },

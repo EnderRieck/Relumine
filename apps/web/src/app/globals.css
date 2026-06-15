@@ -52,6 +52,52 @@ body {
   color: var(--color-ink);
 }
 
+/* ---------- 滚动条：细墨线风 ---------- */
+/* 标准属性（Firefox 及新版 Chromium 均支持） */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c9c4ba transparent;
+}
+
+/* WebKit 细化：宣纸底、墨灰条、方角，悬停转朱砂 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #c9c4ba;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(154, 42, 31, 0.55);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--color-accent);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 页面级滚动条：留一道淡墨轨，与内部容器区分 */
+html::-webkit-scrollbar {
+  width: 10px;
+}
+
+html::-webkit-scrollbar-track {
+  background: var(--color-bg);
+  border-left: 1px solid var(--color-line);
+}
+
 /* ---------- 关键帧 ---------- */
 
 @keyframes ink-rise {

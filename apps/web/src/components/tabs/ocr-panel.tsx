@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Network } from "lucide-react";
 
 import { api, ApiError } from "@/lib/api";
 import type { OcrResponse } from "@/lib/types";
@@ -16,7 +17,6 @@ type Mode = "trad" | "simp";
 
 export function OcrPanel() {
   const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [result, setResult] = useState<OcrResponse | null>(null);
   const [simplifiedText, setSimplifiedText] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("trad");
@@ -24,22 +24,21 @@ export function OcrPanel() {
   const [converting, setConverting] = useState(false);
   const [queueDepth, setQueueDepth] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!file) {
-      setPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
+  const previewUrl = useMemo(
+    () => (file ? URL.createObjectURL(file) : null),
+    [file],
+  );
+
+  useEffect(
+    () => () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    },
+    [previewUrl],
+  );
 
   // 等待时每 1s 轮询一次队列深度；显示"前面有 N 位"
   useEffect(() => {
-    if (!pending) {
-      setQueueDepth(null);
-      return;
-    }
+    if (!pending) return;
     let cancelled = false;
     const poll = async () => {
       try {
@@ -62,6 +61,7 @@ export function OcrPanel() {
     setResult(null);
     setSimplifiedText(null);
     setMode("trad");
+    setQueueDepth(null);
     setPending(true);
     try {
       const res = await api.ocr(f);
@@ -72,6 +72,7 @@ export function OcrPanel() {
       toast.error(detail);
     } finally {
       setPending(false);
+      setQueueDepth(null);
     }
   }
 
@@ -95,6 +96,18 @@ export function OcrPanel() {
   }
 
   const displayedText = mode === "trad" ? result?.text : simplifiedText ?? result?.text;
+
+  function sendToCulture() {
+    if (!displayedText) return;
+    localStorage.setItem("relumine:culture-source", displayedText);
+    window.dispatchEvent(
+      new CustomEvent("relumine:culture-source", { detail: displayedText }),
+    );
+    window.dispatchEvent(
+      new CustomEvent("relumine:open-tab", { detail: "culture" }),
+    );
+    toast.success("识读文本已送入史脉");
+  }
 
   return (
     <section className="relative rounded-[var(--radius)] border border-line bg-surface p-8 md:p-12 animate-ink-rise">
@@ -177,9 +190,19 @@ export function OcrPanel() {
             </div>
 
             {result && !pending ? (
-              <div className="mt-4 pt-4 border-t border-line flex items-center gap-5 text-[10px] font-sans tracking-[0.16em] uppercase text-ink-mute">
-                <span>{result.char_count} chars</span>
-                <span>{result.latency_ms} ms</span>
+              <div className="mt-4 pt-4 border-t border-line flex items-center justify-between gap-4">
+                <div className="flex items-center gap-5 text-[10px] font-sans tracking-[0.16em] uppercase text-ink-mute">
+                  <span>{result.char_count} chars</span>
+                  <span>{result.latency_ms} ms</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={sendToCulture}
+                  className="inline-flex items-center gap-2 text-xs font-sans text-accent hover:text-ink transition-colors"
+                >
+                  <Network className="h-4 w-4" aria-hidden />
+                  送入史脉
+                </button>
               </div>
             ) : null}
           </div>

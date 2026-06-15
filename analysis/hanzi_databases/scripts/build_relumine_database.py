@@ -26,6 +26,8 @@ from analyze_external_databases import (
 
 
 DATABASE_PATH = REPO_ROOT / "apps" / "api" / "ocrforge_web" / "data" / "relumine_char_db.v1.json"
+DATABASE_V2_PATH = REPO_ROOT / "apps" / "api" / "ocrforge_web" / "data" / "relumine_char_db.v2.json"
+SQLITE_PATH = REPO_ROOT / "apps" / "api" / "ocrforge_web" / "data" / "relumine_char_db.v2.sqlite"
 SUMMARY_PATH = OUT_DIR / "relumine_char_db_summary.csv"
 CANDIDATES_PATH = OUT_DIR / "opencc_merge_candidates.csv"
 QUALITY_CHECK_PATH = OUT_DIR / "relumine_char_db_quality_check.json"
@@ -845,6 +847,339 @@ def write_quality_check(database: dict[str, Any]) -> None:
     QUALITY_CHECK_PATH.write_text(json.dumps(check, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+# ---------------------------------------------------------------------------
+# v2 full-universe layer: slim records for every OpenCC mapping + SQLite output
+# ---------------------------------------------------------------------------
+
+_KANGXI_RADICAL_BASE = 0x2F00
+
+
+def radical_char(rs_unicode: str | None) -> str | None:
+    """kRSUnicode like '90.4' or \"120'.4\" -> Kangxi radical character."""
+    if not rs_unicode:
+        return None
+    first = str(rs_unicode).split()[0]
+    num = first.split(".")[0].rstrip("'")
+    if not num.isdigit():
+        return None
+    n = int(num)
+    if 1 <= n <= 214:
+        return chr(_KANGXI_RADICAL_BASE + n - 1)
+    return None
+
+
+def _display_tier(simplified: str, traditional: str, unihan: dict[str, dict[str, str]]) -> str:
+    in_bmp = all(0x4E00 <= ord(ch) <= 0x9FFF for ch in (simplified + traditional))
+    has_pinyin = bool(unihan.get(simplified, {}).get("kMandarin"))
+    return "grid" if in_bmp and has_pinyin else "archive"
+
+
+def build_slim_record(
+    simplified: str,
+    trad_candidates: list[str],
+    unihan: dict[str, dict[str, str]],
+    chise: dict[str, dict[str, str]],
+    opencc_st: dict[str, list[str]],
+    cedict_simp: Counter,
+) -> dict[str, Any]:
+    canonical = choose_canonical_traditional(simplified, trad_candidates, unihan)
+    real_sources = [ch for ch in trad_candidates if ch != simplified]
+    record_type = "multi_source_merge" if len(real_sources) > 1 else "one_to_one"
+    props = unihan.get(simplified, {})
+    simp_strokes = _stroke_count({"total_strokes": props.get("kTotalStrokes")})
+    trad_strokes = _stroke_count({"total_strokes": unihan.get(canonical, {}).get("kTotalStrokes")})
+    return {
+        "id": f"relumine-{char_codepoint(simplified).lower().replace('+', '')}",
+        "curation_level": "auto_slim",
+        "simplified": simplified,
+        "codepoint": char_codepoint(simplified),
+        "record_type": record_type,
+        "pinyin": props.get("kMandarin"),
+        "canonical_traditional": canonical,
+        "simplification_types": [],
+        "external_profile": {
+            "unihan": {
+                "char": simplified,
+                "codepoint": char_codepoint(simplified),
+                "mandarin": props.get("kMandarin"),
+                "definition": props.get("kDefinition"),
+                "total_strokes": props.get("kTotalStrokes"),
+                "radical_stroke": props.get("kRSUnicode"),
+            },
+            "opencc_simplified_to_traditional": trad_candidates,
+            "cc_cedict_as_simplified_occurrences": int(cedict_simp.get(simplified, 0)),
+        },
+        "traditional_sources": [
+            {"char": ch, "codepoint": char_codepoint(ch), "role": "merge_source" if ch != canonical else "canonical_traditional"}
+            for ch in trad_candidates
+            if ch != simplified
+        ],
+        "coverage": {
+            "has_unihan": simplified in unihan,
+            "has_chise_ids": simplified in chise,
+            "has_opencc_mapping": True,
+            "has_cedict_evidence": int(cedict_simp.get(simplified, 0)) > 0,
+        },
+        "slim": {
+            "radical": radical_char(props.get("kRSUnicode")),
+            "simp_strokes": simp_strokes,
+            "trad_strokes": trad_strokes,
+            "stroke_reduction": (trad_strokes - simp_strokes) if (trad_strokes is not None and simp_strokes is not None) else None,
+            "frequency": int(cedict_simp.get(simplified, 0)),
+            "display_tier": _display_tier(simplified, canonical, unihan),
+        },
+    }
+
+
+def _normalized_record_type(record: dict[str, Any]) -> str:
+    raw = record.get("record_type", "")
+    return "merge" if raw == "multi_source_merge" else "one_to_one"
+
+
+def build_summary_row(record: dict[str, Any], unihan: dict[str, dict[str, str]]) -> dict[str, Any]:
+    simplified = record["simplified"]
+    canonical = record.get("canonical_traditional") or simplified
+    props = unihan.get(simplified, {})
+    slim = record.get("slim") or {}
+    cultural = record.get("cultural_computation") or {}
+    risk = cultural.get("ocr_risk") or {}
+    semantic = cultural.get("semantic_ambiguity") or {}
+    stroke = cultural.get("stroke_profile") or {}
+    frequency_block = cultural.get("frequency_profile") or {}
+
+    simp_strokes = slim.get("simp_strokes")
+    trad_strokes = slim.get("trad_strokes")
+    if simp_strokes is None:
+        simp_strokes = _stroke_count({"total_strokes": props.get("kTotalStrokes")})
+    if trad_strokes is None:
+        trad_strokes = _stroke_count({"total_strokes": unihan.get(canonical, {}).get("kTotalStrokes")})
+
+    frequency = slim.get("frequency")
+    if frequency is None:
+        frequency = int((record.get("external_profile") or {}).get("cc_cedict_as_simplified_occurrences") or 0)
+    frequency_tier = frequency_block.get("tier") or ("高频" if frequency >= 200 else "中频" if frequency >= 100 else "低频")
+
+    coverage = record.get("coverage") or {}
+    return {
+        "simplified": simplified,
+        "traditional": canonical,
+        "pinyin": record.get("pinyin"),
+        "record_type": _normalized_record_type(record),
+        "curation_level": record.get("curation_level"),
+        "radical": slim.get("radical") or radical_char(props.get("kRSUnicode")),
+        "simp_strokes": simp_strokes,
+        "trad_strokes": trad_strokes,
+        "stroke_reduction": slim.get("stroke_reduction")
+        if slim.get("stroke_reduction") is not None
+        else ((trad_strokes - simp_strokes) if (trad_strokes is not None and simp_strokes is not None) else None),
+        "frequency": frequency,
+        "frequency_tier": frequency_tier,
+        "display_tier": slim.get("display_tier") or "grid",
+        "ocr_risk_level": risk.get("level"),
+        "ocr_risk_score": risk.get("score"),
+        "semantic_level": semantic.get("level"),
+        "avg_stroke_reduction": stroke.get("average_reduction"),
+        "coverage_count": sum(1 for value in coverage.values() if value),
+        "merges": " ".join(source["char"] for source in record.get("traditional_sources") or [] if source.get("char")),
+    }
+
+
+def build_full_universe(
+    full_records: list[dict[str, Any]],
+    unihan: dict[str, dict[str, str]],
+    opencc_st: dict[str, list[str]],
+    opencc_ts: dict[str, list[str]],
+    chise: dict[str, dict[str, str]],
+    cedict_simp: Counter,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Return (slim_records, summary_rows) covering every OpenCC mapping."""
+    covered = {record["simplified"] for record in full_records}
+
+    ts_inverted: dict[str, list[str]] = {}
+    for traditional, simps in opencc_ts.items():
+        if len(traditional) != 1 or not is_han(traditional):
+            continue
+        for simp in simps:
+            if len(simp) == 1 and is_han(simp):
+                ts_inverted.setdefault(simp, []).append(traditional)
+
+    universe: dict[str, list[str]] = {}
+    for simplified, candidates in opencc_st.items():
+        if len(simplified) != 1 or not is_han(simplified):
+            continue
+        han = [ch for ch in candidates if len(ch) == 1 and is_han(ch)]
+        if han:
+            universe[simplified] = han
+    for simplified, trads in ts_inverted.items():
+        merged = universe.setdefault(simplified, [])
+        for ch in trads:
+            if ch not in merged:
+                merged.append(ch)
+
+    slim_records = [
+        build_slim_record(simplified, trads, unihan, chise, opencc_st, cedict_simp)
+        for simplified, trads in sorted(universe.items(), key=lambda kv: ord(kv[0]))
+        if simplified not in covered and trads
+    ]
+
+    summary_rows = [build_summary_row(record, unihan) for record in full_records]
+    summary_rows.extend(build_summary_row(record, unihan) for record in slim_records)
+    return slim_records, summary_rows
+
+
+def build_stats(summary_rows: list[dict[str, Any]], full_records: list[dict[str, Any]]) -> dict[str, Any]:
+    def bucket_label(value: int | None) -> str:
+        if value is None:
+            return "未知"
+        if value <= 0:
+            return "≤0"
+        if value <= 3:
+            return "1–3"
+        if value <= 6:
+            return "4–6"
+        if value <= 9:
+            return "7–9"
+        return "≥10"
+
+    radical_counter: Counter = Counter()
+    reduction_counter: Counter = Counter()
+    tier_counter: Counter = Counter()
+    for row in summary_rows:
+        if row["display_tier"] == "grid":
+            radical_counter[row["radical"] or "未知"] += 1
+            reduction_counter[bucket_label(row["stroke_reduction"])] += 1
+            tier_counter[row["frequency_tier"]] += 1
+
+    reductions = [row["stroke_reduction"] for row in summary_rows if row["stroke_reduction"] is not None]
+    return {
+        "total": len(summary_rows),
+        "grid_count": sum(1 for row in summary_rows if row["display_tier"] == "grid"),
+        "archive_count": sum(1 for row in summary_rows if row["display_tier"] == "archive"),
+        "merge_count": sum(1 for row in summary_rows if row["record_type"] == "merge"),
+        "one_to_one_count": sum(1 for row in summary_rows if row["record_type"] == "one_to_one"),
+        "handcrafted_count": sum(1 for row in summary_rows if row["curation_level"] == "handcrafted"),
+        "auto_external_count": sum(1 for row in summary_rows if row["curation_level"] == "auto_external"),
+        "auto_slim_count": sum(1 for row in summary_rows if row["curation_level"] == "auto_slim"),
+        "high_ocr_risk_count": sum(1 for row in summary_rows if row["ocr_risk_level"] == "高"),
+        "high_semantic_count": sum(1 for row in summary_rows if row["semantic_level"] == "高"),
+        "high_frequency_count": sum(1 for row in summary_rows if row["frequency_tier"] == "高频"),
+        "avg_stroke_reduction": round(sum(reductions) / len(reductions), 2) if reductions else 0,
+        "radical_groups": [
+            {"radical": radical, "count": count}
+            for radical, count in sorted(radical_counter.items(), key=lambda kv: (kv[0] == "未知", kv[0]))
+        ],
+        "stroke_reduction_buckets": dict(reduction_counter),
+        "frequency_tiers": dict(tier_counter),
+    }
+
+
+def write_sqlite(
+    full_records: list[dict[str, Any]],
+    slim_records: list[dict[str, Any]],
+    summary_rows: list[dict[str, Any]],
+    stats: dict[str, Any],
+) -> None:
+    import sqlite3
+
+    SQLITE_PATH.unlink(missing_ok=True)
+    conn = sqlite3.connect(SQLITE_PATH)
+    try:
+        conn.executescript(
+            """
+            CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+            CREATE TABLE char_summary (
+                simplified TEXT PRIMARY KEY,
+                traditional TEXT NOT NULL,
+                pinyin TEXT,
+                record_type TEXT NOT NULL,
+                curation_level TEXT NOT NULL,
+                radical TEXT,
+                simp_strokes INTEGER,
+                trad_strokes INTEGER,
+                stroke_reduction INTEGER,
+                frequency INTEGER NOT NULL DEFAULT 0,
+                frequency_tier TEXT,
+                display_tier TEXT NOT NULL,
+                ocr_risk_level TEXT,
+                ocr_risk_score INTEGER,
+                semantic_level TEXT,
+                avg_stroke_reduction REAL,
+                coverage_count INTEGER NOT NULL DEFAULT 0,
+                merges TEXT,
+                sort_order INTEGER NOT NULL
+            );
+            CREATE INDEX idx_summary_type ON char_summary(record_type);
+            CREATE INDEX idx_summary_tier ON char_summary(display_tier);
+            CREATE TABLE char_detail (
+                simplified TEXT PRIMARY KEY,
+                record_json TEXT NOT NULL
+            );
+            """
+        )
+        conn.executemany(
+            """
+            INSERT INTO char_summary (
+                simplified, traditional, pinyin, record_type, curation_level, radical,
+                simp_strokes, trad_strokes, stroke_reduction, frequency, frequency_tier,
+                display_tier, ocr_risk_level, ocr_risk_score, semantic_level,
+                avg_stroke_reduction, coverage_count, merges, sort_order
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    row["simplified"], row["traditional"], row["pinyin"], row["record_type"],
+                    row["curation_level"], row["radical"], row["simp_strokes"], row["trad_strokes"],
+                    row["stroke_reduction"], row["frequency"], row["frequency_tier"], row["display_tier"],
+                    row["ocr_risk_level"], row["ocr_risk_score"], row["semantic_level"],
+                    row["avg_stroke_reduction"], row["coverage_count"], row["merges"], index,
+                )
+                for index, row in enumerate(summary_rows)
+            ],
+        )
+        conn.executemany(
+            "INSERT INTO char_detail (simplified, record_json) VALUES (?, ?)",
+            [
+                (record["simplified"], json.dumps(record, ensure_ascii=False))
+                for record in full_records + slim_records
+            ],
+        )
+        conn.execute(
+            "INSERT INTO meta (key, value) VALUES ('stats', ?)",
+            (json.dumps(stats, ensure_ascii=False),),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def write_v2(database: dict[str, Any]) -> dict[str, Any]:
+    project = load_project_data()
+    unihan = load_unihan()
+    opencc_st = parse_opencc_dict(RAW_DIR / "opencc_STCharacters.txt")
+    opencc_ts = parse_opencc_dict(RAW_DIR / "opencc_TSCharacters.txt")
+    _entries, _trad, cedict_simp, _pairs = load_cedict()
+    chise = load_chise_ids()
+    del project  # full records come from the already-built v1 database
+
+    full_records = database["characters"]
+    slim_records, summary_rows = build_full_universe(
+        full_records, unihan, opencc_st, opencc_ts, chise, cedict_simp
+    )
+    stats = build_stats(summary_rows, full_records)
+
+    v2 = {
+        "schema_version": "relumine-char-db-v2",
+        "generated_at": database["generated_at"],
+        "description": "Relumine 汉字数据库 v2：满配层（精修 + 多对一文化计算）+ 全量瘦记录层（OpenCC 全部繁简映射）。",
+        "stats": stats,
+        "characters": full_records,
+        "slim_characters": slim_records,
+    }
+    DATABASE_V2_PATH.write_text(json.dumps(v2, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    write_sqlite(full_records, slim_records, summary_rows, stats)
+    return stats
+
+
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     database = build_database()
@@ -853,10 +1188,14 @@ def main() -> None:
     write_cultural_summary(database)
     write_candidates()
     write_quality_check(database)
+    v2_stats = write_v2(database)
     print(
         json.dumps(
             {
                 "database": str(DATABASE_PATH.relative_to(REPO_ROOT)),
+                "database_v2": str(DATABASE_V2_PATH.relative_to(REPO_ROOT)),
+                "sqlite": str(SQLITE_PATH.relative_to(REPO_ROOT)),
+                "v2_stats": {k: v for k, v in v2_stats.items() if not isinstance(v, (list, dict))},
                 "summary": database["summary"],
                 "summary_csv": str(SUMMARY_PATH.relative_to(REPO_ROOT)),
                 "cultural_summary_csv": str(CULTURAL_SUMMARY_PATH.relative_to(REPO_ROOT)),

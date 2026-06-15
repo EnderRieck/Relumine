@@ -1,6 +1,6 @@
 {
   "schema_version": "relumine-char-db-v1",
-  "generated_at": "2026-06-09T23:57:32",
+  "generated_at": "2026-06-12T03:07:50",
   "description": "Relumine 自建汉字数据库 v1：以项目字形流变记录为核心，融合 Unihan、OpenCC、CC-CEDICT 和 CHISE IDS 的可计算字段；当前为 100 字目标版。",
   "source_files": {
     "project_evolution": "apps/api/ocrforge_web/data/evolution.json",
@@ -692,7 +692,7 @@
         "opencc_simplified_to_traditional": [
           "車"
         ],
-        "cc_cedict_as_simplified_occurrences": 534,
+        "cc_cedict_as_simplified_occurrences": 533,
         "cc_cedict_as_traditional_occurrences": 0
       },
       "traditional_sources": [
@@ -728,7 +728,7 @@
             "simplified_to_traditional_has_source": true
           },
           "cc_cedict": {
-            "aligned_pair_count": 534,
+            "aligned_pair_count": 533,
             "examples": [
               {
                 "traditional": "上車",
@@ -801,7 +801,7 @@
           "reasons": []
         },
         "frequency_profile": {
-          "cc_cedict_occurrences": 534,
+          "cc_cedict_occurrences": 533,
           "rank_in_database": 8,
           "tier": "高频"
         },
@@ -3239,7 +3239,7 @@
             "z_variants": [],
             "source": "Unihan"
           },
-          "chise_ids": "⿸倝干",
+          "chise_ids": "⿸⿰𠦝𠆢干",
           "opencc": {
             "traditional_to_simplified_candidates": [
               "干"
@@ -3480,17 +3480,19 @@
         },
         "component_shift": {
           "traditional_components": [
-            "倝",
+            "𠦝",
+            "𠆢",
             "干"
           ],
           "simplified_components": [],
           "removed_components": [
-            "倝",
+            "𠦝",
+            "𠆢",
             "干"
           ],
           "added_components": [],
           "shared_components": [],
-          "change_count": 2
+          "change_count": 3
         },
         "ocr_risk": {
           "level": "高",
@@ -7970,7 +7972,7 @@
           "里",
           "哩"
         ],
-        "cc_cedict_as_simplified_occurrences": 540,
+        "cc_cedict_as_simplified_occurrences": 541,
         "cc_cedict_as_traditional_occurrences": 409
       },
       "traditional_sources": [
@@ -8179,7 +8181,7 @@
           ]
         },
         "frequency_profile": {
-          "cc_cedict_occurrences": 540,
+          "cc_cedict_occurrences": 541,
           "rank_in_database": 7,
           "tier": "高频"
         },
@@ -22788,7 +22790,7 @@
             "z_variants": [],
             "source": "Unihan"
           },
-          "chise_ids": "&U-i002+2FF1;𢆶戍",
+          "chise_ids": "⿹&CDP-8BA4;人",
           "opencc": {
             "traditional_to_simplified_candidates": [
               "几"
@@ -22939,17 +22941,15 @@
         },
         "component_shift": {
           "traditional_components": [
-            "𢆶",
-            "戍"
+            "人"
           ],
           "simplified_components": [],
           "removed_components": [
-            "𢆶",
-            "戍"
+            "人"
           ],
           "added_components": [],
           "shared_components": [],
-          "change_count": 2
+          "change_count": 1
         },
         "ocr_risk": {
           "level": "高",
