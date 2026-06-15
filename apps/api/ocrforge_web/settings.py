@@ -12,7 +12,12 @@ _PROJECT_ROOT = _THIS.parents[4]
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="OCRFORGE_WEB_", env_file=None)
+    model_config = SettingsConfigDict(
+        env_prefix="OCRFORGE_WEB_",
+        env_file=_THIS.parents[1] / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     project_root: Path = _PROJECT_ROOT
     paddle_ckpt: Path = (
@@ -33,6 +38,12 @@ class Settings(BaseSettings):
 
     evolution_backend: str = "sqlite"
     evolution_path: Path = Path(__file__).parent / "data" / "relumine_char_db.v2.sqlite"
+
+    llm_api_key: str | None = None
+    llm_base_url: str = "https://api.deepseek.com"
+    llm_model: str = "deepseek-v4-flash"
+    llm_timeout: float = 120.0
+    culture_db_path: Path = Path(__file__).parent / "data" / "culture_graph.sqlite"
 
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 

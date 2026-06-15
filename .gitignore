@@ -35,6 +35,9 @@ env/
 .env.*
 !.env.example
 
+# Local cultural-graph review data
+/apps/api/ocrforge_web/data/culture_graph.sqlite*
+
 # OS / editor
 .DS_Store
 *.log

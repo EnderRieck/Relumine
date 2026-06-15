@@ -213,3 +213,66 @@ export type HealthResponse = {
   model_loaded: boolean;
   version: string;
 };
+
+export type EntityType =
+  | "person"
+  | "place"
+  | "office"
+  | "time"
+  | "event"
+  | "work"
+  | "organization"
+  | "other";
+
+export type ReviewStatus = "proposed" | "confirmed" | "rejected";
+
+export type CulturalEntity = {
+  id: string;
+  name: string;
+  normalized_name?: string | null;
+  type: EntityType;
+  aliases: string[];
+  description?: string | null;
+  confidence: number;
+  evidence: string;
+  status: ReviewStatus;
+};
+
+export type CulturalRelation = {
+  id: string;
+  source: string;
+  target: string;
+  type: string;
+  evidence: string;
+  confidence: number;
+  time?: string | null;
+  place?: string | null;
+  interpretation?: string | null;
+  status: ReviewStatus;
+};
+
+export type CultureAnalysis = {
+  id: string;
+  title: string;
+  source_text: string;
+  summary: string;
+  modern_translation: string;
+  entities: CulturalEntity[];
+  relations: CulturalRelation[];
+  model: string;
+  created_at: string;
+};
+
+export type CultureAnalysisSummary = {
+  id: string;
+  title: string;
+  summary: string;
+  entity_count: number;
+  relation_count: number;
+  created_at: string;
+};
+
+export type CultureStatus = {
+  configured: boolean;
+  model: string;
+};

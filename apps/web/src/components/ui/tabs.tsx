@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useId, useState } from "react";
+import { createContext, useContext, useEffect, useId, useState } from "react";
 import { cn } from "@/lib/cn";
 
 type TabsContextValue = {
@@ -27,6 +27,14 @@ export function Tabs({
 }) {
   const [value, setValue] = useState(defaultValue);
   const id = useId();
+  useEffect(() => {
+    const openTab = (event: Event) => {
+      const next = (event as CustomEvent<string>).detail;
+      if (next) setValue(next);
+    };
+    window.addEventListener("relumine:open-tab", openTab);
+    return () => window.removeEventListener("relumine:open-tab", openTab);
+  }, []);
   return (
     <TabsCtx.Provider value={{ value, setValue, id }}>
       <div className={className}>{children}</div>
@@ -48,7 +56,7 @@ export function TabsList({
       role="tablist"
       style={style}
       className={cn(
-        "relative flex items-end gap-10 border-b border-line",
+        "relative flex flex-wrap items-end gap-x-4 md:gap-x-10 border-b border-line",
         className,
       )}
     >

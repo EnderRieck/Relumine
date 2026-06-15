@@ -60,7 +60,7 @@ def healthz() -> HealthResponse:
 def _include_routers() -> None:
     from importlib import import_module
 
-    for mod_name in ("convert", "evolution", "ocr"):
+    for mod_name in ("convert", "evolution", "ocr", "culture"):
         try:
             mod = import_module(f"ocrforge_web.routers.{mod_name}")
         except ModuleNotFoundError:

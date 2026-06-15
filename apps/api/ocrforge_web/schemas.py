@@ -82,3 +82,79 @@ class HealthResponse(BaseModel):
     ok: bool
     model_loaded: bool
     version: str
+
+
+# ---------- cultural graph ----------
+
+EntityType = Literal[
+    "person",
+    "place",
+    "office",
+    "time",
+    "event",
+    "work",
+    "organization",
+    "other",
+]
+ReviewStatus = Literal["proposed", "confirmed", "rejected"]
+
+
+class CulturalEntity(BaseModel):
+    id: str
+    name: str
+    normalized_name: str | None = None
+    type: EntityType
+    aliases: list[str] = Field(default_factory=list)
+    description: str | None = None
+    confidence: float = Field(default=0.5, ge=0, le=1)
+    evidence: str
+    status: ReviewStatus = "proposed"
+
+
+class CulturalRelation(BaseModel):
+    id: str
+    source: str
+    target: str
+    type: str
+    evidence: str
+    confidence: float = Field(default=0.5, ge=0, le=1)
+    time: str | None = None
+    place: str | None = None
+    interpretation: str | None = None
+    status: ReviewStatus = "proposed"
+
+
+class CultureAnalyzeRequest(BaseModel):
+    text: str = Field(..., min_length=2, max_length=12000)
+    title: str | None = Field(default=None, max_length=120)
+
+
+class CultureAnalysis(BaseModel):
+    id: str
+    title: str
+    source_text: str
+    summary: str
+    modern_translation: str
+    entities: list[CulturalEntity]
+    relations: list[CulturalRelation]
+    model: str
+    created_at: str
+
+
+class CultureAnalysisSummary(BaseModel):
+    id: str
+    title: str
+    summary: str
+    entity_count: int
+    relation_count: int
+    created_at: str
+
+
+class CultureReviewRequest(BaseModel):
+    entity_statuses: dict[str, ReviewStatus] = Field(default_factory=dict)
+    relation_statuses: dict[str, ReviewStatus] = Field(default_factory=dict)
+
+
+class CultureStatusResponse(BaseModel):
+    configured: bool
+    model: str

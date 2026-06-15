@@ -45,13 +45,14 @@ OCR 只是入口。最终目标是一套支撑**文化计算（cultural computin
 
 ## 线上产品 · Live Demo
 
-三大支柱已落地为一个可演示的 Web 产品「**古籍重光**」，对外公开的三个功能恰好对应三条主线：
+三大支柱已落地为一个可演示的 Web 产品「**古籍重光**」，并在其上增加可审校的文化关系计算：
 
 | Tab | 功能 | 对应支柱 | 做什么 |
 |-----|------|----------|--------|
 | 壹 · **繁简通译** | 繁⇄简转换 + 合并冲突检测 | ② 繁简映射 | 在 OpenCC 转换基础上，自动标出"多对一"的简化合并点——如 `后 ← 後/后`、`发 ← 發/髮`、`干 ← 乾/幹/干`，把简化造成的语义歧义显式暴露出来 |
 | 貳 · **古籍识读** | 古籍影像 OCR | ① OCR | 上传刻本/写本影像，调用**以古籍微调的 PaddleOCR-VL** 模型转写为文本，返回字数与推理延迟；单卡串行队列、可查看排队深度 |
 | 參 · **形声流变** | 单字繁简演化时间轴 | ② 繁简映射 | 按 `甲骨→金文→小篆→隶书→楷书(繁)→一简(1956)` 展示典型字的字形流变、合并关系与考据注记，是繁简映射数据库的可视化窗口 |
+| 肆 · **史脉** | 古籍实体关系图谱 | ③ 语义对齐 | 调用 DeepSeek 抽取人物、地点、官职、时间和事件，生成今译、关系图和时间线；每条关系保留原文证据与置信度，并支持人工确认或驳回 |
 
 产品定位一句话（取自首页）：
 
@@ -60,15 +61,16 @@ OCR 只是入口。最终目标是一套支撑**文化计算（cultural computin
 ### 系统架构
 
 ```text
-浏览器 ──▶ Next.js 前端 (:3000) ──/api/* rewrites──▶ FastAPI 后端 (:7860) ──▶ PaddleOCR-VL (常驻 GPU)
-                  │                                         │
-            cloudflared 隧道                          OpenCC 繁简词典 + evolution.json
-            (临时公网 URL)
+浏览器 ──▶ Next.js 前端 (:3000) ──/api/* proxy──▶ FastAPI 后端 (:7860)
+                  │                                  ├──▶ PaddleOCR / 远程 OCR
+            cloudflared 隧道                         ├──▶ OpenCC + 汉字 SQLite
+            (临时公网 URL)                           └──▶ DeepSeek + 关系 SQLite
 ```
 
-- **前端** `apps/web/`：Next.js 16，中式版式 UI，`next.config.ts` 把 `/api/*` 代理到后端，浏览器只见单一域名。
-- **后端** `apps/api/ocrforge_web/`：FastAPI，三个路由 `convert` / `ocr` / `evolution`，OCR 模型在 lifespan 中常驻加载。
-- **演化数据** `apps/api/ocrforge_web/data/evolution.json`：当前为 JSON 后端（`JsonEvolutionRepo`，热重载），预留 `SqliteEvolutionRepo` 以便扩展到上百字规模。
+- **前端** `apps/web/`：Next.js 16，中式版式 UI，App Router 代理 `/api/*` 到后端，支持 OCR 长请求与 DeepSeek 长请求。
+- **后端** `apps/api/ocrforge_web/`：FastAPI，包含 `convert` / `ocr` / `evolution` / `culture` 四组路由。
+- **汉字数据** `apps/api/ocrforge_web/data/relumine_char_db.v2.sqlite`：4,941 字繁简映射与文化计算字段。
+- **史脉数据** `culture_graph.sqlite`：本地生成并忽略提交，按文献保存实体、关系、证据和人工审校状态。
 - 启动与运维详见 [`apps/RUN.md`](apps/RUN.md)（三服务 tmux 启动手册）。
 
 ### API 速览
@@ -80,6 +82,9 @@ GET  /api/ocr/queue          # 当前 OCR 队列深度
 POST /api/ocr                # 上传图片，返回 OCR 文本 / 字数 / 延迟
 GET  /api/evolution          # 列出已收录的演化字
 GET  /api/evolution/{char}   # 单字完整演化记录（stages / merges / notes）
+GET  /api/culture/status     # DeepSeek 是否已配置
+POST /api/culture/analyze    # 古籍实体、关系、今译和时间线
+PATCH /api/culture/analyses/{id}/review  # 确认或驳回抽取结果
 ```
 
 ---

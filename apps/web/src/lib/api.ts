@@ -1,10 +1,14 @@
 import type {
   CharRecord,
   CharSummary,
+  CultureAnalysis,
+  CultureAnalysisSummary,
+  CultureStatus,
   ConvertResponse,
   Direction,
   HealthResponse,
   OcrResponse,
+  ReviewStatus,
 } from "@/lib/types";
 
 class ApiError extends Error {
@@ -86,6 +90,53 @@ export const api = {
     async get(char: string): Promise<CharRecord> {
       return jsonOrThrow<CharRecord>(
         await fetch(`/api/evolution/${encodeURIComponent(char)}`, { cache: "no-store" }),
+      );
+    },
+  },
+
+  culture: {
+    async status(): Promise<CultureStatus> {
+      return jsonOrThrow<CultureStatus>(
+        await fetch("/api/culture/status", { cache: "no-store" }),
+      );
+    },
+    async analyze(text: string, title?: string): Promise<CultureAnalysis> {
+      return jsonOrThrow<CultureAnalysis>(
+        await fetch("/api/culture/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, title: title || null }),
+        }),
+      );
+    },
+    async list(): Promise<CultureAnalysisSummary[]> {
+      return jsonOrThrow<CultureAnalysisSummary[]>(
+        await fetch("/api/culture/analyses", { cache: "no-store" }),
+      );
+    },
+    async get(id: string): Promise<CultureAnalysis> {
+      return jsonOrThrow<CultureAnalysis>(
+        await fetch(`/api/culture/analyses/${encodeURIComponent(id)}`, {
+          cache: "no-store",
+        }),
+      );
+    },
+    async review(
+      id: string,
+      changes: {
+        entity_statuses?: Record<string, ReviewStatus>;
+        relation_statuses?: Record<string, ReviewStatus>;
+      },
+    ): Promise<CultureAnalysis> {
+      return jsonOrThrow<CultureAnalysis>(
+        await fetch(`/api/culture/analyses/${encodeURIComponent(id)}/review`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            entity_statuses: changes.entity_statuses ?? {},
+            relation_statuses: changes.relation_statuses ?? {},
+          }),
+        }),
       );
     },
   },
