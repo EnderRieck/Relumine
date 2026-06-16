@@ -1,14 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #f7f5f0;
-  --color-surface: #ffffff;
-  --color-ink: #1a1a1a;
-  --color-ink-soft: #4a4845;
-  --color-ink-mute: #8a8680;
-  --color-line: #e6e3dc;
-  --color-accent: #9a2a1f;
-  --color-accent-gold: #c2a96a;
+  --color-bg: #f4ecdd;
+  --color-surface: #fffaf0;
+  --color-ink: #201916;
+  --color-ink-soft: #4e433b;
+  --color-ink-mute: #897d70;
+  --color-line: #ded2c0;
+  --color-accent: #a33125;
+  --color-accent-gold: #c29a46;
+  --color-jade: #2f7b67;
+  --color-lapis: #2f5f8f;
+  --color-cinnabar: #b53a2e;
+  --color-violet-ink: #67517d;
+  --color-tea: #8a6b38;
 
   --font-serif: var(--font-song), "Noto Serif SC", "Songti SC", "Source Han Serif SC", serif;
   --font-sans: var(--font-inter), system-ui, -apple-system, "Helvetica Neue", sans-serif;
@@ -17,6 +22,8 @@
   --tracking-wider3: 0.16em;
 
   --radius: 0.25rem;
+  --shadow-panel: 0 22px 60px rgba(57, 37, 18, 0.11);
+  --shadow-ink: 0 12px 30px rgba(32, 25, 22, 0.1);
 
   /* ---------- 新中式动效曲线与时长 ---------- */
   /* 通用"墨入纸"曲线：起步快、收尾极慢，呈大气感 */
@@ -32,6 +39,9 @@
   --animate-fade-in: fade-in 500ms ease-out both;
   --animate-stamp-in: stamp-in 320ms var(--ease-ink) both;
   --animate-bg-fade: bg-fade 1200ms ease-out both;
+  --animate-seal-press: seal-press 560ms var(--ease-ink) both;
+  --animate-ink-spread: ink-spread 1100ms var(--ease-ink) both;
+  --animate-brush-sweep: brush-sweep 1400ms var(--ease-draw) both;
 }
 
 :root {
@@ -40,16 +50,199 @@
 
 html,
 body {
-  background-color: var(--color-bg);
+  background:
+    linear-gradient(90deg, rgba(47, 123, 103, 0.055) 0 1px, transparent 1px 72px),
+    linear-gradient(0deg, rgba(194, 154, 70, 0.055) 0 1px, transparent 1px 72px),
+    linear-gradient(135deg, rgba(179, 58, 46, 0.1), transparent 28%),
+    linear-gradient(225deg, rgba(47, 95, 143, 0.12), transparent 32%),
+    var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+body {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* 宣纸纤维 —— 极淡的噪点纹理铺满全局，近看才有"纸感"。
+   固定层，不随滚动，不拦截事件。 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+}
+
 ::selection {
-  background-color: rgba(154, 42, 31, 0.18);
+  background-color: rgba(179, 58, 46, 0.2);
   color: var(--color-ink);
+}
+
+.paper-surface {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(255, 250, 240, 0.86)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(194, 154, 70, 0.04) 0,
+      rgba(194, 154, 70, 0.04) 1px,
+      transparent 1px,
+      transparent 18px
+    );
+  box-shadow: var(--shadow-panel);
+}
+
+.chromatic-frame {
+  position: relative;
+  overflow: hidden;
+}
+
+.chromatic-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-top: 3px solid transparent;
+  border-image: linear-gradient(
+      90deg,
+      var(--color-cinnabar),
+      var(--color-accent-gold),
+      var(--color-jade),
+      var(--color-lapis),
+      var(--color-violet-ink)
+    )
+    1;
+}
+
+/* 标题：纯墨色，不作渐变。以字形、字距与留白见高级，不靠色彩取巧。 */
+.hero-title {
+  color: var(--color-ink);
+  font-feature-settings: "palt" 1;
+}
+
+/* 编目题眉 —— 拉开字距的拉丁小字，作书页式引导 */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--color-ink-mute);
+}
+
+/* 题记 —— 引古语作篇首，墨色稍淡，左缀一道朱线 */
+.epigraph {
+  position: relative;
+  padding-left: 1.1rem;
+  color: var(--color-ink-soft);
+}
+.epigraph::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.35em;
+  bottom: 0.35em;
+  width: 2px;
+  background: linear-gradient(var(--color-accent), rgba(163, 49, 37, 0.25));
+}
+
+/* 目录引线 —— 书页式连点 */
+.leader {
+  flex: 1;
+  align-self: center;
+  border-bottom: 1px dotted var(--color-line);
+  opacity: 0.85;
+}
+
+.color-chip {
+  background:
+    linear-gradient(135deg, rgba(255, 250, 240, 0.82), rgba(255, 255, 255, 0.64)),
+    linear-gradient(90deg, rgba(163, 49, 37, 0.11), rgba(47, 123, 103, 0.09));
+}
+
+/* 竖排 —— 用于点缀性的标题/印款，营造书卷气 */
+.vertical-rl {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.16em;
+}
+
+/* 朱砂落款印章：方寸之间的"重光"二字，盖于版心一角 */
+.seal-stamp {
+  font-family: var(--font-serif);
+  color: var(--color-surface);
+  background: linear-gradient(135deg, #b53a2e, #8f2418);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255, 250, 240, 0.55),
+    0 8px 22px rgba(143, 36, 24, 0.28);
+  position: relative;
+  isolation: isolate;
+}
+/* 盖章不匀的斑驳质感 —— 叠一层噪点做"白文剥蚀"效果 */
+.seal-stamp::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  mix-blend-mode: screen;
+  opacity: 0.22;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+}
+
+/* 墨笔触底线 —— hover 时一道朱墨自左向右渗开（书写感） */
+.brush-underline {
+  position: relative;
+}
+.brush-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, var(--color-accent), transparent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 420ms var(--ease-ink);
+}
+.brush-underline:hover::after {
+  transform: scaleX(1);
+}
+
+/* 古铜金细线在 hover 时点亮的小工具 */
+.ink-lift {
+  transition:
+    transform 360ms var(--ease-ink),
+    box-shadow 360ms var(--ease-ink);
+}
+.ink-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 38px rgba(57, 37, 18, 0.16);
+}
+
+.tone-convert {
+  --tone: var(--color-cinnabar);
+  --tone-soft: rgba(179, 58, 46, 0.12);
+}
+
+.tone-ocr {
+  --tone: var(--color-lapis);
+  --tone-soft: rgba(47, 95, 143, 0.12);
+}
+
+.tone-evolution {
+  --tone: var(--color-jade);
+  --tone-soft: rgba(47, 123, 103, 0.12);
+}
+
+.tone-culture {
+  --tone: var(--color-violet-ink);
+  --tone-soft: rgba(103, 81, 125, 0.12);
 }
 
 /* ---------- 滚动条：细墨线风 ---------- */
@@ -167,6 +360,43 @@ html::-webkit-scrollbar-track {
   }
   to {
     opacity: 0.08;
+  }
+}
+
+/* 印章落款：自上方略带旋转地"压"下，收尾沉稳无回弹 */
+@keyframes seal-press {
+  0% {
+    opacity: 0;
+    transform: translateY(-14px) scale(1.35) rotate(-8deg);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(-4deg);
+  }
+}
+
+/* 墨晕扩散：用于水墨背景层，由聚到散缓缓晕开 */
+@keyframes ink-spread {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: var(--ink-spread-to, 0.1);
+    transform: scale(1);
+  }
+}
+
+/* 一笔横扫：水墨笔锋自左侧推出 */
+@keyframes brush-sweep {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
   }
 }
 

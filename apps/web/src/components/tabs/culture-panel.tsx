@@ -20,6 +20,7 @@ import { toast } from "sonner";
 
 import { CornerBrackets } from "@/components/chinese/CornerBrackets";
 import { SectionMark } from "@/components/chinese/SectionMark";
+import { IconMeridian } from "@/components/chinese/BrushIcons";
 import { api, ApiError } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { useRegisterSnapshot, useRegisterAction } from "@/lib/agent-bridge";
@@ -220,10 +221,11 @@ export function CulturePanel() {
     : 0;
 
   return (
-    <section className="relative rounded-[var(--radius)] border border-line bg-surface p-6 md:p-10 animate-ink-rise">
+    <section className="tone-culture chromatic-frame paper-surface relative rounded-[var(--radius)] border border-line p-6 md:p-10 animate-ink-rise">
       <CornerBrackets />
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <SectionMark
+          icon={<IconMeridian size={18} />}
           title="史脉"
           subtitle="古籍实体抽取 · 人物关系 · 证据审校"
         />

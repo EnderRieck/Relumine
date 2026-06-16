@@ -56,7 +56,7 @@ export function TabsList({
       role="tablist"
       style={style}
       className={cn(
-        "relative flex flex-wrap items-end gap-x-4 md:gap-x-10 border-b border-line",
+        "relative flex flex-wrap items-end gap-3 border-b border-line/80 pb-3",
         className,
       )}
     >
@@ -76,6 +76,14 @@ export function TabsTrigger({
 }) {
   const { value: active, setValue, id } = useTabsCtx();
   const isActive = active === value;
+  const tone =
+    value === "convert"
+      ? "tone-convert"
+      : value === "ocr"
+        ? "tone-ocr"
+        : value === "evolution"
+          ? "tone-evolution"
+          : "tone-culture";
   return (
     <button
       type="button"
@@ -85,9 +93,12 @@ export function TabsTrigger({
       aria-controls={`${id}-panel-${value}`}
       onClick={() => setValue(value)}
       className={cn(
-        "group relative -mb-px py-3 px-1 outline-none",
-        "font-serif text-base tracking-[0.08em] transition-colors duration-200",
-        isActive ? "text-ink" : "text-ink-mute hover:text-ink-soft",
+        tone,
+        "group relative min-w-[8.5rem] border px-3.5 py-3 outline-none",
+        "font-serif text-base tracking-[0.08em] transition-all duration-300",
+        isActive
+          ? "border-[var(--tone)] bg-[var(--tone-soft)] text-ink shadow-[0_12px_28px_rgba(57,37,18,0.08)]"
+          : "border-line bg-surface/70 text-ink-mute hover:border-[var(--tone)] hover:text-ink-soft",
       )}
     >
       <span
@@ -98,8 +109,8 @@ export function TabsTrigger({
           "w-5 h-5 border font-serif text-[12px] leading-none tracking-normal",
           "transition-colors duration-300",
           isActive
-            ? "border-accent bg-accent text-surface animate-stamp-in"
-            : "border-accent/45 text-accent/75 group-hover:border-accent/80",
+            ? "border-[var(--tone)] bg-[var(--tone)] text-surface animate-stamp-in"
+            : "border-[var(--tone)] text-[var(--tone)] group-hover:bg-[var(--tone-soft)]",
         )}
       >
         {ordinal}
@@ -108,7 +119,7 @@ export function TabsTrigger({
       <span
         aria-hidden
         className={cn(
-          "absolute left-0 right-0 -bottom-px h-px bg-accent origin-left transition-opacity duration-300",
+          "absolute left-3 right-3 -bottom-[13px] h-0.5 bg-[var(--tone)] origin-left transition-opacity duration-300",
           isActive ? "opacity-100 animate-line-draw-x" : "opacity-0",
         )}
       />

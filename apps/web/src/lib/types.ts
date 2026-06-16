@@ -57,6 +57,31 @@ export type ReductionSummary = {
 };
 
 export type ClAnalysis = {
+  database_radar?: {
+    scale: number;
+    thesis: string;
+    axes: Array<{
+      key: string;
+      label: string;
+      description: string;
+    }>;
+    databases: Array<{
+      name: string;
+      role: string;
+      record_count: number;
+      unique_chars: number;
+      scores: Record<string, number>;
+      strength: string;
+      limitation: string;
+      derived_from?: string[];
+    }>;
+    contributions: Array<{
+      source: string;
+      provides: string;
+      used_for: string;
+      relumine_value: string;
+    }>;
+  };
   stroke_reduction: { full: ReductionSummary; curated: ReductionSummary };
   least_effort: {
     char_count: number;

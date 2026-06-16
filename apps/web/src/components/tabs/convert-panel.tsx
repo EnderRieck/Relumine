@@ -12,6 +12,7 @@ import { useRegisterSnapshot, useRegisterAction } from "@/lib/agent-bridge";
 import { SectionMark } from "@/components/chinese/SectionMark";
 import { GoldRule } from "@/components/chinese/GoldRule";
 import { CornerBrackets } from "@/components/chinese/CornerBrackets";
+import { IconConvert } from "@/components/chinese/BrushIcons";
 
 const EXAMPLES: { label: string; text: string; dir: Direction }[] = [
   { label: "學而時習之，不亦說乎", text: "學而時習之，不亦說乎", dir: "t2s" },
@@ -80,30 +81,36 @@ export function ConvertPanel() {
   };
 
   return (
-    <section className="rounded-[var(--radius)] border border-line bg-surface p-8 md:p-12 relative animate-ink-rise">
+    <section className="tone-convert chromatic-frame paper-surface rounded-[var(--radius)] border border-line p-8 md:p-12 relative animate-ink-rise">
       <CornerBrackets />
       <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <SectionMark
+          icon={<IconConvert size={18} />}
           title={direction === "t2s" ? "繁体 → 简体" : "简体 → 繁体"}
           subtitle="繁-简汉字映射数据库"
         />
-        <div className="flex items-center gap-3 text-xs font-sans tracking-wider uppercase text-ink-mute">
+        <div className="flex flex-wrap items-center gap-2 text-xs font-sans tracking-wider uppercase text-ink-mute">
           {EXAMPLES.map((ex) => (
             <button
               key={ex.label}
               onClick={() => loadExample(ex)}
-              className="hover:text-accent transition-colors duration-200"
+              className="color-chip border border-line px-2.5 py-1 hover:border-accent hover:text-accent transition-colors duration-200"
             >
-              · {ex.label}
+              {ex.label}
             </button>
           ))}
         </div>
       </header>
 
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-px bg-line">
-        <div className="bg-surface p-6">
-          <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute mb-3">
+      <div className="mt-8 grid grid-cols-1 overflow-hidden border border-line md:grid-cols-[1fr_auto_1fr]">
+        <div className="bg-[rgba(179,58,46,0.06)] p-6">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute">
             输入 · {direction === "t2s" ? "繁體" : "简体"}
+            </div>
+            <span className="font-serif text-2xl text-accent/50" aria-hidden>
+              繁
+            </span>
           </div>
           <textarea
             value={input}
@@ -122,14 +129,14 @@ export function ConvertPanel() {
           />
         </div>
 
-        <div className="bg-surface flex md:flex-col items-center justify-center gap-2 p-4 md:px-6">
+        <div className="bg-surface/90 flex md:flex-col items-center justify-center gap-2 border-y border-line p-4 md:border-x md:border-y-0 md:px-6">
           <button
             type="button"
             onClick={run}
             disabled={pending}
             className={cn(
-              "group flex flex-col items-center gap-1 px-3 py-2",
-              "font-serif text-sm text-ink hover:text-accent transition-colors duration-200",
+              "group flex min-h-16 min-w-16 flex-col items-center justify-center gap-1 border border-accent-gold/60 bg-bg px-3 py-2",
+              "font-serif text-sm text-ink shadow-[0_10px_24px_rgba(57,37,18,0.08)] transition-colors duration-200 hover:border-accent hover:text-accent",
               pending && "opacity-50",
             )}
           >
@@ -145,9 +152,14 @@ export function ConvertPanel() {
           </button>
         </div>
 
-        <div className="bg-surface p-6">
-          <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute mb-3">
+        <div className="bg-[rgba(47,123,103,0.065)] p-6">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute">
             输出 · {direction === "t2s" ? "简体" : "繁體"}
+            </div>
+            <span className="font-serif text-2xl text-[#2f7b67]/55" aria-hidden>
+              简
+            </span>
           </div>
           {result ? (
             <HighlightedResult

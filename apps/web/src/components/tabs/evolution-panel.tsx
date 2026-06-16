@@ -13,11 +13,13 @@ import { useOverlayGutter } from "@/components/agent/agent-shell";
 
 import { SectionMark } from "@/components/chinese/SectionMark";
 import { CornerBrackets } from "@/components/chinese/CornerBrackets";
+import { IconBranch } from "@/components/chinese/BrushIcons";
 
 type FilterMode = "all" | "high_ocr" | "high_semantic" | "multi_source" | "handcrafted";
 type SortMode = "default" | "frequency" | "ocr_risk" | "source_count" | "stroke_reduction";
 type Hall = "merge" | "grid" | "cl";
 type GroupAxis = "radical" | "reduction" | "frequency";
+const HOMOPHONY_ORDER = ["完全同音", "声同调异", "部分同音", "非同音", "读音缺失"] as const;
 
 export function EvolutionPanel() {
   const [summaries, setSummaries] = useState<CharSummary[]>([]);
@@ -174,10 +176,10 @@ export function EvolutionPanel() {
   );
 
   return (
-    <section className="relative rounded-[var(--radius)] border border-line bg-surface p-8 md:p-12 animate-ink-rise">
+    <section className="tone-evolution chromatic-frame paper-surface relative rounded-[var(--radius)] border border-line p-8 md:p-12 animate-ink-rise">
       <CornerBrackets />
       <div className="flex items-start justify-between gap-4">
-        <SectionMark title="形声流变" subtitle="综合4大数据库，解析各繁体字简化详细历程" />
+        <SectionMark icon={<IconBranch size={18} />} title="形声流变" subtitle="综合4大数据库，解析各繁体字简化详细历程" />
         <button
           type="button"
           aria-label="数据来源说明"
@@ -894,13 +896,15 @@ function ClAnalysisView({
   const bucketOrder = ["≤0", "1–3", "4–6", "7–9", "≥10", "未知"];
   const maxBucket = Math.max(...bucketOrder.map((key) => reduction.full.buckets[key] ?? 0), 1);
   const maxDecile = Math.max(...leastEffort.deciles.map((d) => d.mean_reduction), 1);
-  const homophonyOrder = ["完全同音", "声同调异", "部分同音", "非同音", "读音缺失"];
-
   return (
     <div className="mt-6">
       <div className="text-xs font-sans tracking-[0.16em] uppercase text-ink-mute">
         计算语言学分析 · 全库 {reduction.full.char_count} 字
       </div>
+
+      {data.database_radar ? (
+        <DatabaseRadarSection radar={data.database_radar} />
+      ) : null}
 
       <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* 1. 笔画削减分布 */}
@@ -963,7 +967,7 @@ function ClAnalysisView({
           按 Unihan 读音逐组比对合并来源与简体是否同音——「同音替代」不是少数案例，而是多对一合并的主导机制。
         </p>
         <div className="flex flex-wrap gap-2">
-          {homophonyOrder.map((key) =>
+          {HOMOPHONY_ORDER.map((key) =>
             homophony.distribution[key] ? (
               <span key={key} className="border border-line px-3 py-1.5 font-serif text-sm text-ink-soft">
                 {key} <span className="ml-1 font-sans text-xs text-accent">{homophony.distribution[key]}</span>
@@ -980,6 +984,7 @@ function ClAnalysisView({
               .join("；")}
           </div>
         ) : null}
+        <HomophonyEvidencePanel homophony={homophony} />
       </section>
 
       {/* 4. OCR 混淆预测 */}
@@ -1007,6 +1012,745 @@ function ClAnalysisView({
       </section>
       </div>
     </div>
+  );
+}
+
+type HomophonyData = ClAnalysis["homophony"];
+type DatabaseRadarData = NonNullable<ClAnalysis["database_radar"]>;
+type RadarDatabase = DatabaseRadarData["databases"][number];
+
+const RADAR_COLORS = ["#6b8f83", "#9a2a1f", "#c2a96a", "#6d6486", "#2f5f8f"];
+const HOMOPHONY_COLORS: Record<string, string> = {
+  完全同音: "#2f7b67",
+  声同调异: "#2f5f8f",
+  部分同音: "#c29a46",
+  非同音: "#a33125",
+  读音缺失: "#6d6486",
+};
+
+function HomophonyEvidencePanel({ homophony }: { homophony: HomophonyData }) {
+  const [activeCategory, setActiveCategory] = useState<(typeof HOMOPHONY_ORDER)[number]>("完全同音");
+  const total = Object.values(homophony.distribution).reduce((sum, value) => sum + value, 0) || 1;
+  const activeCount = homophony.distribution[activeCategory] ?? 0;
+  const examples = (homophony.examples[activeCategory] ?? [])
+    .slice(0, 6)
+    .map((example) => ({
+        ...example,
+      category: activeCategory,
+    }));
+
+  return (
+    <div className="mt-5 border-t border-line pt-4">
+      <div className="grid gap-4 xl:grid-cols-[1fr_0.95fr]">
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <div className="font-serif text-base text-ink">同音替代分布</div>
+            <div className="font-sans text-[10px] text-ink-mute">{total} 组判定</div>
+          </div>
+          <div className="overflow-hidden border border-line bg-bg/30">
+            <div className="flex h-4">
+              {HOMOPHONY_ORDER.map((key) => {
+                const value = homophony.distribution[key] ?? 0;
+                if (!value) return null;
+                return (
+                  <button
+                    type="button"
+                    key={key}
+                    aria-label={`筛选${key}`}
+                    onClick={() => setActiveCategory(key)}
+                    className={cn(
+                      "h-full transition-opacity hover:opacity-80",
+                      activeCategory !== key && "opacity-55",
+                    )}
+                    title={`${key} ${value}组`}
+                    style={{
+                      width: `${(value / total) * 100}%`,
+                      backgroundColor: HOMOPHONY_COLORS[key] ?? "#8f8a82",
+                    }}
+                  />
+                );
+              })}
+            </div>
+            <div className="grid gap-px bg-line sm:grid-cols-2">
+              {HOMOPHONY_ORDER.map((key) => {
+                const value = homophony.distribution[key] ?? 0;
+                if (!value) return null;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setActiveCategory(key)}
+                    className={cn(
+                      "bg-surface px-3 py-2 text-left transition-colors hover:bg-bg",
+                      activeCategory === key && "shadow-[inset_0_0_0_1px_var(--accent)]",
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="inline-flex items-center gap-1.5 font-serif text-sm text-ink-soft">
+                        <span
+                          className="h-2 w-2"
+                          style={{ backgroundColor: HOMOPHONY_COLORS[key] ?? "#8f8a82" }}
+                        />
+                        {key}
+                      </span>
+                      <span className="font-sans text-[10px] text-accent">
+                        {value} · {Math.round((value / total) * 100)}%
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <p className="mt-3 border-l-2 border-accent-gold pl-3 font-sans text-xs leading-relaxed text-ink-mute">
+            数据说明：多对一合并优先依赖读音接近，非严格同音案例再进入语义、古字复用和规范化解释。
+          </p>
+        </div>
+
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <div className="font-serif text-base text-ink">代表合并案例</div>
+            <div className="font-sans text-[10px] text-ink-mute">
+              {activeCategory} · {activeCount} 组
+            </div>
+          </div>
+          <div className="space-y-2">
+            {examples.length ? examples.map((example, index) => (
+              <article
+                key={`${example.category}-${example.simplified}-${index}`}
+                className="grid grid-cols-[1fr_auto] items-start gap-3 border border-line bg-surface px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <div className="break-words font-serif text-base leading-[1.55] text-ink">
+                    {example.sources.join("、")}
+                    <span className="mx-1 text-ink-mute">→</span>
+                    <span className="text-accent">{example.simplified}</span>
+                  </div>
+                  <p className="mt-1 font-sans text-[10px] leading-relaxed text-ink-mute">
+                    同组字用于判断借音、形义复用或规范合并。
+                  </p>
+                </div>
+                <span
+                  className="shrink-0 whitespace-nowrap border px-1.5 py-0.5 font-sans text-[9px] tracking-[0.1em]"
+                  style={{
+                    borderColor: HOMOPHONY_COLORS[example.category] ?? "#8f8a82",
+                    color: HOMOPHONY_COLORS[example.category] ?? "#8f8a82",
+                  }}
+                >
+                  {example.category}
+                </span>
+              </article>
+            )) : (
+              <div className="border border-line bg-surface px-3 py-6 text-center font-sans text-xs text-ink-mute">
+                这一类暂无可展示样例
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DatabaseRadarSection({ radar }: { radar: DatabaseRadarData }) {
+  const relumine = radar.databases.find((database) => database.name === "Relumine");
+  const official = radar.databases.filter((database) => database.name !== "Relumine");
+
+  return (
+    <section className="mt-5 border border-line bg-surface p-5">
+      <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+        <ClSectionTitle
+          numeral="總"
+          title="五库能力雷达图"
+          subtitle="规模覆盖 · 繁简映射 · 字义词证 · 字形结构 · 文化解释"
+        />
+        <div className="font-sans text-[10px] tracking-[0.14em] text-ink-mute">
+          评分 1–5 · 基于字段用途与项目使用方式
+        </div>
+      </div>
+      <p className="mt-1 max-w-4xl font-sans text-xs leading-relaxed text-ink-mute">
+        {radar.thesis}
+      </p>
+
+      <div className="mt-5 grid gap-6 xl:grid-cols-[minmax(470px,0.95fr)_minmax(0,1fr)]">
+        <div className="border border-line bg-bg/30 p-4">
+          <RadarChart radar={radar} />
+          <div className="mt-4 flex flex-wrap gap-2">
+            {radar.databases.map((database, index) => (
+              <span
+                key={database.name}
+                className="inline-flex items-center gap-1.5 border border-line bg-surface px-2.5 py-1 font-sans text-[10px] text-ink-mute"
+              >
+                <span
+                  className="h-2 w-2"
+                  style={{ backgroundColor: RADAR_COLORS[index % RADAR_COLORS.length] }}
+                />
+                {database.name}
+              </span>
+            ))}
+          </div>
+          <DatabasePositionMap radar={radar} />
+        </div>
+
+        <div className="space-y-4">
+          <CapabilityHeatmap radar={radar} />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {official.map((database) => (
+              <DatabaseScoreCard
+                key={database.name}
+                database={database}
+                axes={radar.axes}
+              />
+            ))}
+          </div>
+          {relumine ? (
+            <div className="border border-accent/50 bg-accent/5 p-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-3">
+                <div>
+                  <div className="font-serif text-lg text-ink">Relumine 的定位</div>
+                  <div className="mt-1 font-sans text-xs text-ink-mute">
+                    {relumine.record_count.toLocaleString()} 字 · 综合解释层
+                  </div>
+                </div>
+                <span className="border border-accent/40 px-2.5 py-1 font-sans text-[10px] tracking-[0.12em] text-accent">
+                  四库证据 → 文化计算
+                </span>
+              </div>
+              <p className="mt-3 font-serif text-sm leading-[1.8] text-ink-soft">
+                {relumine.strength}
+              </p>
+              <p className="mt-2 font-sans text-xs leading-relaxed text-ink-mute">
+                {relumine.limitation}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+        <SourceFlowDiagram radar={radar} />
+        <RelumineAdvantagePanel />
+      </div>
+
+      <div className="mt-5 border-t border-line pt-5">
+        <div className="mb-3 text-[10px] font-sans tracking-[0.16em] uppercase text-ink-mute">
+          四库如何进入我们的数据库
+        </div>
+        <div className="grid gap-px bg-line border border-line md:grid-cols-2 xl:grid-cols-4">
+          {radar.contributions.map((item) => (
+            <article key={item.source} className="bg-surface p-4">
+              <div className="font-serif text-base text-ink">{item.source}</div>
+              <div className="mt-2 font-sans text-[10px] tracking-[0.12em] text-ink-mute">
+                提供
+              </div>
+              <p className="mt-1 font-serif text-sm leading-[1.7] text-ink-soft">
+                {item.provides}
+              </p>
+              <div className="mt-3 font-sans text-[10px] tracking-[0.12em] text-ink-mute">
+                Relumine 用来
+              </div>
+              <p className="mt-1 font-serif text-sm leading-[1.7] text-ink-soft">
+                {item.used_for}
+              </p>
+              <p className="mt-3 border-l-2 border-accent-gold pl-3 font-sans text-xs leading-relaxed text-ink-mute">
+                {item.relumine_value}
+              </p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DatabasePositionMap({ radar }: { radar: DatabaseRadarData }) {
+  const [activeName, setActiveName] = useState("Relumine");
+  const cultureAxis = radar.axes.find((axis) => axis.label.includes("文化")) ?? radar.axes.at(-1);
+  const width = 460;
+  const height = 260;
+  const plot = { left: 58, right: 28, top: 28, bottom: 52 };
+  const plotWidth = width - plot.left - plot.right;
+  const plotHeight = height - plot.top - plot.bottom;
+  const maxLog = Math.max(...radar.databases.map((database) => Math.log10(database.unique_chars + 1)), 1);
+  const explanationScore = (database: RadarDatabase) => {
+    if (database.name === "Relumine") return 4;
+    return cultureAxis ? database.scores[cultureAxis.key] ?? 1 : 1;
+  };
+  const pointOffset: Record<string, { x: number; y: number }> = {
+    Unihan: { x: -10, y: -8 },
+    "CHISE IDS": { x: 10, y: 8 },
+    OpenCC: { x: -8, y: 0 },
+  };
+  const positioned = radar.databases.map((database, index) => {
+    const logSize = Math.log10(database.unique_chars + 1);
+    const explanation = explanationScore(database);
+    const offset = pointOffset[database.name] ?? { x: 0, y: 0 };
+    const rawX = plot.left + (logSize / maxLog) * plotWidth + offset.x;
+    const rawY = plot.top + (1 - (explanation - 1) / Math.max(radar.scale - 1, 1)) * plotHeight + offset.y;
+    return {
+      database,
+      color: RADAR_COLORS[index % RADAR_COLORS.length],
+      score: explanation,
+      x: Math.max(plot.left + 8, Math.min(plot.left + plotWidth - 8, rawX)),
+      y: Math.max(plot.top + 8, Math.min(plot.top + plotHeight - 8, rawY)),
+      isRelumine: database.name === "Relumine",
+      marker: String(index + 1),
+    };
+  });
+  const active = positioned.find((item) => item.database.name === activeName) ?? positioned.find((item) => item.isRelumine) ?? positioned[0];
+
+  return (
+    <div className="mt-5 border-t border-line pt-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div className="font-serif text-base text-ink">规模覆盖 × 解释深度</div>
+        <div className="font-sans text-[10px] text-ink-mute">点击圆点或图例 · 纵轴为保守解释整合度</div>
+      </div>
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        className="mt-2 w-full"
+        role="img"
+        aria-label="五个数据库在规模覆盖和解释深度上的定位图"
+      >
+        <defs>
+          <linearGradient id="position-zone" x1="0" x2="1" y1="1" y2="0">
+            <stop offset="0%" stopColor="#c29a46" stopOpacity="0.08" />
+            <stop offset="50%" stopColor="#2f7b67" stopOpacity="0.11" />
+            <stop offset="100%" stopColor="#2f5f8f" stopOpacity="0.12" />
+          </linearGradient>
+        </defs>
+        <rect
+          x={plot.left}
+          y={plot.top}
+          width={plotWidth}
+          height={plotHeight}
+          fill="url(#position-zone)"
+          stroke="#ded9d0"
+        />
+        {[1, 2, 3, 4, 5].map((score) => {
+          const y = plot.top + (1 - (score - 1) / Math.max(radar.scale - 1, 1)) * plotHeight;
+          return (
+            <g key={score}>
+              <line x1={plot.left} x2={plot.left + plotWidth} y1={y} y2={y} stroke="#e6dfd2" />
+              <text x={plot.left - 12} y={y + 4} textAnchor="end" fontSize="10" fill="#8f8a82">
+                {score}
+              </text>
+            </g>
+          );
+        })}
+        <line
+          x1={plot.left}
+          x2={plot.left + plotWidth}
+          y1={plot.top + plotHeight}
+          y2={plot.top + plotHeight}
+          stroke="#bfb6a8"
+        />
+        <line x1={plot.left} x2={plot.left} y1={plot.top} y2={plot.top + plotHeight} stroke="#bfb6a8" />
+        <text x={plot.left + plotWidth / 2} y={height - 16} textAnchor="middle" fontSize="11" fill="#77736d">
+          规模覆盖
+        </text>
+        <text
+          x={16}
+          y={plot.top + plotHeight / 2}
+          textAnchor="middle"
+          fontSize="11"
+          fill="#77736d"
+          transform={`rotate(-90 16 ${plot.top + plotHeight / 2})`}
+        >
+          解释深度
+        </text>
+        <text x={plot.left + 10} y={plot.top + plotHeight - 12} fontSize="10" fill="#8f8a82">
+          证据整理
+        </text>
+        <text x={plot.left + plotWidth - 10} y={plot.top + 18} textAnchor="end" fontSize="10" fill="#8f8a82">
+          大规模底座
+        </text>
+        {positioned.map(({ database, color, x, y, isRelumine, marker }) => (
+          <g
+            key={database.name}
+            role="button"
+            tabIndex={0}
+            aria-label={`查看${database.name}`}
+            onClick={() => setActiveName(database.name)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") setActiveName(database.name);
+            }}
+            className="cursor-pointer outline-none"
+          >
+            {isRelumine ? (
+              <circle cx={x} cy={y} r="15" fill={color} fillOpacity="0.12" stroke={color} strokeWidth="1.4" />
+            ) : null}
+            <circle
+              cx={x}
+              cy={y}
+              r={activeName === database.name ? 8 : isRelumine ? 7 : 6}
+              fill={color}
+              stroke={activeName === database.name ? "#201916" : "none"}
+              strokeWidth="1.2"
+            />
+            <text
+              x={x}
+              y={y + 3.5}
+              textAnchor="middle"
+              fontSize="8"
+              fontWeight="700"
+              fill="#fffdf9"
+            >
+              {marker}
+            </text>
+          </g>
+        ))}
+      </svg>
+      <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+        {positioned.map(({ database, color, marker, score }) => (
+          <button
+            key={database.name}
+            type="button"
+            onClick={() => setActiveName(database.name)}
+            className={cn(
+              "flex items-center justify-between gap-3 border border-line bg-surface px-2.5 py-1.5 text-left transition-colors hover:border-accent",
+              activeName === database.name && "border-accent bg-accent/5",
+            )}
+          >
+            <span className="inline-flex min-w-0 items-center gap-2">
+              <span
+                className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full font-sans text-[9px] font-bold text-surface"
+                style={{ backgroundColor: color }}
+              >
+                {marker}
+              </span>
+              <span className="truncate font-serif text-sm text-ink">{database.name}</span>
+            </span>
+            <span className="shrink-0 font-sans text-[10px] text-ink-mute">
+              {database.unique_chars.toLocaleString()} 字 · {score}/5
+            </span>
+          </button>
+        ))}
+      </div>
+      {active ? (
+        <div className="mt-2 border border-line bg-surface px-3 py-2">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <div className="font-serif text-base text-ink">{active.database.name}</div>
+            <div className="font-sans text-[10px] text-ink-mute">
+              {active.database.unique_chars.toLocaleString()} 字 · 解释整合度 {active.score}/5
+            </div>
+          </div>
+          <p className="mt-1 font-sans text-xs leading-relaxed text-ink-mute">
+            {active.database.name === "Relumine"
+              ? "这里采用保守评分：Relumine 强在把四库证据整合成可解释指标，但它不是官方底库，也不应被画成绝对满分。"
+              : active.database.strength}
+          </p>
+        </div>
+      ) : null}
+      <p className="mt-2 border-l-2 border-accent-gold pl-3 font-sans text-xs leading-relaxed text-ink-mute">
+        读图：官方库承担大规模事实底座，Relumine 的优势在于解释整合；因此这里用 4/5 而不是满分，避免把自建库画得过度绝对。
+      </p>
+    </div>
+  );
+}
+
+function CapabilityHeatmap({ radar }: { radar: DatabaseRadarData }) {
+  return (
+    <div className="border border-line p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="font-serif text-base text-ink">能力热力矩阵</div>
+        <div className="font-sans text-[10px] text-ink-mute">深色为强项</div>
+      </div>
+      <div className="overflow-x-auto">
+        <div
+          className="grid min-w-[520px] gap-px bg-line border border-line"
+          style={{
+            gridTemplateColumns: `7rem repeat(${radar.axes.length}, minmax(4.8rem, 1fr))`,
+          }}
+        >
+          <div className="bg-bg px-2 py-2 font-sans text-[10px] text-ink-mute">
+            数据库
+          </div>
+          {radar.axes.map((axis) => (
+            <div
+              key={axis.key}
+              className="bg-bg px-2 py-2 text-center font-sans text-[10px] text-ink-mute"
+            >
+              {axis.label}
+            </div>
+          ))}
+          {radar.databases.map((database) => (
+            <div key={database.name} className="contents">
+              <div className="bg-surface px-2 py-2 font-serif text-sm text-ink">
+                {database.name}
+              </div>
+              {radar.axes.map((axis) => {
+                const score = database.scores[axis.key] ?? 0;
+                return (
+                  <div key={`${database.name}-${axis.key}`} className="bg-surface p-1.5">
+                    <div
+                      className="flex h-8 items-center justify-center font-sans text-xs"
+                      style={{
+                        backgroundColor: `rgba(53, 104, 89, ${0.12 + score * 0.14})`,
+                        color: score >= 4 ? "#fffdf9" : "#356859",
+                      }}
+                    >
+                      {score}/5
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SourceFlowDiagram({ radar }: { radar: DatabaseRadarData }) {
+  const outputs = [
+    { title: "繁简来源图谱", detail: "多繁一简、同形复用、转换候选" },
+    { title: "结构变化指标", detail: "笔画削减、部件删换、形近风险" },
+    { title: "语义歧义指标", detail: "词条例证、同音替代、义项合并" },
+    { title: "演化证据链", detail: "来源字证据、简化类型、考据注记" },
+  ];
+
+  return (
+    <section className="border border-line p-5">
+      <ClSectionTitle
+        numeral="源"
+        title="四库到 Relumine 的构建流程"
+        subtitle="外部证据层 → 对齐计算层 → 自建解释层"
+      />
+      <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr]">
+        <div className="space-y-2">
+          {radar.contributions.map((source) => (
+            <div key={source.source} className="border border-line bg-bg/40 p-3">
+              <div className="font-serif text-base text-ink">{source.source}</div>
+              <div className="mt-1 font-sans text-[10px] tracking-[0.12em] text-ink-mute">
+                {source.provides}
+              </div>
+            </div>
+          ))}
+        </div>
+        <FlowArrow />
+        <div className="space-y-2">
+          {radar.contributions.map((source) => (
+            <div key={`${source.source}-use`} className="border border-line bg-surface p-3">
+              <div className="font-sans text-[10px] tracking-[0.12em] text-ink-mute">
+                对齐计算
+              </div>
+              <div className="mt-1 font-serif text-sm leading-[1.6] text-ink-soft">
+                {source.used_for}
+              </div>
+            </div>
+          ))}
+        </div>
+        <FlowArrow />
+        <div className="space-y-2">
+          {outputs.map((output) => (
+            <div key={output.title} className="border border-accent/30 bg-accent/5 p-3">
+              <div className="font-serif text-base text-ink">{output.title}</div>
+              <div className="mt-1 font-sans text-[10px] leading-relaxed text-ink-mute">
+                {output.detail}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FlowArrow() {
+  return (
+    <div className="hidden items-center justify-center px-1 text-accent-gold lg:flex">
+      <svg viewBox="0 0 24 120" className="h-full min-h-32 w-6" aria-hidden>
+        <path
+          d="M 7 8 C 18 34 18 86 7 112"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeDasharray="4 5"
+        />
+        <path d="M 7 112 L 4 103 L 13 108 Z" fill="currentColor" />
+      </svg>
+    </div>
+  );
+}
+
+function RelumineAdvantagePanel() {
+  const rows = [
+    { label: "简化类型", official: 1, relumine: 5, note: "草书楷化、古字复用、多对一合并" },
+    { label: "语义歧义", official: 2, relumine: 5, note: "来源义项与词条例证合并分析" },
+    { label: "OCR 风险", official: 1, relumine: 5, note: "由 IDS 结构相似与多源合并推导" },
+    { label: "笔画削减", official: 3, relumine: 5, note: "从 Unihan 笔画转为统计分布" },
+    { label: "演化证据链", official: 1, relumine: 4, note: "精修字含阶段、依据和注释" },
+  ];
+  return (
+    <section className="border border-line p-5">
+      <ClSectionTitle
+        numeral="辨"
+        title="Relumine 相对官方库的增量"
+        subtitle="官方库给证据，自建库给解释指标"
+      />
+      <div className="mt-4 space-y-3">
+        {rows.map((row) => (
+          <div key={row.label}>
+            <div className="mb-1 flex items-baseline justify-between gap-3">
+              <span className="font-serif text-sm text-ink">{row.label}</span>
+              <span className="text-right font-sans text-[10px] text-ink-mute">{row.note}</span>
+            </div>
+            <CompareBar label="官方库直接提供" value={row.official} muted />
+            <CompareBar label="Relumine 派生整合" value={row.relumine} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CompareBar({
+  label,
+  value,
+  muted,
+}: {
+  label: string;
+  value: number;
+  muted?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-[6.5rem_1fr_2rem] items-center gap-2 py-0.5">
+      <span className="font-sans text-[10px] text-ink-mute">{label}</span>
+      <div className="h-2 bg-bg">
+        <div
+          className={cn("h-full", muted ? "bg-line" : "bg-accent")}
+          style={{ width: `${(value / 5) * 100}%` }}
+        />
+      </div>
+      <span className="text-right font-sans text-[10px] text-ink-mute">{value}/5</span>
+    </div>
+  );
+}
+
+function RadarChart({ radar }: { radar: DatabaseRadarData }) {
+  const centerX = 230;
+  const centerY = 190;
+  const maxRadius = 112;
+  const width = 460;
+  const height = 380;
+  const levels = [1, 2, 3, 4, 5];
+  const pointsFor = (scores: Record<string, number>, radiusScale = 1) =>
+    radar.axes
+      .map((axis, index) => {
+        const angle = -Math.PI / 2 + (index / radar.axes.length) * Math.PI * 2;
+        const value = Math.max(0, Math.min(radar.scale, scores[axis.key] ?? 0));
+        const radius = (value / radar.scale) * maxRadius * radiusScale;
+        return `${centerX + Math.cos(angle) * radius},${centerY + Math.sin(angle) * radius}`;
+      })
+      .join(" ");
+
+  return (
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      className="mx-auto w-full max-w-[470px]"
+      role="img"
+      aria-label="五个数据库能力对比雷达图"
+    >
+      {levels.map((level) => (
+        <polygon
+          key={level}
+          points={pointsFor(Object.fromEntries(radar.axes.map((axis) => [axis.key, level])))}
+          fill="none"
+          stroke="#ded9d0"
+          strokeWidth="1"
+        />
+      ))}
+      {radar.axes.map((axis, index) => {
+        const angle = -Math.PI / 2 + (index / radar.axes.length) * Math.PI * 2;
+        const x = centerX + Math.cos(angle) * maxRadius;
+        const y = centerY + Math.sin(angle) * maxRadius;
+        const labelX = centerX + Math.cos(angle) * (maxRadius + 58);
+        const labelY = centerY + Math.sin(angle) * (maxRadius + 42);
+        return (
+          <g key={axis.key}>
+            <line x1={centerX} y1={centerY} x2={x} y2={y} stroke="#d8d2c8" strokeWidth="1" />
+            <text
+              x={labelX}
+              y={labelY}
+              textAnchor={labelX < centerX - 8 ? "end" : labelX > centerX + 8 ? "start" : "middle"}
+              dominantBaseline="middle"
+              fontSize="13"
+              fill="#77736d"
+            >
+              {axis.label}
+            </text>
+          </g>
+        );
+      })}
+      {radar.databases.map((database, index) => (
+        <g key={database.name}>
+          <polygon
+            points={pointsFor(database.scores)}
+            fill={RADAR_COLORS[index % RADAR_COLORS.length]}
+            fillOpacity={database.name === "Relumine" ? "0.18" : "0.08"}
+            stroke={RADAR_COLORS[index % RADAR_COLORS.length]}
+            strokeWidth={database.name === "Relumine" ? "2.4" : "1.4"}
+          />
+          {pointsFor(database.scores)
+            .split(" ")
+            .map((point, pointIndex) => {
+              const [x, y] = point.split(",").map(Number);
+              return (
+                <circle
+                  key={`${database.name}-${pointIndex}`}
+                  cx={x}
+                  cy={y}
+                  r={database.name === "Relumine" ? "3" : "2"}
+                  fill={RADAR_COLORS[index % RADAR_COLORS.length]}
+                />
+              );
+            })}
+        </g>
+      ))}
+      <circle cx={centerX} cy={centerY} r="2" fill="#c2a96a" />
+    </svg>
+  );
+}
+
+function DatabaseScoreCard({
+  database,
+  axes,
+}: {
+  database: RadarDatabase;
+  axes: DatabaseRadarData["axes"];
+}) {
+  const topAxes = axes
+    .map((axis) => ({ ...axis, score: database.scores[axis.key] ?? 0 }))
+    .toSorted((left, right) => right.score - left.score)
+    .slice(0, 2);
+  return (
+    <article className="border border-line p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="font-serif text-base text-ink">{database.name}</div>
+          <div className="mt-1 font-sans text-[10px] tracking-[0.12em] text-ink-mute">
+            {database.role}
+          </div>
+        </div>
+        <div className="text-right font-sans text-[10px] text-ink-mute">
+          {database.unique_chars.toLocaleString()} 字
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {topAxes.map((axis) => (
+          <span
+            key={axis.key}
+            className="border border-line bg-bg px-2 py-1 font-sans text-[10px] text-ink-mute"
+          >
+            {axis.label} {axis.score}/5
+          </span>
+        ))}
+      </div>
+      <p className="mt-3 font-serif text-sm leading-[1.7] text-ink-soft">
+        {database.strength}
+      </p>
+    </article>
   );
 }
 

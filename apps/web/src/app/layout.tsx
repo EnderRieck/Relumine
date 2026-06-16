@@ -5,6 +5,8 @@ import { Toaster } from "sonner";
 import "./globals.css";
 import { BgPattern } from "@/components/chinese/BgPattern";
 import { HuiwenKnot } from "@/components/chinese/HuiwenKnot";
+import { BrushStroke } from "@/components/chinese/BrushStroke";
+import { SealStamp } from "@/components/chinese/SealStamp";
 import { PageBridgeProvider } from "@/lib/agent-bridge";
 import { AgentShell } from "@/components/agent/agent-shell";
 
@@ -43,37 +45,49 @@ export default function RootLayout({
         <PageBridgeProvider>
          <AgentShell>
           <div className="relative z-10 min-h-screen flex flex-col">
-            <header className="border-b border-line bg-bg/70 backdrop-blur-[2px]">
-            <div className="mx-auto max-w-[1480px] px-6 md:px-10 h-16 flex items-center justify-between">
+            <header className="border-b border-line/80 bg-surface/72 backdrop-blur-md shadow-[0_10px_32px_rgba(57,37,18,0.06)]">
+            <div className="mx-auto max-w-[1480px] px-6 md:px-10 h-[4.5rem] flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Image
-                  src="/logo.png"
-                  alt="古籍重光 logo"
-                  width={44}
-                  height={44}
-                  priority
-                  className="h-11 w-11 object-contain"
-                />
-                <span className="text-lg font-semibold tracking-[0.16em]">古籍重光</span>
-                <span className="text-xs text-ink-mute font-sans tracking-widest uppercase">
+                <div className="relative">
+                  <span className="absolute -inset-1 border border-accent-gold/45" aria-hidden />
+                  <Image
+                    src="/logo.png"
+                    alt="古籍重光 logo"
+                    width={46}
+                    height={46}
+                    priority
+                    className="relative h-[2.875rem] w-[2.875rem] object-contain bg-surface"
+                  />
+                </div>
+                <span className="hero-title text-xl font-semibold tracking-[0.18em]">古籍重光</span>
+                <span className="hidden sm:inline-flex border-l border-line pl-3 text-xs text-ink-mute font-sans tracking-widest uppercase">
                   北邮学生项目组
                 </span>
               </div>
-              <nav className="hidden md:flex items-center gap-6 text-xs text-ink-mute font-sans tracking-wider uppercase">
-                <span>赵海英老师指导</span>
+              <nav className="hidden md:flex items-center gap-5 text-xs text-ink-mute font-sans tracking-wider uppercase">
+                <span className="text-accent">赵海英老师指导</span>
                 <span>·</span>
-                <span>文化计算大脑</span>
+                <span className="text-[#2f7b67]">文化计算大脑</span>
+                <span>·</span>
+                <span className="text-[#2f5f8f]">繁简 · OCR · 史脉</span>
               </nav>
             </div>
           </header>
 
           <main className="flex-1">{children}</main>
 
-          <footer className="border-t border-line bg-bg/70 backdrop-blur-[2px]">
-            <div className="mx-auto max-w-[1480px] px-6 md:px-10 py-4 flex flex-col items-center gap-2">
-              <HuiwenKnot className="w-40 h-3 opacity-80" />
-              <div className="text-xs text-ink-mute font-sans tracking-wider">
-                文化表示与挖掘 · 课程展示 · 繁-简数据库 与 古籍OCR识别
+          <footer className="border-t border-line/80 bg-surface/70 backdrop-blur-md">
+            <div className="mx-auto max-w-[1480px] px-6 md:px-10 py-6 flex flex-col items-center gap-3">
+              <div className="flex items-center gap-3 text-ink-soft">
+                <BrushStroke className="h-3 w-20 rotate-180 opacity-50" />
+                <HuiwenKnot className="w-40 h-3 opacity-80" />
+                <BrushStroke className="h-3 w-20 opacity-50" />
+              </div>
+              <div className="flex items-center gap-3">
+                <SealStamp chars={["重", "光"]} size={34} animate={false} className="opacity-90" />
+                <div className="text-xs text-ink-mute font-sans tracking-wider">
+                  文化表示与挖掘 · 课程展示 · 繁-简数据库 与 古籍OCR识别
+                </div>
               </div>
             </div>
           </footer>

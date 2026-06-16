@@ -12,6 +12,7 @@ import { useRegisterSnapshot } from "@/lib/agent-bridge";
 import { SectionMark } from "@/components/chinese/SectionMark";
 import { GoldRule } from "@/components/chinese/GoldRule";
 import { CornerBrackets } from "@/components/chinese/CornerBrackets";
+import { IconScroll } from "@/components/chinese/BrushIcons";
 import { UploadDropzone } from "@/components/shared/upload-dropzone";
 
 type Mode = "trad" | "simp";
@@ -121,9 +122,9 @@ export function OcrPanel() {
   }
 
   return (
-    <section className="relative rounded-[var(--radius)] border border-line bg-surface p-8 md:p-12 animate-ink-rise">
+    <section className="tone-ocr chromatic-frame paper-surface relative rounded-[var(--radius)] border border-line p-8 md:p-12 animate-ink-rise">
       <CornerBrackets />
-      <SectionMark title="古籍识读" subtitle="本机OCR识读 · 繁简转换" />
+      <SectionMark icon={<IconScroll size={18} />} title="古籍识读" subtitle="本机OCR识读 · 繁简转换" />
 
       {!file ? (
         <div className="mt-8">
