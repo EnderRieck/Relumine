@@ -52,7 +52,7 @@ OCR 只是入口。最终目标是一套支撑**文化计算（cultural computin
 | 壹 · **繁简通译** | 繁⇄简转换 + 合并冲突检测 | ② 繁简映射 | 在 OpenCC 转换基础上，自动标出"多对一"的简化合并点——如 `后 ← 後/后`、`发 ← 發/髮`、`干 ← 乾/幹/干`，把简化造成的语义歧义显式暴露出来 |
 | 貳 · **古籍识读** | 古籍影像 OCR | ① OCR | 上传刻本/写本影像，调用**以古籍微调的 PaddleOCR-VL** 模型转写为文本，返回字数与推理延迟；单卡串行队列、可查看排队深度 |
 | 參 · **形声流变** | 单字繁简演化时间轴 | ② 繁简映射 | 按 `甲骨→金文→小篆→隶书→楷书(繁)→一简(1956)` 展示典型字的字形流变、合并关系与考据注记，是繁简映射数据库的可视化窗口 |
-| 肆 · **史脉** | 古籍实体关系图谱 | ③ 语义对齐 | 调用 DeepSeek 抽取人物、地点、官职、时间和事件，再以 CBDB 校验人物、CHGIS 对齐历史地名与坐标；生成今译、关系图、空间分布和时间线，并保留原文证据与人工审校状态 |
+| 肆 · **史脉** | 古籍实体关系图谱 | ③ 语义对齐 | 调用 DeepSeek 抽取人物、地点、官职、时间和事件，再以 CBDB 校验人物、CHGIS 对齐历史地名与坐标；权威库的**繁体**规范名经多源校验**实时繁→简**显示（繁体作辅注 + 各库证据）；生成今译、关系图、空间分布和时间线，并保留原文证据与人工审校状态 |
 
 产品定位一句话（取自首页）：
 
@@ -78,6 +78,7 @@ OCR 只是入口。最终目标是一套支撑**文化计算（cultural computin
 ```text
 GET  /api/healthz            # 健康检查 + 模型是否就绪
 POST /api/convert            # 繁简转换，返回 result + 合并冲突 collisions
+POST /api/convert/name       # 人名/地名多源繁→简（CC-CEDICT 词级 + OpenCC/Unihan 字级 + CHISE 佐证）
 GET  /api/ocr/queue          # 当前 OCR 队列深度
 POST /api/ocr                # 上传图片，返回 OCR 文本 / 字数 / 延迟
 GET  /api/evolution          # 列出已收录的演化字
@@ -93,6 +94,19 @@ GET  /api/agent/skills       # 列出可用技能
 ```
 
 > 右侧"智能助手"侧边栏复用同一套 DeepSeek 配置，可读写页面、查字库、联网搜索、看网页、跑技能。详见 [`apps/api/README.md`](apps/api/README.md#agent-智能助手侧边栏)。
+
+### 多源繁简转换（权威名实时繁→简）
+
+CBDB / CHGIS 等权威库以**繁体**存储规范名。史脉对齐到权威名后，会用一套**多源繁→简转换**把它实时转为简体显示，尤其适合人名、地名这类专名——它联合项目的四个文字数据库，而非只靠 OpenCC 逐字：
+
+- **词级优先**：整名先查 CC-CEDICT 词条（如 `錢鍾書 → 钱钟书`，胜过逐字 OpenCC 的 `钱锺书`）；
+- **字级兜底**：词典未收的字用 OpenCC 转换，并与 Unihan `kSimplifiedVariant` 交叉校验；
+- **结构佐证**：附 CHISE IDS 部件分解，辅助辨别形近变体；
+- 每段给出**置信度**与**分歧标注**：不同库给出不同简体时显式提示并列出候选。
+
+运行时索引 `apps/api/ocrforge_web/data/hanzi_convert.sqlite` 由 `analysis/hanzi_databases/scripts/build_convert_index.py` 离线从 Unihan / CC-CEDICT / CHISE IDS 提炼而成（原始 dump 保持忽略提交）。同时提供独立接口 `POST /api/convert/name`（含 `/batch`、`/sources`）与助手工具 `convert_name`。
+
+> 配套加固了 CBDB 人物匹配：弃用被多人共享的字/号（如 `子楚`）等歧义异名、精确名优先于异名、按本篇年代过滤跨代重名，并使重新对齐保持幂等。
 
 ### 本地启动（Windows + pixi）
 

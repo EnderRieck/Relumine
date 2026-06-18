@@ -5,6 +5,7 @@ CultureCourse 演示用 Web 后端：
 | 路径 | 用途 |
 |------|------|
 | `POST /api/convert` | 繁简通译 + 多对一字检测（OpenCC） |
+| `POST /api/convert/name` | 人名/地名多源繁→简（CC-CEDICT 词级 + OpenCC/Unihan 字级 + CHISE 佐证）；`/batch` 批量、`/sources` 索引状态 |
 | `POST /api/ocr` | 上传图片 → OCR 识别文本 |
 | `GET  /api/evolution` | 字形演化数据库 |
 | `GET  /api/evolution/{char}` | 单字详情 |
@@ -94,6 +95,7 @@ OCRFORGE_WEB_AGENT_MODEL=deepseek-chat
 | `OCRFORGE_WEB_REMOTE_OCR_TIMEOUT` | `120` | 远程 OCR 请求超时时间，单位秒 |
 | `OCRFORGE_WEB_EVOLUTION_BACKEND` | `sqlite` | `json` / `sqlite` |
 | `OCRFORGE_WEB_EVOLUTION_PATH` | `data/relumine_char_db.v2.sqlite` | 演化数据文件 |
+| `OCRFORGE_WEB_HANZI_CONVERT_PATH` | `data/hanzi_convert.sqlite` | 多源繁→简转换索引（缺失则退化为纯 OpenCC 字级） |
 | `OCRFORGE_WEB_LLM_API_KEY` | _(unset)_ | DeepSeek API Key |
 | `OCRFORGE_WEB_LLM_BASE_URL` | `https://api.deepseek.com` | DeepSeek 兼容接口地址 |
 | `OCRFORGE_WEB_LLM_MODEL` | `deepseek-v4-flash` | 史脉抽取模型 |
@@ -114,6 +116,11 @@ python analysis/authority_databases/download_cbdb.py
 人物实体会与 CBDB 的规范姓名、异名、生卒年和索引年对齐。地点实体通过
 CHGIS 官方只读 Temporal Gazetteer API 检索，保存历史有效年代、类型、上级政区、
 经纬度与来源链接。CHGIS 原始数据禁止再分发，因此项目不会提交其数据包。
+
+人物匹配做了去噪：被多人共享的字/号（如 `子楚`）等**歧义异名**会被弃用、**精确名优先于异名**、
+异名匹配按本篇年代过滤掉**跨代重名**，并且不再用匹配结果覆写 `normalized_name`，使重新对齐
+（`POST /api/culture/analyses/{id}/link-authorities`）保持幂等。对齐到的（繁体）规范名还会经下文
+的多源转换实时给出简体形（`canonical_name_simplified`）与各库证据。
 | `OCRFORGE_WEB_AGENT_MODEL` | _(unset)_ | 助手模型，缺省回退 `LLM_MODEL` |
 | `OCRFORGE_WEB_BRAVE_API_KEY` | _(unset)_ | Brave 搜索 Key，启用 `web_search` |
 | `OCRFORGE_WEB_AGENT_ENABLE_BROWSER` | `true` | 是否启用 Playwright 无头浏览器工具 |
@@ -139,3 +146,28 @@ OCRFORGE_WEB_SKIP_OCR=1 conda run -n base uvicorn ocrforge_web.main:app ...
   `generate_page`；没有 checkpoint 时使用 macOS Vision OCR 后备链路。
 - `ocrforge_web/__init__.py` 在导入时把 `CultureCourse/src` 加入 `sys.path`，
   与 `tools/_bootstrap.py` 同思路。
+
+## 多源繁→简转换
+
+`services/name_convert.py` 把繁体专名（人名/地名，尤其 CBDB/CHGIS 权威名）转成简体，
+联合项目的四个文字数据库，而非只靠 OpenCC 逐字：
+
+1. **词级优先**：整名用 CC-CEDICT 词条贪婪最长匹配（`錢鍾書 → 钱钟书`，胜过逐字的 `钱锺书`）；
+2. **字级兜底**：词典未收的字用 OpenCC 转换，并与 Unihan `kSimplifiedVariant` 交叉校验；
+3. **结构佐证**：附 CHISE IDS 部件分解辅助辨别形近变体；
+4. 每段返回**置信度**、**分歧标注**（不同库给出不同简体时列出候选）与各库证据。
+
+接口 `POST /api/convert/name`（含 `/batch` 批量、`/sources` 索引状态），助手工具 `convert_name`，
+并在 `authority_linker` 中为每个权威匹配挂上 `canonical_name_simplified` 与转换明细。
+
+运行时索引 `data/hanzi_convert.sqlite`（CC-CEDICT 词对 / Unihan 变体 / CHISE IDS）由离线脚本构建、
+随仓库提交；原始 dump 放在 `analysis/hanzi_databases/raw/`（忽略提交）。重建：
+
+```bash
+pixi run python analysis/hanzi_databases/scripts/build_convert_index.py
+```
+
+索引缺失时服务自动退化为纯 OpenCC 字级转换（置信度更低、无证据）。
+
+> 前端代理目标支持用环境变量 `API_PROXY_TARGET` 覆盖（默认 `http://127.0.0.1:7860`），
+> 便于在 7860 被占用时把后端跑到其他端口；见 `apps/web/src/app/api/[...path]/route.ts`。
