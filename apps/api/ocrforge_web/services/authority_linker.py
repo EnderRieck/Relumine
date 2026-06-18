@@ -5,11 +5,28 @@ import sqlite3
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
 from ocrforge_web.schemas import AuthorityMatch, CulturalEntity
+from ocrforge_web.services import name_convert
 from ocrforge_web.settings import Settings
+
+# An alias-only (字/号) CBDB match must fall within this many years of the era
+# anchored by the analysis's exact matches, else it is a cross-era namesake.
+_ERA_WINDOW = 300
+
+
+def _with_simplified(match: AuthorityMatch) -> AuthorityMatch:
+    """Attach a real-time 繁→简 rendering + evidence to an authority match."""
+    conversion = name_convert.convert(match.canonical_name)
+    return match.model_copy(
+        update={
+            "canonical_name_simplified": conversion.simplified,
+            "name_conversion": conversion,
+        }
+    )
 
 
 class AuthorityLinker:
@@ -27,21 +44,34 @@ class AuthorityLinker:
         return bool(self.chgis_api_url)
 
     def link_entities(self, entities: list[CulturalEntity]) -> list[CulturalEntity]:
-        person_matches: dict[str, list[AuthorityMatch]] = {}
+        # Pass 1 — anchor the era from RELIABLE (exact) person matches only, so
+        # alias matches can be sanity-checked against the analysis's century.
         context_years: list[int] = []
-        for entity in entities:
-            if entity.type == "person" and self.cbdb_available:
-                matches = self._match_cbdb(entity)
-                person_matches[entity.id] = matches
-                if matches:
-                    metadata = matches[0].metadata
-                    year = metadata.get("index_year") or metadata.get("birth_year")
-                    if isinstance(year, int):
+        if self.cbdb_available:
+            for entity in entities:
+                if entity.type != "person":
+                    continue
+                for match in self._match_cbdb(entity):
+                    if match.match_type != "exact":
+                        continue
+                    year = match.metadata.get("index_year") or match.metadata.get(
+                        "birth_year"
+                    )
+                    if isinstance(year, int) and year != 0:
                         context_years.append(year)
-
         context_year = (
             sorted(context_years)[len(context_years) // 2] if context_years else None
         )
+
+        # Pass 2 — full person matches (exact + era-filtered, unambiguous alias).
+        person_matches: dict[str, list[AuthorityMatch]] = {}
+        if self.cbdb_available:
+            for entity in entities:
+                if entity.type == "person":
+                    person_matches[entity.id] = self._match_cbdb(
+                        entity, context_year=context_year
+                    )
+
         place_matches = {
             entity.id: self._match_chgis(entity, context_year=context_year)
             for entity in entities
@@ -55,21 +85,20 @@ class AuthorityLinker:
                 matches = person_matches.get(entity.id, [])
             elif entity.type == "place" and self.chgis_available:
                 matches = place_matches.get(entity.id, [])
-            normalized_name = (
-                matches[0].canonical_name if matches else entity.normalized_name
-            )
-            linked.append(
-                entity.model_copy(
-                    update={
-                        "normalized_name": normalized_name,
-                        "authority_matches": matches,
-                    }
-                )
-            )
+            matches = [_with_simplified(match) for match in matches]
+            # Deliberately do NOT overwrite normalized_name with a match: that made
+            # re-linking non-idempotent (a wrong match became the next search key
+            # and could drift). The authority name lives on canonical_name /
+            # canonical_name_simplified; normalized_name stays as the extractor set it.
+            linked.append(entity.model_copy(update={"authority_matches": matches}))
         return linked
 
-    def _match_cbdb(self, entity: CulturalEntity) -> list[AuthorityMatch]:
+    def _match_cbdb(
+        self, entity: CulturalEntity, context_year: int | None = None
+    ) -> list[AuthorityMatch]:
         names = _candidate_names(entity)
+        if not names:
+            return []
         connection = sqlite3.connect(
             f"file:{self.cbdb_path}?mode=ro", uri=True, timeout=10
         )
@@ -94,63 +123,119 @@ class AuthorityLinker:
                 )
                 if column
             ]
-            rows: list[tuple[sqlite3.Row, str]] = []
             placeholders = ",".join("?" for _ in names)
-            query = (
-                f"SELECT {','.join(_quote(column) for column in selected)} "
-                f"FROM BIOG_MAIN WHERE {_quote(chinese_name)} IN ({placeholders}) "
-                "LIMIT 8"
-            )
-            rows.extend((row, "exact") for row in connection.execute(query, names))
+            col_list = ",".join(_quote(column) for column in selected)
 
+            exact_rows = list(
+                connection.execute(
+                    f"SELECT {col_list} FROM BIOG_MAIN "
+                    f"WHERE {_quote(chinese_name)} IN ({placeholders}) LIMIT 8",
+                    names,
+                )
+            )
+
+            alias_rows: list[sqlite3.Row] = []
             alt_columns = _table_columns(connection, "ALTNAME_DATA")
             alt_person = _pick(alt_columns, "c_personid", "personid")
             alt_name = _pick(alt_columns, "c_alt_name_chn", "c_alt_name")
-            if alt_person and alt_name and len(rows) < 8:
-                query = (
-                    f"SELECT {','.join('b.' + _quote(column) for column in selected)} "
-                    "FROM ALTNAME_DATA a JOIN BIOG_MAIN b "
-                    f"ON a.{_quote(alt_person)} = b.{_quote(person_id)} "
-                    f"WHERE a.{_quote(alt_name)} IN ({placeholders}) LIMIT 8"
-                )
-                rows.extend((row, "alias") for row in connection.execute(query, names))
-
-            results: list[AuthorityMatch] = []
-            seen: set[str] = set()
-            for row, match_type in rows:
-                authority_id = str(row[person_id])
-                if authority_id in seen:
-                    continue
-                seen.add(authority_id)
-                birth = _row_value(row, "c_birthyear")
-                death = _row_value(row, "c_deathyear")
-                years = _year_span(birth, death)
-                canonical_name = str(row[chinese_name] or entity.name)
-                results.append(
-                    AuthorityMatch(
-                        source="CBDB",
-                        authority_id=authority_id,
-                        canonical_name=canonical_name,
-                        match_type=match_type,
-                        confidence=0.99 if match_type == "exact" else 0.92,
-                        source_url=(
-                            "https://cbdb.fas.harvard.edu/cbdbapi/person.php"
-                            f"?id={urllib.parse.quote(authority_id)}"
-                        ),
-                        label="中国历代人物传记资料库",
-                        years=years,
-                        metadata={
-                            "birth_year": birth,
-                            "death_year": death,
-                            "dynasty_code": _row_value(row, "c_dy"),
-                            "index_year": _row_value(row, "c_index_year"),
-                            "female": _row_value(row, "c_female"),
-                        },
+            if alt_person and alt_name:
+                b_cols = ",".join("b." + _quote(column) for column in selected)
+                alias_rows = list(
+                    connection.execute(
+                        f"SELECT {b_cols}, a.{_quote(alt_name)} AS matched_alias "
+                        "FROM ALTNAME_DATA a JOIN BIOG_MAIN b "
+                        f"ON a.{_quote(alt_person)} = b.{_quote(person_id)} "
+                        f"WHERE a.{_quote(alt_name)} IN ({placeholders}) LIMIT 40",
+                        names,
                     )
                 )
-            return results[:3]
+            return self._assemble_cbdb(
+                entity, exact_rows, alias_rows, person_id, chinese_name, context_year
+            )
         finally:
             connection.close()
+
+    def _assemble_cbdb(
+        self,
+        entity: CulturalEntity,
+        exact_rows: list[sqlite3.Row],
+        alias_rows: list[sqlite3.Row],
+        person_id: str,
+        chinese_name: str,
+        context_year: int | None,
+    ) -> list[AuthorityMatch]:
+        results: list[AuthorityMatch] = []
+        seen: set[str] = set()
+        for row in exact_rows:
+            pid = str(row[person_id])
+            if pid in seen:
+                continue
+            seen.add(pid)
+            results.append(
+                self._make_cbdb_match(entity, row, "exact", 0.97, person_id, chinese_name)
+            )
+
+        # Alias (字/号) matches are weak: a courtesy name shared by several people
+        # (e.g. 子楚) is not an identifier. Only trust an alias that singles out ONE
+        # person, only when no exact match already won, and only when it does not
+        # land in a different era than the rest of the analysis.
+        if not results and alias_rows:
+            persons_by_alias: dict[str, set[str]] = defaultdict(set)
+            row_by_pair: dict[tuple[str, str], sqlite3.Row] = {}
+            for row in alias_rows:
+                alias = str(row["matched_alias"])
+                pid = str(row[person_id])
+                persons_by_alias[alias].add(pid)
+                row_by_pair.setdefault((alias, pid), row)
+            for alias, pids in persons_by_alias.items():
+                if len(pids) != 1:
+                    continue  # ambiguous courtesy/alt name — drop entirely
+                pid = next(iter(pids))
+                if pid in seen:
+                    continue
+                row = row_by_pair[(alias, pid)]
+                if context_year is not None:
+                    year = _row_int(row, "c_index_year") or _row_int(row, "c_birthyear")
+                    if year is not None and abs(year - context_year) > _ERA_WINDOW:
+                        continue  # cross-era namesake
+                seen.add(pid)
+                results.append(
+                    self._make_cbdb_match(entity, row, "alias", 0.65, person_id, chinese_name)
+                )
+        return results[:3]
+
+    def _make_cbdb_match(
+        self,
+        entity: CulturalEntity,
+        row: sqlite3.Row,
+        match_type: str,
+        confidence: float,
+        person_id: str,
+        chinese_name: str,
+    ) -> AuthorityMatch:
+        authority_id = str(row[person_id])
+        birth = _row_value(row, "c_birthyear")
+        death = _row_value(row, "c_deathyear")
+        return AuthorityMatch(
+            source="CBDB",
+            authority_id=authority_id,
+            canonical_name=str(row[chinese_name] or entity.name),
+            match_type=match_type,
+            confidence=confidence,
+            source_url=(
+                "https://cbdb.fas.harvard.edu/cbdbapi/person.php"
+                f"?id={urllib.parse.quote(authority_id)}"
+            ),
+            label="中国历代人物传记资料库",
+            years=_year_span(birth, death),
+            metadata={
+                "birth_year": birth,
+                "death_year": death,
+                "dynasty_code": _row_value(row, "c_dy"),
+                "index_year": _row_value(row, "c_index_year"),
+                "female": _row_value(row, "c_female"),
+            },
+        )
 
     def _match_chgis(
         self, entity: CulturalEntity, context_year: int | None = None
@@ -244,6 +329,14 @@ def _quote(identifier: str) -> str:
 
 def _row_value(row: sqlite3.Row, key: str) -> Any:
     return row[key] if key in row.keys() else None
+
+
+def _row_int(row: sqlite3.Row, key: str) -> int | None:
+    try:
+        value = int(_row_value(row, key))
+    except (TypeError, ValueError):
+        return None
+    return value or None
 
 
 def _year_span(birth: Any, death: Any) -> str | None:

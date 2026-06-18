@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     remote_ocr_timeout: float = 120.0
 
     opencc_profile: str = "t2s"
+    # Compact繁→简 conversion index (CC-CEDICT words + Unihan variants + CHISE IDS).
+    # Built offline by analysis/hanzi_databases/scripts/build_convert_index.py.
+    hanzi_convert_path: Path = Path(__file__).parent / "data" / "hanzi_convert.sqlite"
 
     evolution_backend: str = "sqlite"
     evolution_path: Path = Path(__file__).parent / "data" / "relumine_char_db.v2.sqlite"

@@ -3,6 +3,10 @@ import { NextRequest } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// Backend origin. Defaults to 127.0.0.1:7860; override with API_PROXY_TARGET
+// (e.g. when 7860 is taken by another local service).
+const API_TARGET = process.env.API_PROXY_TARGET ?? "http://127.0.0.1:7860";
+
 type RouteContext = {
   params: Promise<{ path: string[] }>;
 };
@@ -11,7 +15,7 @@ async function proxy(request: NextRequest, context: RouteContext) {
   const { path } = await context.params;
   const target = new URL(
     `/api/${path.map(encodeURIComponent).join("/")}${request.nextUrl.search}`,
-    "http://127.0.0.1:7860",
+    API_TARGET,
   );
   const headers = new Headers(request.headers);
   headers.delete("host");

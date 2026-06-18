@@ -264,10 +264,38 @@ export type CulturalEntity = {
   authority_matches: AuthorityMatch[];
 };
 
+export type ConvertEvidence = {
+  source: string;
+  value?: string | null;
+  note?: string | null;
+};
+
+export type ConvertSegment = {
+  traditional: string;
+  simplified: string;
+  method: "word" | "char" | "identity";
+  confidence: number;
+  sources: string[];
+  conflict: boolean;
+  alternatives: string[];
+  evidence: ConvertEvidence[];
+};
+
+export type NameConversion = {
+  traditional: string;
+  simplified: string;
+  confidence: number;
+  method: "word" | "char" | "mixed" | "identity";
+  segments: ConvertSegment[];
+  note?: string | null;
+};
+
 export type AuthorityMatch = {
   source: "CBDB" | "CHGIS";
   authority_id: string;
   canonical_name: string;
+  canonical_name_simplified?: string | null;
+  name_conversion?: NameConversion | null;
   match_type: "exact" | "alias" | "prefix";
   confidence: number;
   source_url: string;

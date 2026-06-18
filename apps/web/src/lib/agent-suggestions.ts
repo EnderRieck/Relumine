@@ -13,6 +13,16 @@ export const SUGGESTIONS: Suggestion[] = [
   { label: "转成简体", prompt: "帮我把“學而時習之，不亦說乎”转成简体" },
   { label: "繁简碰撞例子", prompt: "举个繁简转换里多对一合并会出歧义的例子" },
 
+  // convert_name (多源人名/地名繁→简)
+  {
+    label: "人名繁→简",
+    prompt: "把“錢鍾書”转成简体，用多源字库给出依据和置信度",
+  },
+  {
+    label: "地名繁→简",
+    prompt: "“瀋陽”“歐陽脩”这些繁体专名转简体，分别是怎么定的？有没有分歧",
+  },
+
   // search_characters / get_database_stats / get_cl_analysis
   { label: "列几个疑难合并字", prompt: "列几个繁简多对一的疑难合并字" },
   { label: "字库规模", prompt: "字库一共收录了多少字？合并字有多少？" },

@@ -24,6 +24,44 @@ class ConvertResponse(BaseModel):
     collisions: list[Collision]
 
 
+# ---------- multi-source name (繁→简) conversion ----------
+
+class ConvertEvidence(BaseModel):
+    """What one source says about a segment's conversion."""
+    source: str  # cc-cedict | opencc | unihan | chise
+    value: str | None = None
+    note: str | None = None
+
+
+class ConvertSegment(BaseModel):
+    traditional: str
+    simplified: str
+    method: Literal["word", "char", "identity"]
+    confidence: float = Field(ge=0, le=1)
+    sources: list[str] = Field(default_factory=list)  # sources that agree on `simplified`
+    conflict: bool = False  # sources disagree on the simplified form
+    alternatives: list[str] = Field(default_factory=list)  # other candidate simplifieds
+    evidence: list[ConvertEvidence] = Field(default_factory=list)
+
+
+class NameConversion(BaseModel):
+    """繁→简 conversion of a proper noun, combining 4 text databases."""
+    traditional: str
+    simplified: str
+    confidence: float = Field(ge=0, le=1)
+    method: Literal["word", "char", "mixed", "identity"]
+    segments: list[ConvertSegment] = Field(default_factory=list)
+    note: str | None = None
+
+
+class NameConvertRequest(BaseModel):
+    text: str = Field(..., max_length=200)
+
+
+class NameConvertBatchRequest(BaseModel):
+    texts: list[str] = Field(..., max_length=200)
+
+
 # ---------- ocr ----------
 
 class OcrResponse(BaseModel):
@@ -102,7 +140,9 @@ ReviewStatus = Literal["proposed", "confirmed", "rejected"]
 class AuthorityMatch(BaseModel):
     source: Literal["CBDB", "CHGIS"]
     authority_id: str
-    canonical_name: str
+    canonical_name: str  # 权威库规范名（繁体）
+    canonical_name_simplified: str | None = None  # 实时繁→简结果
+    name_conversion: NameConversion | None = None  # 多源转换明细（证据/置信度）
     match_type: Literal["exact", "alias", "prefix"]
     confidence: float = Field(ge=0, le=1)
     source_url: str

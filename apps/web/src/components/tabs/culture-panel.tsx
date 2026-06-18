@@ -31,6 +31,7 @@ import type {
   CultureAnalysisSummary,
   CultureStatus,
   EntityType,
+  NameConversion,
   ReviewStatus,
 } from "@/lib/types";
 
@@ -754,31 +755,48 @@ function EvidencePanel({
           ) : null}
           {entity?.authority_matches.length ? (
             <div className="mt-4 space-y-2">
-              {entity.authority_matches.map((match) => (
-                <a
-                  key={`${match.source}-${match.authority_id}`}
-                  href={match.source_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block border border-line bg-bg/40 p-3 outline-none hover:border-accent-gold focus-visible:border-[#356859] focus-visible:ring-1 focus-visible:ring-[#356859]"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-sans text-[#356859]">
-                      <Database className="h-3.5 w-3.5" aria-hidden />
-                      {match.source} · {match.authority_id}
-                    </span>
-                    <ExternalLink className="h-3.5 w-3.5 text-ink-mute" aria-hidden />
+              {entity.authority_matches.map((match) => {
+                const simplified =
+                  match.canonical_name_simplified ?? match.canonical_name;
+                const showTraditional = simplified !== match.canonical_name;
+                return (
+                  <div key={`${match.source}-${match.authority_id}`}>
+                    <a
+                      href={match.source_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block border border-line bg-bg/40 p-3 outline-none hover:border-accent-gold focus-visible:border-[#356859] focus-visible:ring-1 focus-visible:ring-[#356859]"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-sans text-[#356859]">
+                          <Database className="h-3.5 w-3.5" aria-hidden />
+                          {match.source} · {match.authority_id}
+                        </span>
+                        <ExternalLink className="h-3.5 w-3.5 text-ink-mute" aria-hidden />
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-ink">
+                        <span>
+                          {simplified}
+                          {match.feature_type ? ` · ${match.feature_type}` : ""}
+                        </span>
+                        {showTraditional ? (
+                          <span className="text-xs text-ink-mute">繁 {match.canonical_name}</span>
+                        ) : null}
+                        {match.name_conversion ? (
+                          <ConversionBadge conv={match.name_conversion} />
+                        ) : null}
+                      </div>
+                      <div className="mt-1 text-[11px] font-sans text-ink-mute">
+                        {[match.years, match.parent_name].filter(Boolean).join(" · ") ||
+                          `${Math.round(match.confidence * 100)}% 匹配`}
+                      </div>
+                    </a>
+                    {match.name_conversion ? (
+                      <ConversionEvidence conv={match.name_conversion} />
+                    ) : null}
                   </div>
-                  <div className="mt-2 text-sm text-ink">
-                    {match.canonical_name}
-                    {match.feature_type ? ` · ${match.feature_type}` : ""}
-                  </div>
-                  <div className="mt-1 text-[11px] font-sans text-ink-mute">
-                    {[match.years, match.parent_name].filter(Boolean).join(" · ") ||
-                      `${Math.round(match.confidence * 100)}% 匹配`}
-                  </div>
-                </a>
-              ))}
+                );
+              })}
             </div>
           ) : entity && (entity.type === "person" || entity.type === "place") ? (
             <div className="mt-4 text-xs font-sans text-ink-mute">
@@ -841,6 +859,81 @@ function EvidencePanel({
   );
 }
 
+const CONV_METHOD_LABEL: Record<string, string> = {
+  word: "整词",
+  char: "逐字",
+  mixed: "混合",
+  identity: "原形",
+};
+const CONV_SOURCE_LABEL: Record<string, string> = {
+  "cc-cedict": "CC-CEDICT",
+  opencc: "OpenCC",
+  unihan: "Unihan",
+  chise: "CHISE",
+};
+
+function conversionHasConflict(conv: NameConversion): boolean {
+  return conv.segments.some((seg) => seg.conflict);
+}
+
+// Small badge: 繁→简 method + confidence; amber when sources disagree.
+function ConversionBadge({
+  conv,
+  className,
+}: {
+  conv: NameConversion;
+  className?: string;
+}) {
+  const conflict = conversionHasConflict(conv);
+  return (
+    <span
+      title={conflict ? "不同字库给出不同简体，存在分歧" : "多源字库一致"}
+      className={cn(
+        "inline-flex items-center rounded-sm px-1.5 py-px text-[10px] font-sans",
+        conflict ? "bg-accent/10 text-accent" : "bg-[#356859]/12 text-[#356859]",
+        className,
+      )}
+    >
+      {CONV_METHOD_LABEL[conv.method] ?? conv.method} ·{" "}
+      {Math.round(conv.confidence * 100)}%{conflict ? " · 存疑" : ""}
+    </span>
+  );
+}
+
+// Per-segment multi-source evidence (collapsible). MUST live outside any <a>.
+function ConversionEvidence({ conv }: { conv: NameConversion }) {
+  const segments = conv.segments.filter(
+    (seg) => seg.method !== "identity" || seg.conflict,
+  );
+  if (!segments.length) return null;
+  return (
+    <details className="mt-1.5">
+      <summary className="cursor-pointer text-[10px] font-sans text-ink-mute hover:text-accent">
+        多源转换依据
+      </summary>
+      <div className="mt-1 space-y-1 border-l border-line/70 pl-2">
+        {segments.map((seg, index) => (
+          <div key={`${seg.traditional}-${index}`} className="text-[10px] font-sans leading-5">
+            <span className="text-ink">
+              {seg.traditional} → {seg.simplified}
+            </span>
+            <span className="text-ink-mute">
+              {" · "}
+              {seg.sources.map((s) => CONV_SOURCE_LABEL[s] ?? s).join(" + ") || "—"}
+            </span>
+            {seg.conflict && seg.alternatives.length ? (
+              <span className="text-accent">
+                {" · 候选 "}
+                {seg.alternatives.join(" / ")}
+              </span>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </details>
+  );
+}
+
 function AuthorityOverview({ analysis }: { analysis: CultureAnalysis }) {
   const matched = analysis.entities.filter(
     (entity) => entity.authority_matches.length > 0,
@@ -887,7 +980,11 @@ function AuthorityOverview({ analysis }: { analysis: CultureAnalysis }) {
                   </span>
                   {match.canonical_name !== entity.name ? (
                     <span className="mt-0.5 block truncate text-[10px] font-sans text-ink-mute">
-                      规范名 {match.canonical_name}
+                      规范名 {match.canonical_name_simplified ?? match.canonical_name}
+                      {match.canonical_name_simplified &&
+                      match.canonical_name_simplified !== match.canonical_name
+                        ? ` · 繁 ${match.canonical_name}`
+                        : ""}
                     </span>
                   ) : null}
                 </span>

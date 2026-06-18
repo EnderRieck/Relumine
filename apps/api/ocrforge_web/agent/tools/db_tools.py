@@ -86,6 +86,19 @@ async def _convert_text(args: dict[str, Any], ctx: ToolContext) -> Any:
     return await asyncio.to_thread(_run)
 
 
+async def _convert_name(args: dict[str, Any], ctx: ToolContext) -> Any:
+    from ocrforge_web.services import name_convert
+
+    text = str(args.get("text") or "").strip()
+    if not text:
+        return {"error": "text is required"}
+
+    def _run() -> dict:
+        return name_convert.convert(text).model_dump(exclude_none=True)
+
+    return await asyncio.to_thread(_run)
+
+
 # ---------- cultural relation graph (history tab) ----------
 
 async def _list_culture_analyses(args: dict[str, Any], ctx: ToolContext) -> Any:
@@ -181,6 +194,23 @@ def db_tools() -> list[Tool]:
                 "additionalProperties": False,
             },
             handler=_convert_text,
+        ),
+        Tool(
+            name="convert_name",
+            description=(
+                "把繁体专有名词(人名/地名，尤其 CBDB/CHGIS 权威名)做'繁→简'转换：联合四个文字"
+                "数据库——CC-CEDICT 整词优先、OpenCC+Unihan 逐字兜底、CHISE 部件佐证，返回简体结果、"
+                "置信度、分歧标注(conflict)与各库证据。人名/地名请用本工具而非 convert_text。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "text": {"type": "string", "description": "繁体专有名词（人名/地名）"}
+                },
+                "required": ["text"],
+                "additionalProperties": False,
+            },
+            handler=_convert_name,
         ),
         Tool(
             name="list_culture_analyses",
