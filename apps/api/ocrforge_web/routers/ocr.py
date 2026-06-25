@@ -40,9 +40,10 @@ async def ocr_proofread(
     request: ProofreadRequest,
     proofreader: OcrProofreadClient = Depends(_proofreader),
 ) -> ProofreadResult:
-    """对（OCR 识读出的）古籍文本做上下文校对，标注可疑字并给候选；不改原文。"""
-    if not proofreader.configured:
-        raise HTTPException(status_code=503, detail="DeepSeek API key is not configured")
+    """对（OCR 识读出的）古籍文本做校对：按逐字置信度选字、形近字/OCR 次优给候选；不改原文。
+
+    选字不依赖 DeepSeek；DeepSeek 若配置则仅用来给候选排序。无逐字置信度的后端返回空风险 + 说明。
+    """
     try:
         return await asyncio.to_thread(
             proofreader.proofread,

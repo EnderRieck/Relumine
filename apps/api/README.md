@@ -7,7 +7,7 @@ CultureCourse 演示用 Web 后端：
 | `POST /api/convert` | 繁简通译 + 多对一字检测（OpenCC） |
 | `POST /api/convert/name` | 人名/地名多源繁→简（CC-CEDICT 词级 + OpenCC/Unihan 字级 + CHISE 佐证）；`/batch` 批量、`/sources` 索引状态 |
 | `POST /api/ocr` | 上传图片 → OCR 识别文本（本地 PaddleOCR-VL 还会附逐字置信度与 top-k 候选） |
-| `POST /api/ocr/proofread` | 古籍 OCR 文本校对：OCR 逐字置信度 + 部件形近字 + DeepSeek 上下文，标注可疑字 + 给候选，不改原文 |
+| `POST /api/ocr/proofread` | 古籍 OCR 校对：按逐字置信度选字，形近字库 + OCR 次优给候选，DeepSeek 仅排序；标注不改字 |
 | `GET  /api/evolution` | 字形演化数据库 |
 | `GET  /api/evolution/{char}` | 单字详情 |
 | `POST /api/culture/analyze` | DeepSeek 古籍实体与关系抽取 |
@@ -104,6 +104,7 @@ OCRFORGE_WEB_AGENT_MODEL=deepseek-chat
 | `OCRFORGE_WEB_LLM_BASE_URL` | `https://api.deepseek.com` | DeepSeek 兼容接口地址 |
 | `OCRFORGE_WEB_LLM_MODEL` | `deepseek-v4-flash` | 史脉抽取模型 |
 | `OCRFORGE_WEB_LLM_TIMEOUT` | `120` | 大模型请求超时，单位秒 |
+| `OCRFORGE_WEB_PROOFREAD_CONF_THRESHOLD` | `0.90` | OCR 校对：逐字置信度低于此值的字被选为待校对 |
 | `OCRFORGE_WEB_CULTURE_DB_PATH` | `data/culture_graph.sqlite` | 史脉审校数据库 |
 | `OCRFORGE_WEB_CBDB_PATH` | `data/authority/cbdb/cbdb.sqlite3` | CBDB 本地 SQLite |
 | `OCRFORGE_WEB_CHGIS_API_URL` | `https://chgis.hudci.org/tgaz/placename` | CHGIS Temporal Gazetteer API |
@@ -152,34 +153,36 @@ OCRFORGE_WEB_SKIP_OCR=1 conda run -n base uvicorn ocrforge_web.main:app ...
 - `ocrforge_web/__init__.py` 在导入时把 `CultureCourse/src` 加入 `sys.path`，
   与 `tools/_bootstrap.py` 同思路。
 
-## OCR 上下文校对
+## OCR 置信度校对
 
-`services/ocr_proofread.py` 对（OCR 识读出的）古籍文本做**上下文校对**：找出疑似被识别错的字、
-给出候选，但**只标注不改写**——判断权交给专家。接口 `POST /api/ocr/proofread`（DeepSeek 未配置返回
-503），助手工具 `proofread_ocr`，前端在「古籍识读」页点「校对」即可，风险字按把握度分级框标、点击出候选。
+`services/ocr_proofread.py` 对（OCR 识读出的）古籍文本做校对：标出疑似被识别错的字、给出候选，
+但**只标注不改写**——判断权交给专家。接口 `POST /api/ocr/proofread`，助手工具 `proofread_ocr`，
+前端在「古籍识读」页点「校对」即可，待校对字按 OCR 把握度分级框标、点击出候选。三者分工明确：
 
-判定不靠单一信号，三层叠加：
+1. **选字 = OCR 逐字置信度（唯一闸门）**：本地 PaddleOCR-VL 贪婪解码时每个 token 的 softmax 概率即模型把握。
+   `generate_page_with_confidence` 用 `output_scores + compute_transition_scores` 取概率，再经
+   `models/token_confidence.py` 的 `text_anchored_pieces` 做 **token→字对齐**（以最终文本为锚，对 byte-fallback
+   稳健）。置信度低于 `settings.proofread_conf_threshold`（默认 0.90）的字被选为「待校对」，取最低的至多 60 个。
+2. **候选 = 形近字库 + OCR 次优读法**：选中的字，候选来自全量形近字索引（见下）+ 该字的 OCR top-k 次优 token。
+   OCR 次优是强证据（模型自己拿不准的读法），排在形近候选之前。
+3. **排序 = DeepSeek（可选，仅排序）**：若配置 `settings.llm_*`，DeepSeek **只对已选中字的候选按上下文重排**——
+   不参与选字、不新增候选、不造词。未配置 / 调用失败则保留「OCR 次优 + 形近」原序。
 
-1. **OCR 逐字置信度（主闸门）**：本地 PaddleOCR-VL 贪婪解码时，每个 token 的 softmax 概率即模型把握。
-   `generate_page_with_confidence` 用 `return_dict_in_generate + output_scores` 取分数、
-   `compute_transition_scores` 还原逐 token 概率，再经 `models/token_confidence.py` 做 **token→字对齐**
-   （增量 decode 求每 token 新增片段、跨多 token 的字取最小概率、单 token 单字位附 top-k 次优读法当候选）。
-   低置信字优先送校对、并把 OCR 自己的 top-k 候选并入；非前缀稳定或任一步出错时**优雅退回纯文本**，不拖累识读。
-2. **形近字先验**：从 `cl_analysis.v1.json` 的 `ocr_confusion.top_pairs`（CHISE 部件结构在繁体字形上算的
-   形近字对）建「字→易混字」索引，作候选先验喂给模型，并把模型漏掉的形近孪生字强制补进候选；
-3. **上下文判定**：DeepSeek（复用 `settings.llm_*`）结合文义、搭配、人名地名书名判断某字是否可疑、该改成什么；
-   并被告知「OCR 低置信位」清单优先核查。OCR 硬低置信（< 0.6）但模型未标的位置，单独兜底成「低置信」风险交专家过目。
+每个待校对字带 `ocr_confidence`（OCR 识别把握）与 `confidence`（= 1 − 置信度，越不确定越高）。
+选字依赖逐字置信度，故只在**本地 PaddleOCR-VL** 后端可用；remote / vision 后端或纯文本调用拿不到置信度，
+返回空风险 + 说明（不再用语言模型瞎猜选字）。前后端一律按**码点**索引，避免扩展区汉字的 UTF-16 错位。
 
-每个风险字带两个独立信号：`confidence`（语言模型判定的误识把握）与 `ocr_confidence`（OCR 模型识别置信度）。
-置信度只在本地 PaddleOCR-VL 后端有；remote / vision 后端拿不到，退化为「形近 + 上下文」两层，行为不变。
+### 全量形近字索引
 
-**位置对齐**不让模型数下标（模型对字符计数不可靠）：模型只回包含可疑字的**原文片段 `snippet`**，后端用
-`text.find(snippet)+片段内偏移` 算出绝对码点下标，并核验 `text[pos]==suspect`，定位不上的直接丢弃。
-前后端一律按**码点**（Python `str` / JS `Array.from`）索引，避免扩展区汉字的 UTF-16 错位。
+`data/confusable_index.v1.json`：每个繁体字 → 最像它的 top-10 形近字（OCR 易混候选），由
+`analysis/hanzi_databases/scripts/build_confusable_index.py` 离线构建（依赖 raw CHISE/Unihan，产物随仓库提交）：
 
-> 说明：`top_pairs` 是从 8 万余对里截断的高相似子集（约覆盖百余字），形近表只作候选先验，真正判断靠
-> 置信度 + 上下文，覆盖不全不影响可用。后续增强：从全量 CHISE 建部件倒排进一步扩大形近覆盖。
-> token→字对齐逻辑（`token_confidence.py`）已离线单测；逐字置信度的真实数值需在能跑 PaddleOCR-VL 的部署环境验证。
+- **合体字**用 CHISE IDS 结构相似度（共享部件 + IDS 编辑距离，相似度 ≥0.6、笔画差 ≤2）自动算出；
+- **原子字**（`己/已/巳`、`戊/戌/戍`、`土/士`、`未/末`、`日/曰` 等部件法覆盖不到的）用**人工形近组**补齐；
+- 只按繁体字形建（古籍 OCR 即繁体）——不做简体投影，因简化常削掉共享部件（如繁体 `慄/憐` 形近，但简体 `栗/怜` 毫不像）。
+
+> 说明：约 3650 字有形近候选（不是每个字都有形近字）。token→字对齐与形近逻辑已离线单测；
+> 逐字置信度的真实数值需在能跑 PaddleOCR-VL 的部署环境验证。`proofread_conf_threshold` 可按实测调松紧。
 
 ## 多源繁→简转换
 

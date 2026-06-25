@@ -109,8 +109,6 @@ async def _proofread_ocr(args: dict[str, Any], ctx: ToolContext) -> Any:
         return {"error": "text is required"}
 
     client = OcrProofreadClient(ctx.settings)
-    if not client.configured:
-        return {"error": "DeepSeek API key is not configured"}
 
     def _run() -> dict:
         return client.proofread(text).model_dump(exclude_none=True)
@@ -237,9 +235,9 @@ def db_tools() -> list[Tool]:
         Tool(
             name="proofread_ocr",
             description=(
-                "对古籍 OCR 识读出的文本做上下文校对：结合文义与部件形近字表，找出疑似被识别错的"
-                "单字，给出候选字、理由与把握度(confidence)，并用 position 标出位置。只给建议、不改"
-                "原文，供专家权衡。适合在用户问'这段识读有没有错字/帮我校对'时调用。"
+                "古籍 OCR 校对：按 OCR 逐字置信度选出待校对字、用形近字库 + OCR 次优给候选。"
+                "选字依赖逐字置信度，纯文本调用拿不到置信度会返回空结果——此时应提示用户到"
+                "「古籍识读」页用本地 PaddleOCR-VL 识读后点「校对」。"
             ),
             parameters={
                 "type": "object",

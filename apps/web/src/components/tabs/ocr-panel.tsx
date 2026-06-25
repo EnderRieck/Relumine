@@ -170,17 +170,12 @@ export function OcrPanel() {
       setCorrections({});
       setDecided({});
       if (res.risks.length === 0) {
-        toast.success("校对完成 · 未发现明显可疑字");
+        toast(res.note ?? "校对完成 · 未发现低置信字");
       } else {
-        toast.success(`校对完成 · 标出 ${res.risks.length} 处可疑字，请逐一复核`);
+        toast.success(`校对完成 · 按置信度标出 ${res.risks.length} 处待校对字`);
       }
     } catch (e) {
-      const detail =
-        e instanceof ApiError
-          ? e.status === 503
-            ? "未配置 DeepSeek，无法校对"
-            : e.message
-          : "校对失败";
+      const detail = e instanceof ApiError ? e.message : "校对失败";
       toast.error(detail);
     } finally {
       setProofing(false);
@@ -645,15 +640,14 @@ function ProofSummary(props: {
   if (total === 0) {
     return (
       <div className="mt-3 text-xs font-sans text-ink-mute">
-        校对完成 · 未发现明显可疑字
-        {note ? <span className="ml-1">· {note}</span> : null}
+        {note ?? "校对完成 · 未发现低置信字"}
       </div>
     );
   }
   return (
     <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-sans text-ink-mute">
       <span>
-        可疑 <span className="text-ink font-medium">{total}</span> 处
+        待校对 <span className="text-ink font-medium">{total}</span> 处
       </span>
       <span>
         已复核 <span className="text-ink font-medium">{decided}</span>/{total}
@@ -661,7 +655,7 @@ function ProofSummary(props: {
       {applied > 0 ? (
         <span style={{ color: "#3f7a52" }}>已采纳 {applied} 处替换</span>
       ) : null}
-      <span className="text-ink-mute/70">点击高亮字查看候选 · 仅建议、不自动改</span>
+      <span className="text-ink-mute/70">按 OCR 置信度选字 · 点高亮字看候选 · 仅建议不自动改</span>
     </div>
   );
 }

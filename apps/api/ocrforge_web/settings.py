@@ -47,6 +47,8 @@ class Settings(BaseSettings):
     llm_model: str = "deepseek-v4-flash"
     llm_timeout: float = 120.0
     llm_max_tokens: int = 131072
+    # OCR 校对：逐字置信度低于此阈值的字被选为「待校对」（仅本地 PaddleOCR-VL 提供置信度）。
+    proofread_conf_threshold: float = 0.90
     culture_db_path: Path = Path(__file__).parent / "data" / "culture_graph.sqlite"
     cbdb_path: Path = (
         Path(__file__).parent
