@@ -156,10 +156,7 @@ class PaddleOCRVLModule:
         贪婪解码（do_sample=False, num_beams=1）下，被选 token 的 softmax 概率即模型把握。
         取分数 / 增量 decode / 对齐任一步失败都**优雅退回纯文本**，不影响识读主链路。
         """
-        from ocrforge.models.token_confidence import (
-            assemble_char_confidence,
-            strip_aligned,
-        )
+        from ocrforge.models.token_confidence import strip_aligned
 
         self.eval()
         image = ImageOps.exif_transpose(Image.open(image_path)).convert("RGB")
@@ -216,8 +213,8 @@ class PaddleOCRVLModule:
 
         try:
             enriched = self._char_confidence(
-                target, sequences, outputs.scores, inputs["input_ids"].shape[-1],
-                eos_id, top_k, assemble_char_confidence,
+                target, sequences, outputs.scores,
+                inputs["input_ids"].shape[-1], eos_id, top_k,
             )
         except Exception:  # pragma: no cover - 任何意外都不该拖垮识读
             enriched = None
@@ -235,17 +232,16 @@ class PaddleOCRVLModule:
             "alternatives": {str(k): v for k, v in alts.items()},
         }
 
-    def _char_confidence(
-        self, target, sequences, scores, prompt_len, eos_id, top_k, assemble
-    ):
-        """从 generate 的 scores 还原逐 token 概率 + token→字对齐，再对齐到逐字。
+    def _char_confidence(self, target, sequences, scores, prompt_len, eos_id, top_k):
+        """从 generate 的 scores 还原逐 token 概率，再按「原始字节」对齐到逐字。
 
         返回 (text, char_confidences, alternatives) 或 None（无法稳妥对齐时）。
-        对齐逻辑委托给已单测的 token_confidence 纯函数（以最终文本为锚，对 byte-fallback
-        稳健），这里只剩 exp / topk 几个 trivial 的 torch 调用。
+        对齐委托给已单测的 byte_aligned_confidence —— 用 convert_ids_to_tokens 拿到
+        <0x##> 字节 token 形态，按 UTF-8 字节累积成字，对 byte-fallback 分词器稳健。
+        这里只剩 exp / topk 几个 trivial 的 torch 调用。
         """
         import torch as _torch
-        from ocrforge.models.token_confidence import text_anchored_pieces
+        from ocrforge.models.token_confidence import byte_aligned_confidence
 
         transition = target.compute_transition_scores(
             sequences, scores, normalize_logits=True
@@ -260,25 +256,24 @@ class PaddleOCRVLModule:
         gen_ids = gen_ids[:end]
 
         tok = self.processor
-        decode = lambda ids: tok.decode(ids, skip_special_tokens=True)
-        final_text = decode(gen_ids)
-        pieces = text_anchored_pieces(final_text, gen_ids, decode)
-        if pieces is None:
-            return None  # 无法稳妥对齐，放弃置信度（宁可不给也不给错的）
+        tokenizer = tok.tokenizer
+        final_text = tok.decode(gen_ids, skip_special_tokens=True)
+        tok_strings = tokenizer.convert_ids_to_tokens(gen_ids)  # 保留 <0x##> 形态
 
         probs: list[float] = []
-        topk_pieces: list[list[str]] = []
+        topk_strings: list[list[str]] = []
         for i in range(end):
             probs.append(float(_torch.exp(transition[i])))
             row = scores[i][0]
             k = min(top_k + 1, int(row.shape[-1]))
             alt_ids = _torch.topk(row, k).indices.tolist()
             chosen = gen_ids[i]
-            topk_pieces.append(
+            # 备选「字」用于候选：byte token decode 成 � 会被候选过滤掉
+            topk_strings.append(
                 [tok.decode([aid], skip_special_tokens=True) for aid in alt_ids if aid != chosen]
             )
 
-        return assemble(pieces, probs, topk_pieces)
+        return byte_aligned_confidence(final_text, tok_strings, probs, topk_strings)
 
     def build_training_batch(self, image_path: Path, prompt: str, target_text: str) -> dict[str, Any]:
         image = ImageOps.exif_transpose(Image.open(image_path)).convert("RGB")

@@ -16,7 +16,95 @@ PaddleOCR-VL 贪婪解码时，每个生成 token 的 softmax 概率即模型对
 
 from __future__ import annotations
 
+import re
 from typing import Callable
+
+_BYTE_TOKEN_RE = re.compile(r"^<0x([0-9A-Fa-f]{2})>$")
+_SP_SPACE = "▁"  # SentencePiece ▁ 空格记号
+
+
+def _tok_bytes(tok_str: str) -> bytes:
+    """单个 token 字符串 → 它贡献的原始字节。
+
+    SentencePiece/Llama 的 byte-fallback token 形如 <0xE8>（生僻字逐字节）；
+    普通 token 直接取其 UTF-8 字节（▁ 还原为空格）。
+    """
+    m = _BYTE_TOKEN_RE.match(tok_str)
+    if m:
+        return bytes([int(m.group(1), 16)])
+    return tok_str.replace(_SP_SPACE, " ").encode("utf-8")
+
+
+def _valid_utf8_len(buf: bytes) -> int:
+    """buf 前缀里构成完整 UTF-8 字符的字节数（尾部不完整字节不计）。"""
+    try:
+        buf.decode("utf-8")
+        return len(buf)
+    except UnicodeDecodeError as exc:
+        return exc.start
+
+
+def byte_aligned_confidence(
+    final_text: str,
+    tok_strings: list[str],
+    probs: list[float],
+    topk_strings: list[list[str]] | None = None,
+    *,
+    alt_threshold: float = 0.95,
+    top_k_emit: int = 3,
+) -> tuple[str, list[float], dict[int, list[str]]] | None:
+    """按「原始字节」把逐 token 概率对齐到逐字符，对 byte-fallback 分词器稳健。
+
+    不经过 lossy 的字符串 decode —— 它对半个字会渲染成非单调的 �，让对齐错乱（实测
+    LlamaTokenizerFast 把生僻 CJK 拆成 <0xE8><0xA9><0x94> 这类字节 token，前缀 decode
+    会反复 �）。改为：byte-fallback token <0x##> 取 1 字节、普通 token 取其 UTF-8 字节，
+    累积成完整 UTF-8 字符再发；每字置信度 = 贡献它的那些字节 token 概率的最小值。
+
+    tok_strings  : convert_ids_to_tokens(gen_ids)，保留 <0x##> 形态。
+    topk_strings : 每个 token 的若干备选「字」（已 decode 成字符串，用作候选）。
+    返回 (text, char_confidences, alternatives) 或 None（重建文本与 final_text 不符时）。
+    """
+    if topk_strings is None:
+        topk_strings = [[] for _ in tok_strings]
+    if not (len(tok_strings) == len(probs) == len(topk_strings)):
+        return None
+
+    buf = bytearray()
+    owner: list[int] = []  # buf 每个字节来自哪个 token
+    out_chars: list[str] = []
+    out_confs: list[float] = []
+    alts: dict[int, list[str]] = {}
+
+    for ti, tok in enumerate(tok_strings):
+        tb = _tok_bytes(tok)
+        buf.extend(tb)
+        owner.extend([ti] * len(tb))
+        vlen = _valid_utf8_len(bytes(buf))
+        if vlen == 0:
+            continue
+        text = bytes(buf[:vlen]).decode("utf-8")
+        bpos = 0
+        for ch in text:
+            cb = len(ch.encode("utf-8"))
+            owners = owner[bpos: bpos + cb]
+            conf = min(_clamp01(probs[o]) for o in owners)
+            pos = len(out_chars)
+            out_chars.append(ch)
+            out_confs.append(conf)
+            # 候选仅在「该字恰由一个普通字 token 单独产出」时可靠（byte-fallback 不给）
+            if len(set(owners)) == 1:
+                oi = owners[0]
+                if _tok_bytes(tok_strings[oi]) == ch.encode("utf-8") and conf < alt_threshold:
+                    cands = _clean_alts(topk_strings[oi], exclude=ch, limit=top_k_emit)
+                    if cands:
+                        alts[pos] = cands
+            bpos += cb
+        del buf[:vlen]
+        del owner[:vlen]
+
+    if "".join(out_chars) != final_text:
+        return None
+    return final_text, out_confs, alts
 
 
 def text_anchored_pieces(
