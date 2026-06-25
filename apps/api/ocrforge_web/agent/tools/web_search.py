@@ -1,10 +1,18 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import httpx
 
 from ocrforge_web.agent.tools.base import Tool, ToolContext
+
+logger = logging.getLogger("ocrforge_web.agent.web_search")
+
+
+def _error_detail(exc: Exception) -> str:
+    detail = str(exc).strip()
+    return f"{type(exc).__name__}: {detail}" if detail else type(exc).__name__
 
 
 async def _web_search(args: dict[str, Any], ctx: ToolContext) -> Any:
@@ -23,14 +31,30 @@ async def _web_search(args: dict[str, Any], ctx: ToolContext) -> Any:
         "X-Subscription-Token": settings.brave_api_key,
     }
     params = {"q": query, "count": count}
+    client_kwargs: dict[str, Any] = {"timeout": 20.0, "trust_env": True}
+    if settings.brave_proxy_url:
+        client_kwargs["proxy"] = settings.brave_proxy_url
+        client_kwargs["trust_env"] = False
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
+        async with httpx.AsyncClient(**client_kwargs) as client:
             resp = await client.get(settings.brave_endpoint, headers=headers, params=params)
             if resp.status_code >= 400:
                 return {"error": f"Brave API HTTP {resp.status_code}: {resp.text[:200]}"}
             data = resp.json()
     except httpx.HTTPError as exc:
-        return {"error": f"无法访问 Brave 搜索：{exc}"}
+        detail = _error_detail(exc)
+        logger.warning(
+            "Brave web_search request failed: %s | endpoint=%s | query=%r",
+            detail,
+            settings.brave_endpoint,
+            query,
+            extra={"brave_proxy_configured": bool(settings.brave_proxy_url)},
+        )
+        return {"error": f"无法访问 Brave 搜索：{detail}"}
+    except ValueError as exc:
+        detail = _error_detail(exc)
+        logger.warning("Brave web_search returned invalid JSON: %s", detail)
+        return {"error": f"Brave 搜索返回了无法解析的 JSON：{detail}"}
 
     results = []
     for item in (data.get("web", {}) or {}).get("results", [])[:count]:

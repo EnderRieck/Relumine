@@ -121,6 +121,7 @@ class OcrProofreadClient:
         self.base_url = settings.llm_base_url.rstrip("/")
         self.model = settings.llm_model
         self.timeout = settings.llm_timeout
+        self.max_tokens = settings.llm_max_tokens
 
     @property
     def configured(self) -> bool:
@@ -159,7 +160,7 @@ class OcrProofreadClient:
             ],
             "response_format": {"type": "json_object"},
             "temperature": 0.1,
-            "max_tokens": 2048,
+            "max_tokens": self.max_tokens,
             "stream": False,
         }
         request = urllib.request.Request(
@@ -172,22 +173,36 @@ class OcrProofreadClient:
             method="POST",
         )
 
-        try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
-                raw: dict[str, Any] = json.loads(response.read().decode("utf-8"))
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")
-            logger.warning("DeepSeek HTTP %s: %s", exc.code, detail[:500])
-            raise RuntimeError(f"DeepSeek API returned HTTP {exc.code}") from exc
-        except urllib.error.URLError as exc:
-            raise RuntimeError(f"cannot reach DeepSeek API: {exc.reason}") from exc
+        for attempt in range(2):
+            try:
+                with urllib.request.urlopen(request, timeout=self.timeout) as response:
+                    raw: dict[str, Any] = json.loads(response.read().decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", errors="replace")
+                logger.warning("DeepSeek HTTP %s: %s", exc.code, detail[:500])
+                raise RuntimeError(f"DeepSeek API returned HTTP {exc.code}") from exc
+            except urllib.error.URLError as exc:
+                raise RuntimeError(f"cannot reach DeepSeek API: {exc.reason}") from exc
 
-        try:
-            content = raw["choices"][0]["message"]["content"]
-            parsed = json.loads(_strip_code_fence(content))
-        except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
-            logger.warning("DeepSeek 校对返回无法解析: %s", exc)
-            raise RuntimeError("DeepSeek returned an invalid structured response") from exc
+            try:
+                choice = raw["choices"][0]
+                content = choice["message"]["content"] or ""
+                parsed = json.loads(_strip_code_fence(content))
+                break
+            except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+                finish_reason, content_length = _choice_diagnostics(raw)
+                logger.warning(
+                    "DeepSeek 校对返回无法解析: %s "
+                    "(finish_reason=%s, content_length=%s, max_tokens=%s, attempt=%s)",
+                    exc,
+                    finish_reason,
+                    content_length,
+                    self.max_tokens,
+                    attempt + 1,
+                )
+                if attempt == 0:
+                    continue
+                raise RuntimeError("DeepSeek returned an invalid structured response") from exc
 
         risks = _assemble_risks(text, parsed, confs, ocr_cands)
         # OCR 硬低置信、但大模型没标的位置，单独兜底成「低置信」风险交专家过目。
@@ -410,3 +425,12 @@ def _strip_code_fence(content: str) -> str:
         lines = value.splitlines()
         value = "\n".join(lines[1:-1])
     return value.strip()
+
+
+def _choice_diagnostics(raw: dict[str, Any]) -> tuple[str | None, int | None]:
+    try:
+        choice = raw["choices"][0]
+        content = choice.get("message", {}).get("content") or ""
+        return choice.get("finish_reason"), len(content)
+    except Exception:  # noqa: BLE001 - diagnostics must never mask root cause
+        return None, None

@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     llm_base_url: str = "https://api.deepseek.com"
     llm_model: str = "deepseek-v4-flash"
     llm_timeout: float = 120.0
+    llm_max_tokens: int = 131072
     culture_db_path: Path = Path(__file__).parent / "data" / "culture_graph.sqlite"
     cbdb_path: Path = (
         Path(__file__).parent
@@ -63,6 +64,7 @@ class Settings(BaseSettings):
     agent_model: str | None = None
     brave_api_key: str | None = None
     brave_endpoint: str = "https://api.search.brave.com/res/v1/web/search"
+    brave_proxy_url: str | None = None
     agent_enable_browser: bool = True
     agent_max_steps: int = 12
     agent_session_ttl: float = 3600.0
