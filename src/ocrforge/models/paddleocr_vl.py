@@ -156,7 +156,10 @@ class PaddleOCRVLModule:
         贪婪解码（do_sample=False, num_beams=1）下，被选 token 的 softmax 概率即模型把握。
         取分数 / 增量 decode / 对齐任一步失败都**优雅退回纯文本**，不影响识读主链路。
         """
-        from ocrforge.models.token_confidence import assemble_char_confidence
+        from ocrforge.models.token_confidence import (
+            assemble_char_confidence,
+            strip_aligned,
+        )
 
         self.eval()
         image = ImageOps.exif_transpose(Image.open(image_path)).convert("RGB")
@@ -219,12 +222,15 @@ class PaddleOCRVLModule:
         except Exception:  # pragma: no cover - 任何意外都不该拖垮识读
             enriched = None
 
-        if enriched is None or enriched[0].strip() != plain_text:
+        if enriched is None:
+            return {"text": plain_text, "char_confidences": None, "alternatives": None}
+        # 去首尾空白时 text / confs / alts 同步裁剪，避免长度错位导致前端整段丢弃置信度
+        text, confs, alts = strip_aligned(*enriched)
+        if text != plain_text or len(confs) != len(text):
             # 对齐结果与正式 decode 不一致（分词器非前缀稳定等）→ 只给文本，不给可能错位的置信度
             return {"text": plain_text, "char_confidences": None, "alternatives": None}
-        text, confs, alts = enriched
         return {
-            "text": text.strip(),
+            "text": text,
             "char_confidences": confs,
             "alternatives": {str(k): v for k, v in alts.items()},
         }
@@ -232,14 +238,14 @@ class PaddleOCRVLModule:
     def _char_confidence(
         self, target, sequences, scores, prompt_len, eos_id, top_k, assemble
     ):
-        """从 generate 的 scores 还原逐 token 概率 + 增量 decode 片段，再对齐到逐字。
+        """从 generate 的 scores 还原逐 token 概率 + token→字对齐，再对齐到逐字。
 
         返回 (text, char_confidences, alternatives) 或 None（无法稳妥对齐时）。
-        对齐与「前缀稳定性」判定都委托给已单测的 token_confidence 纯函数，
-        这里只剩 exp / topk 几个 trivial 的 torch 调用。
+        对齐逻辑委托给已单测的 token_confidence 纯函数（以最终文本为锚，对 byte-fallback
+        稳健），这里只剩 exp / topk 几个 trivial 的 torch 调用。
         """
         import torch as _torch
-        from ocrforge.models.token_confidence import incremental_pieces
+        from ocrforge.models.token_confidence import text_anchored_pieces
 
         transition = target.compute_transition_scores(
             sequences, scores, normalize_logits=True
@@ -254,11 +260,11 @@ class PaddleOCRVLModule:
         gen_ids = gen_ids[:end]
 
         tok = self.processor
-        pieces = incremental_pieces(
-            gen_ids, lambda ids: tok.decode(ids, skip_special_tokens=True)
-        )
+        decode = lambda ids: tok.decode(ids, skip_special_tokens=True)
+        final_text = decode(gen_ids)
+        pieces = text_anchored_pieces(final_text, gen_ids, decode)
         if pieces is None:
-            return None  # 非前缀稳定，放弃置信度（宁可不给也不给错的）
+            return None  # 无法稳妥对齐，放弃置信度（宁可不给也不给错的）
 
         probs: list[float] = []
         topk_pieces: list[list[str]] = []

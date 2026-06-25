@@ -3,9 +3,11 @@
 PaddleOCR-VL 贪婪解码时，每个生成 token 的 softmax 概率即模型对该 token 的把握。
 但 token ≠ 字：一个 token 可能产出多字、一个字也可能跨多 token（生僻字/字节回退）。
 本模块把「逐 token 的概率 + top-k 备选」对齐到「逐字符的置信度 + 候选字」。
+对齐以最终解码文本为锚（text_anchored_pieces），对生僻字/扩展区汉字的 byte fallback
+稳健——半个字无论渲染成 "" 还是替换符 �，都能正确归并，不会错位。
 
-约定（由调用方在模型侧用 tokenizer 增量 decode 得到）：
-- pieces[i]      : 第 i 个生成 token 相对前缀「新增」的文本（可能为 ""，表示尚未凑成字）。
+约定（pieces 由 text_anchored_pieces 算出）：
+- pieces[i]      : 第 i 个生成 token 新完成的字符（可能为 ""，表示该字节 token 尚未凑成字）。
 - probs[i]       : 第 i 个 token 被选中的概率 ∈ [0,1]。
 - topk_pieces[i] : 第 i 个 token 的若干备选 token 各自单独 decode 的字符串（已去掉被选中的那个）。
 
@@ -17,26 +19,70 @@ from __future__ import annotations
 from typing import Callable
 
 
-def incremental_pieces(
+def text_anchored_pieces(
+    final_text: str,
     token_ids: list[int],
     decode: Callable[[list[int]], str],
 ) -> list[str] | None:
-    """用 decode 增量还原每个 token 相对前缀「新增」的文本片段。
+    """以最终文本为锚，算出每个 token「新完成」的字符片段，对 byte-fallback 稳健。
 
-    decode: 把一段 token id 解码为文本（已 skip special tokens）。
-    返回与 token_ids 等长的 pieces；若分词器**非前缀稳定**（解码更长前缀的结果
-    不以更短前缀的结果开头，常见于带前导空格的 BPE）则返回 None —— 此时宁可不给
-    置信度也不给错位的。
+    很多分词器对生僻字 / 扩展区汉字走 byte fallback：单个字节 token 解码不出完整字，
+    decode 中间前缀会产出 "" 或替换符 �（U+FFFD）。本函数不依赖「前缀稳定性」，而是
+    以 final_text（整段权威解码结果）为基准，只统计「已经成为 final_text 前缀的字符」——
+    无论半个字渲染成 "" 还是 �，都能正确对齐：凑不出字的字节 token 片段记为 ""，
+    其概率由 assemble 累计到完成该字的那一步取最小。
+
+    final_text: 对完整生成序列 decode(skip special) 的结果（已去 eos）。
+    decode    : Callable[[list[int]], str]，对 token id 前缀解码（skip special）。
+    返回与 token_ids 等长的 pieces；若解码前缀偏离 final_text（异常分词器）或末尾
+    未对齐（生成被截断在半个字）则返回 None —— 宁可不给也不给错位的。
     """
+    chars = list(final_text)
     pieces: list[str] = []
-    prev = ""
+    covered = 0
     for i in range(len(token_ids)):
         cur = decode(token_ids[: i + 1])
-        if not cur.startswith(prev):
-            return None
-        pieces.append(cur[len(prev):])
-        prev = cur
+        adv = _common_prefix_len(cur, chars)
+        if adv < covered:
+            return None  # 解码结果倒退/偏离锚文本，放弃
+        pieces.append("".join(chars[covered:adv]))
+        covered = adv
+    if covered != len(chars):
+        return None  # 末尾还有字没被任何 token 覆盖（截断在半个字）
     return pieces
+
+
+def _common_prefix_len(cur: str, chars: list[str]) -> int:
+    """cur 与 final_text 的最长公共前缀长度（按码点）。
+
+    半个字渲染成 � 时，� 不等于 final_text 的下一个真实字 → 自然停在已完成处。
+    """
+    cur_chars = list(cur)
+    k = 0
+    m = min(len(cur_chars), len(chars))
+    while k < m and cur_chars[k] == chars[k]:
+        k += 1
+    return k
+
+
+def strip_aligned(
+    text: str,
+    confs: list[float],
+    alts: dict[int, list[str]],
+) -> tuple[str, list[float], dict[int, list[str]]]:
+    """去掉 text 首尾空白，并**同步**裁剪 confs、移位 alts，使三者保持逐字对齐。
+
+    模型输出常带首尾换行/空格；若只 strip 文本而不裁 confs，长度就会错位
+    （前端按长度一致性判断，会因此整段丢弃置信度）。
+    """
+    lead = len(text) - len(text.lstrip())
+    end = len(text.rstrip())  # 尾部空白起始下标
+    if end < lead:  # 全是空白
+        return "", [], {}
+    new_text = text[lead:end]
+    new_confs = confs[lead:end]
+    new_alts = {k - lead: v for k, v in alts.items() if lead <= k < end}
+    return new_text, new_confs, new_alts
 
 
 def assemble_char_confidence(
@@ -94,7 +140,7 @@ def assemble_char_confidence(
 
 def _clean_alts(topk: list[str], *, exclude: str, limit: int) -> list[str]:
     out: list[str] = []
-    seen: set[str] = {exclude}
+    seen: set[str] = {exclude, "�"}  # 排除自身与替换符 �（byte-fallback 残字）
     for raw in topk:
         ch = (raw or "").strip()
         if len(ch) == 1 and ch not in seen:
