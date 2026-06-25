@@ -34,6 +34,7 @@ const ACTION_TAB: Record<string, string> = {
   analyze_corpus_coverage: "evolution",
   set_culture_text: "culture",
   run_culture_analysis: "culture",
+  run_ocr_proofread: "ocr",
 };
 
 function openTab(tab: string) {

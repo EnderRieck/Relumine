@@ -36,6 +36,13 @@ export const SUGGESTIONS: Suggestion[] = [
       "用 corpus-audit 审计这段古籍的识读风险：學而時習之，不亦說乎？有朋自遠方來，不亦樂乎？",
   },
 
+  // run_ocr_proofread (古籍识读页 · OCR 置信度校对)
+  {
+    label: "校对识读结果",
+    prompt:
+      "帮我校对『古籍识读』页这次的识读结果：把 OCR 没把握的字找出来、给候选，说说哪几处最该核对",
+  },
+
   // culture (史脉) page operation
   {
     label: "分析史记开篇",

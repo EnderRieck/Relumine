@@ -8,7 +8,7 @@ import { Gauge, Network, ScanText } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import type { OcrResponse, ProofreadResult, ProofreadRisk } from "@/lib/types";
 import { cn } from "@/lib/cn";
-import { useRegisterSnapshot } from "@/lib/agent-bridge";
+import { useRegisterSnapshot, useRegisterAction } from "@/lib/agent-bridge";
 
 import { SectionMark } from "@/components/chinese/SectionMark";
 import { GoldRule } from "@/components/chinese/GoldRule";
@@ -71,16 +71,54 @@ export function OcrPanel() {
   );
 
   // ----- Agent bridge: expose OCR panel state (read-only) -----
-  useRegisterSnapshot("ocr", () => ({
-    fileName: file?.name ?? null,
-    mode,
-    ocrText: result?.text ?? null,
-    proofedText: proof ? effectiveText : null,
-    riskCount: proof?.risks.length ?? 0,
-    simplifiedText,
-    charCount: result?.char_count ?? 0,
-    queueDepth,
-  }));
+  useRegisterSnapshot("ocr", () => {
+    const cc = result?.char_confidences ?? null;
+    // OCR 自己没把握的字（< 0.9），供 Agent 解读 / 判断要不要校对
+    const lowConfidenceChars =
+      cc && cc.length === codepoints.length
+        ? codepoints
+            .map((ch, i) => ({ char: ch, position: i, confidence: cc[i] }))
+            .filter((x) => x.confidence < 0.9)
+            .sort((a, b) => a.confidence - b.confidence)
+            .slice(0, 20)
+            .map((x) => ({ ...x, confidence: Math.round(x.confidence * 100) / 100 }))
+        : null;
+    return {
+      fileName: file?.name ?? null,
+      mode,
+      ocrText: result?.text ?? null,
+      hasConfidence,
+      lowConfidenceChars,
+      proofedText: proof ? effectiveText : null,
+      riskCount: proof?.risks.length ?? 0,
+      simplifiedText,
+      charCount: result?.char_count ?? 0,
+      queueDepth,
+    };
+  });
+
+  // ----- Agent bridge: 触发校对（用本面板已存的逐字置信度）-----
+  useRegisterAction("run_ocr_proofread", async () => {
+    if (!result)
+      return { error: "还没有识读结果——请先在『古籍识读』页上传图片做 OCR。" };
+    if (!hasConfidence)
+      return {
+        note: "本次识读没有逐字置信度（远程 / 非本地 PaddleOCR-VL 后端拿不到），无法按置信度校对。",
+      };
+    const res = await runProofread();
+    if (!res) return { error: "校对失败（后端无响应）。" };
+    return {
+      riskCount: res.risks.length,
+      note: res.note ?? null,
+      risks: res.risks.map((r) => ({
+        position: r.position,
+        original: r.original,
+        ocr_confidence: r.ocr_confidence,
+        snippet: r.snippet,
+        candidates: r.candidates.map((c) => c.char),
+      })),
+    };
+  });
 
   useEffect(
     () => () => {
@@ -156,8 +194,8 @@ export function OcrPanel() {
     }
   }
 
-  async function runProofread() {
-    if (!result) return;
+  async function runProofread(): Promise<ProofreadResult | null> {
+    if (!result) return null;
     setMode("trad"); // 校对在繁体原文上做
     setProofing(true);
     setOpenPos(null);
@@ -174,9 +212,11 @@ export function OcrPanel() {
       } else {
         toast.success(`校对完成 · 按置信度标出 ${res.risks.length} 处待校对字`);
       }
+      return res;
     } catch (e) {
       const detail = e instanceof ApiError ? e.message : "校对失败";
       toast.error(detail);
+      return null;
     } finally {
       setProofing(false);
     }

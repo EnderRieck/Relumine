@@ -99,26 +99,6 @@ async def _convert_name(args: dict[str, Any], ctx: ToolContext) -> Any:
     return await asyncio.to_thread(_run)
 
 
-# ---------- OCR 上下文校对 ----------
-
-async def _proofread_ocr(args: dict[str, Any], ctx: ToolContext) -> Any:
-    from ocrforge_web.services.ocr_proofread import OcrProofreadClient
-
-    text = str(args.get("text") or "").strip()
-    if not text:
-        return {"error": "text is required"}
-
-    client = OcrProofreadClient(ctx.settings)
-
-    def _run() -> dict:
-        return client.proofread(text).model_dump(exclude_none=True)
-
-    try:
-        return await asyncio.to_thread(_run)
-    except RuntimeError as exc:
-        return {"error": str(exc)}
-
-
 # ---------- cultural relation graph (history tab) ----------
 
 async def _list_culture_analyses(args: dict[str, Any], ctx: ToolContext) -> Any:
@@ -231,23 +211,6 @@ def db_tools() -> list[Tool]:
                 "additionalProperties": False,
             },
             handler=_convert_name,
-        ),
-        Tool(
-            name="proofread_ocr",
-            description=(
-                "古籍 OCR 校对：按 OCR 逐字置信度选出待校对字、用形近字库 + OCR 次优给候选。"
-                "选字依赖逐字置信度，纯文本调用拿不到置信度会返回空结果——此时应提示用户到"
-                "「古籍识读」页用本地 PaddleOCR-VL 识读后点「校对」。"
-            ),
-            parameters={
-                "type": "object",
-                "properties": {
-                    "text": {"type": "string", "description": "待校对的古籍文本（通常为繁体）"}
-                },
-                "required": ["text"],
-                "additionalProperties": False,
-            },
-            handler=_proofread_ocr,
         ),
         Tool(
             name="list_culture_analyses",

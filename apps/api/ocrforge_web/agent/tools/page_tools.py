@@ -128,4 +128,13 @@ def client_tools() -> list[Tool]:
             "触发'史脉'页对当前原文执行实体-关系抽取分析（较慢）。",
             no_params(),
         ),
+        _client_tool(
+            "run_ocr_proofread",
+            "在'古籍识读'页对当前识读结果做 OCR 置信度校对：按逐字置信度选出『待校对字』、"
+            "用形近字库 + OCR 次优给候选（DeepSeek 排序），返回风险字列表"
+            "（position / 原字 / ocr_confidence / 候选）供你解读。"
+            "需先有识读结果、且后端为本地 PaddleOCR-VL（才有逐字置信度）；否则返回提示。"
+            "用户问'识读有没有错字 / 帮我校对 / OCR 哪些字没把握'时用本工具。",
+            no_params(),
+        ),
     ]
