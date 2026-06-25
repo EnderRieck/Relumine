@@ -8,6 +8,7 @@ import type {
   Direction,
   HealthResponse,
   OcrResponse,
+  ProofreadResult,
   ReviewStatus,
 } from "@/lib/types";
 
@@ -64,6 +65,26 @@ export const api = {
   async ocrQueue(): Promise<{ depth: number }> {
     return jsonOrThrow<{ depth: number }>(
       await fetch("/api/ocr/queue", { cache: "no-store" }),
+    );
+  },
+
+  async proofread(
+    text: string,
+    opts?: {
+      char_confidences?: number[] | null;
+      ocr_candidates?: Record<string, string[]> | null;
+    },
+  ): Promise<ProofreadResult> {
+    return jsonOrThrow<ProofreadResult>(
+      await fetch("/api/ocr/proofread", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text,
+          char_confidences: opts?.char_confidences ?? null,
+          ocr_candidates: opts?.ocr_candidates ?? null,
+        }),
+      }),
     );
   },
 

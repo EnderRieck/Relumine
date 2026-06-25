@@ -6,7 +6,8 @@ CultureCourse 演示用 Web 后端：
 |------|------|
 | `POST /api/convert` | 繁简通译 + 多对一字检测（OpenCC） |
 | `POST /api/convert/name` | 人名/地名多源繁→简（CC-CEDICT 词级 + OpenCC/Unihan 字级 + CHISE 佐证）；`/batch` 批量、`/sources` 索引状态 |
-| `POST /api/ocr` | 上传图片 → OCR 识别文本 |
+| `POST /api/ocr` | 上传图片 → OCR 识别文本（本地 PaddleOCR-VL 还会附逐字置信度与 top-k 候选） |
+| `POST /api/ocr/proofread` | 古籍 OCR 文本校对：OCR 逐字置信度 + 部件形近字 + DeepSeek 上下文，标注可疑字 + 给候选，不改原文 |
 | `GET  /api/evolution` | 字形演化数据库 |
 | `GET  /api/evolution/{char}` | 单字详情 |
 | `POST /api/culture/analyze` | DeepSeek 古籍实体与关系抽取 |
@@ -58,7 +59,8 @@ cp apps/api/.env.example apps/api/.env
 工具与技能：
 
 - **服务端工具**：`search_characters` / `get_character_detail` / `get_database_stats` /
-  `get_cl_analysis` / `convert_text` / `list_culture_analyses` / `get_culture_analysis`
+  `get_cl_analysis` / `convert_text` / `convert_name` / `proofread_ocr` /
+  `list_culture_analyses` / `get_culture_analysis`
   （复用现有只读仓储与 OpenCC）、`web_search`（Brave）、`browse_page`（Playwright 无头）。
 - **客户端工具**：`get_page_context` 读取页面快照；`switch_tab` / `set_convert_input` /
   `run_convert` / `set_evolution_search` / `select_character` / `set_culture_text` /
@@ -146,6 +148,35 @@ OCRFORGE_WEB_SKIP_OCR=1 conda run -n base uvicorn ocrforge_web.main:app ...
   `generate_page`；没有 checkpoint 时使用 macOS Vision OCR 后备链路。
 - `ocrforge_web/__init__.py` 在导入时把 `CultureCourse/src` 加入 `sys.path`，
   与 `tools/_bootstrap.py` 同思路。
+
+## OCR 上下文校对
+
+`services/ocr_proofread.py` 对（OCR 识读出的）古籍文本做**上下文校对**：找出疑似被识别错的字、
+给出候选，但**只标注不改写**——判断权交给专家。接口 `POST /api/ocr/proofread`（DeepSeek 未配置返回
+503），助手工具 `proofread_ocr`，前端在「古籍识读」页点「校对」即可，风险字按把握度分级框标、点击出候选。
+
+判定不靠单一信号，三层叠加：
+
+1. **OCR 逐字置信度（主闸门）**：本地 PaddleOCR-VL 贪婪解码时，每个 token 的 softmax 概率即模型把握。
+   `generate_page_with_confidence` 用 `return_dict_in_generate + output_scores` 取分数、
+   `compute_transition_scores` 还原逐 token 概率，再经 `models/token_confidence.py` 做 **token→字对齐**
+   （增量 decode 求每 token 新增片段、跨多 token 的字取最小概率、单 token 单字位附 top-k 次优读法当候选）。
+   低置信字优先送校对、并把 OCR 自己的 top-k 候选并入；非前缀稳定或任一步出错时**优雅退回纯文本**，不拖累识读。
+2. **形近字先验**：从 `cl_analysis.v1.json` 的 `ocr_confusion.top_pairs`（CHISE 部件结构在繁体字形上算的
+   形近字对）建「字→易混字」索引，作候选先验喂给模型，并把模型漏掉的形近孪生字强制补进候选；
+3. **上下文判定**：DeepSeek（复用 `settings.llm_*`）结合文义、搭配、人名地名书名判断某字是否可疑、该改成什么；
+   并被告知「OCR 低置信位」清单优先核查。OCR 硬低置信（< 0.6）但模型未标的位置，单独兜底成「低置信」风险交专家过目。
+
+每个风险字带两个独立信号：`confidence`（语言模型判定的误识把握）与 `ocr_confidence`（OCR 模型识别置信度）。
+置信度只在本地 PaddleOCR-VL 后端有；remote / vision 后端拿不到，退化为「形近 + 上下文」两层，行为不变。
+
+**位置对齐**不让模型数下标（模型对字符计数不可靠）：模型只回包含可疑字的**原文片段 `snippet`**，后端用
+`text.find(snippet)+片段内偏移` 算出绝对码点下标，并核验 `text[pos]==suspect`，定位不上的直接丢弃。
+前后端一律按**码点**（Python `str` / JS `Array.from`）索引，避免扩展区汉字的 UTF-16 错位。
+
+> 说明：`top_pairs` 是从 8 万余对里截断的高相似子集（约覆盖百余字），形近表只作候选先验，真正判断靠
+> 置信度 + 上下文，覆盖不全不影响可用。后续增强：从全量 CHISE 建部件倒排进一步扩大形近覆盖。
+> token→字对齐逻辑（`token_confidence.py`）已离线单测；逐字置信度的真实数值需在能跑 PaddleOCR-VL 的部署环境验证。
 
 ## 多源繁→简转换
 

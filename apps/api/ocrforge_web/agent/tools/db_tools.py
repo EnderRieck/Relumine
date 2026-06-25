@@ -99,6 +99,28 @@ async def _convert_name(args: dict[str, Any], ctx: ToolContext) -> Any:
     return await asyncio.to_thread(_run)
 
 
+# ---------- OCR 上下文校对 ----------
+
+async def _proofread_ocr(args: dict[str, Any], ctx: ToolContext) -> Any:
+    from ocrforge_web.services.ocr_proofread import OcrProofreadClient
+
+    text = str(args.get("text") or "").strip()
+    if not text:
+        return {"error": "text is required"}
+
+    client = OcrProofreadClient(ctx.settings)
+    if not client.configured:
+        return {"error": "DeepSeek API key is not configured"}
+
+    def _run() -> dict:
+        return client.proofread(text).model_dump(exclude_none=True)
+
+    try:
+        return await asyncio.to_thread(_run)
+    except RuntimeError as exc:
+        return {"error": str(exc)}
+
+
 # ---------- cultural relation graph (history tab) ----------
 
 async def _list_culture_analyses(args: dict[str, Any], ctx: ToolContext) -> Any:
@@ -211,6 +233,23 @@ def db_tools() -> list[Tool]:
                 "additionalProperties": False,
             },
             handler=_convert_name,
+        ),
+        Tool(
+            name="proofread_ocr",
+            description=(
+                "对古籍 OCR 识读出的文本做上下文校对：结合文义与部件形近字表，找出疑似被识别错的"
+                "单字，给出候选字、理由与把握度(confidence)，并用 position 标出位置。只给建议、不改"
+                "原文，供专家权衡。适合在用户问'这段识读有没有错字/帮我校对'时调用。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "text": {"type": "string", "description": "待校对的古籍文本（通常为繁体）"}
+                },
+                "required": ["text"],
+                "additionalProperties": False,
+            },
+            handler=_proofread_ocr,
         ),
         Tool(
             name="list_culture_analyses",

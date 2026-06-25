@@ -23,6 +23,13 @@ export const SUGGESTIONS: Suggestion[] = [
     prompt: "“瀋陽”“歐陽脩”这些繁体专名转简体，分别是怎么定的？有没有分歧",
   },
 
+  // proofread_ocr (OCR 上下文校对)
+  {
+    label: "校对这段识读",
+    prompt:
+      "帮我校对这段古籍 OCR 文本有没有形近错字，标出可疑字并给候选：學而時習之，不亦說乎？有朋自遠方來，不亦樂乎？人不知而不慍，不亦君子乎？",
+  },
+
   // search_characters / get_database_stats / get_cl_analysis
   { label: "列几个疑难合并字", prompt: "列几个繁简多对一的疑难合并字" },
   { label: "字库规模", prompt: "字库一共收录了多少字？合并字有多少？" },

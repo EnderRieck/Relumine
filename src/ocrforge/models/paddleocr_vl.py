@@ -144,6 +144,136 @@ class PaddleOCRVLModule:
             generated = generated[:-1]
         return self.processor.decode(generated, skip_special_tokens=True).strip()
 
+    def generate_page_with_confidence(
+        self, image_path: Path, top_k: int = 5
+    ) -> dict[str, Any]:
+        """同 generate_page，但额外返回逐字置信度与逐位 top-k 候选字。
+
+        返回 {"text", "char_confidences", "alternatives"}：
+        - char_confidences: 与 text 等长（按码点）的 [0,1] 概率列表，None 表示本后端拿不到；
+        - alternatives: {码点位置: [候选字…]}，仅低置信单字位给出。
+
+        贪婪解码（do_sample=False, num_beams=1）下，被选 token 的 softmax 概率即模型把握。
+        取分数 / 增量 decode / 对齐任一步失败都**优雅退回纯文本**，不影响识读主链路。
+        """
+        from ocrforge.models.token_confidence import assemble_char_confidence
+
+        self.eval()
+        image = ImageOps.exif_transpose(Image.open(image_path)).convert("RGB")
+        task = str(self.cfg.get("task", "ocr"))
+        text_prompt = str(self.cfg.get("prompt", PROMPTS.get(task, "OCR:")))
+        max_pixels = int(self.cfg.get("max_pixels", 1280 * 28 * 28))
+        max_new_tokens = int(self.cfg.get("max_new_tokens", 512))
+        use_cache = bool(self.cfg.get("use_cache", True))
+        messages: list[dict[str, Any]] = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image", "image": image},
+                    {"type": "text", "text": text_prompt},
+                ],
+            }
+        ]
+        inputs = self.processor.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            tokenize=True,
+            return_dict=True,
+            return_tensors="pt",
+            images_kwargs={
+                "size": {
+                    "shortest_edge": self.processor.image_processor.min_pixels,
+                    "longest_edge": max_pixels,
+                }
+            },
+        ).to(self.input_device)
+        target = self._target_model()
+        with torch.inference_mode():
+            outputs = target.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                use_cache=use_cache,
+                do_sample=False,
+                num_beams=1,
+                eos_token_id=self.processor.tokenizer.eos_token_id,
+                pad_token_id=self.processor.tokenizer.pad_token_id,
+                return_dict_in_generate=True,
+                output_scores=True,
+            )
+
+        sequences = outputs.sequences
+        generated = sequences[0][inputs["input_ids"].shape[-1] :]
+        eos_id = self.processor.tokenizer.eos_token_id
+        plain_text = self.processor.decode(
+            generated[:-1]
+            if generated.numel() > 0 and int(generated[-1]) == eos_id
+            else generated,
+            skip_special_tokens=True,
+        ).strip()
+
+        try:
+            enriched = self._char_confidence(
+                target, sequences, outputs.scores, inputs["input_ids"].shape[-1],
+                eos_id, top_k, assemble_char_confidence,
+            )
+        except Exception:  # pragma: no cover - 任何意外都不该拖垮识读
+            enriched = None
+
+        if enriched is None or enriched[0].strip() != plain_text:
+            # 对齐结果与正式 decode 不一致（分词器非前缀稳定等）→ 只给文本，不给可能错位的置信度
+            return {"text": plain_text, "char_confidences": None, "alternatives": None}
+        text, confs, alts = enriched
+        return {
+            "text": text.strip(),
+            "char_confidences": confs,
+            "alternatives": {str(k): v for k, v in alts.items()},
+        }
+
+    def _char_confidence(
+        self, target, sequences, scores, prompt_len, eos_id, top_k, assemble
+    ):
+        """从 generate 的 scores 还原逐 token 概率 + 增量 decode 片段，再对齐到逐字。
+
+        返回 (text, char_confidences, alternatives) 或 None（无法稳妥对齐时）。
+        对齐与「前缀稳定性」判定都委托给已单测的 token_confidence 纯函数，
+        这里只剩 exp / topk 几个 trivial 的 torch 调用。
+        """
+        import torch as _torch
+        from ocrforge.models.token_confidence import incremental_pieces
+
+        transition = target.compute_transition_scores(
+            sequences, scores, normalize_logits=True
+        )[0]
+        gen_ids = sequences[0][prompt_len:].tolist()
+        n = len(gen_ids)
+        if n == 0:
+            return ("", [], {})
+
+        # 末尾 eos 不计入字符
+        end = n - 1 if gen_ids[-1] == eos_id else n
+        gen_ids = gen_ids[:end]
+
+        tok = self.processor
+        pieces = incremental_pieces(
+            gen_ids, lambda ids: tok.decode(ids, skip_special_tokens=True)
+        )
+        if pieces is None:
+            return None  # 非前缀稳定，放弃置信度（宁可不给也不给错的）
+
+        probs: list[float] = []
+        topk_pieces: list[list[str]] = []
+        for i in range(end):
+            probs.append(float(_torch.exp(transition[i])))
+            row = scores[i][0]
+            k = min(top_k + 1, int(row.shape[-1]))
+            alt_ids = _torch.topk(row, k).indices.tolist()
+            chosen = gen_ids[i]
+            topk_pieces.append(
+                [tok.decode([aid], skip_special_tokens=True) for aid in alt_ids if aid != chosen]
+            )
+
+        return assemble(pieces, probs, topk_pieces)
+
     def build_training_batch(self, image_path: Path, prompt: str, target_text: str) -> dict[str, Any]:
         image = ImageOps.exif_transpose(Image.open(image_path)).convert("RGB")
         text_prompt = str(self.cfg.get("prompt", prompt or PROMPTS.get(str(self.cfg.get("task", "ocr")), "OCR:")))

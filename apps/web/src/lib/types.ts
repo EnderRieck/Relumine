@@ -16,6 +16,41 @@ export type OcrResponse = {
   text: string;
   char_count: number;
   latency_ms: number;
+  // 逐字（按码点）识别置信度；仅本地 PaddleOCR-VL 提供，其余后端为 null。
+  char_confidences?: number[] | null;
+  // { 码点位置: [模型 top-k 备选字…] }
+  alternatives?: Record<string, string[]> | null;
+};
+
+export type ProofreadCategory =
+  | "形近"
+  | "文义"
+  | "缺漏"
+  | "衍文"
+  | "其他"
+  | "低置信";
+
+export type ProofreadCandidate = {
+  char: string;
+  source: "confusable" | "ocr" | "context";
+};
+
+export type ProofreadRisk = {
+  position: number;
+  original: string;
+  snippet: string;
+  candidates: ProofreadCandidate[];
+  confidence: number;
+  ocr_confidence?: number | null;
+  reason: string;
+  category: ProofreadCategory;
+};
+
+export type ProofreadResult = {
+  text: string;
+  risks: ProofreadRisk[];
+  model: string;
+  note?: string | null;
 };
 
 export type Stage = {

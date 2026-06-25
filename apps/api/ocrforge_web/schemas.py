@@ -68,10 +68,47 @@ class OcrResponse(BaseModel):
     text: str
     char_count: int
     latency_ms: int
+    # 逐字（按码点）识别置信度 ∈ [0,1]；仅本地 PaddleOCR-VL 提供，其余后端为 None。
+    char_confidences: list[float] | None = None
+    # {码点位置(字符串): [模型 top-k 备选字…]}，仅低置信位给出。
+    alternatives: dict[str, list[str]] | None = None
 
 
 class OcrQueueStatus(BaseModel):
     depth: int
+
+
+# ---------- ocr proofread (上下文校对) ----------
+
+class ProofreadRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=20000)
+    # 可选：来自 OCR 的逐字置信度与逐位候选（仅在校对刚识读出的文本时回传）。
+    char_confidences: list[float] | None = None
+    ocr_candidates: dict[str, list[str]] | None = None
+
+
+class ProofreadCandidate(BaseModel):
+    char: str
+    # confusable: 部件形近字表；ocr: OCR 模型 top-k 次优读法；context: 大模型按上下文给出
+    source: Literal["confusable", "ocr", "context"] = "context"
+
+
+class ProofreadRisk(BaseModel):
+    position: int  # 可疑字在原文中的字符下标（0 基，按码点）
+    original: str  # 原文该处的字
+    snippet: str  # 模型给出、用于定位的原文片段
+    candidates: list[ProofreadCandidate] = Field(default_factory=list)
+    confidence: float = Field(ge=0, le=1)  # 此处确为误识的把握（语言模型判定）
+    ocr_confidence: float | None = None  # OCR 模型对该字的识别置信度（有则附上）
+    reason: str = ""
+    category: Literal["形近", "文义", "缺漏", "衍文", "其他", "低置信"] = "其他"
+
+
+class ProofreadResult(BaseModel):
+    text: str
+    risks: list[ProofreadRisk] = Field(default_factory=list)
+    model: str
+    note: str | None = None
 
 
 # ---------- evolution ----------

@@ -217,8 +217,35 @@ async def shutdown() -> None:
     _REMOTE_OCR_TIMEOUT = 120.0
 
 
-async def run_ocr(image_path: Path) -> str:
-    """串行化：单卡同时只跑一个推理，其余请求按到达顺序排队。
+def _infer_detailed(image_path: Path) -> dict[str, Any]:
+    """同步推理，返回 {"text", "char_confidences", "alternatives"}。
+
+    仅本地 PaddleOCR-VL 能给逐字置信度（且模型实现了 generate_page_with_confidence）；
+    remote / vision 后端只给文本，置信度为 None。
+    """
+    if _BACKEND == "remote":
+        return {"text": _run_remote_ocr(image_path), "char_confidences": None, "alternatives": None}
+    if _BACKEND == "vision":
+        return {"text": _run_vision_ocr(image_path), "char_confidences": None, "alternatives": None}
+    fn = getattr(_MODULE, "generate_page_with_confidence", None)
+    if fn is not None:
+        result = fn(image_path)
+        if isinstance(result, dict) and "text" in result:
+            return {
+                "text": result["text"],
+                "char_confidences": result.get("char_confidences"),
+                "alternatives": result.get("alternatives"),
+            }
+    # 兼容旧模型实现：只给文本
+    return {
+        "text": _MODULE.generate_page(image_path, None, None, False),
+        "char_confidences": None,
+        "alternatives": None,
+    }
+
+
+async def run_ocr_detailed(image_path: Path) -> dict[str, Any]:
+    """串行化推理，返回带逐字置信度的结构（拿不到置信度时其字段为 None）。
 
     `_WAITING` 在拿锁之前 ++、释放锁之后 --，让 /api/ocr/queue 能反映真实队伍长度。
     """
@@ -231,11 +258,13 @@ async def run_ocr(image_path: Path) -> str:
         _WAITING += 1
     try:
         async with _LOCK:
-            if _BACKEND == "remote":
-                return await asyncio.to_thread(_run_remote_ocr, image_path)
-            if _BACKEND == "vision":
-                return await asyncio.to_thread(_run_vision_ocr, image_path)
-            return await asyncio.to_thread(_MODULE.generate_page, image_path, None, None, False)
+            return await asyncio.to_thread(_infer_detailed, image_path)
     finally:
         async with _WAITING_LOCK:
             _WAITING -= 1
+
+
+async def run_ocr(image_path: Path) -> str:
+    """仅返回文本（供 agent / 其他只需文本的调用方复用）。"""
+    detailed = await run_ocr_detailed(image_path)
+    return detailed["text"]
