@@ -74,6 +74,8 @@ cp apps/api/.env.example apps/api/.env
 ```bash
 # 联网搜索（Brave Search API）
 OCRFORGE_WEB_BRAVE_API_KEY=...
+# 直连 Brave 不通时可配置代理
+OCRFORGE_WEB_BRAVE_PROXY_URL=http://127.0.0.1:7890
 # 无头浏览器（默认开启），首次需安装内核：
 pixi run playwright install chromium
 # 默认模型若不支持 function-calling，可切换：
@@ -125,6 +127,7 @@ CHGIS 官方只读 Temporal Gazetteer API 检索，保存历史有效年代、�
 的多源转换实时给出简体形（`canonical_name_simplified`）与各库证据。
 | `OCRFORGE_WEB_AGENT_MODEL` | _(unset)_ | 助手模型，缺省回退 `LLM_MODEL` |
 | `OCRFORGE_WEB_BRAVE_API_KEY` | _(unset)_ | Brave 搜索 Key，启用 `web_search` |
+| `OCRFORGE_WEB_BRAVE_PROXY_URL` | _(unset)_ | Brave 搜索代理，直连不通时使用 |
 | `OCRFORGE_WEB_AGENT_ENABLE_BROWSER` | `true` | 是否启用 Playwright 无头浏览器工具 |
 | `OCRFORGE_WEB_AGENT_MAX_STEPS` | `12` | 单轮对话最多工具调用步数 |
 | `OCRFORGE_WEB_AGENT_SESSION_TTL` | `3600` | 内存会话存活秒数 |

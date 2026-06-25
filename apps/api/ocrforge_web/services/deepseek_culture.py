@@ -75,6 +75,7 @@ class DeepSeekCultureClient:
         self.base_url = settings.llm_base_url.rstrip("/")
         self.model = settings.llm_model
         self.timeout = settings.llm_timeout
+        self.max_tokens = settings.llm_max_tokens
 
     @property
     def configured(self) -> bool:
@@ -93,7 +94,7 @@ class DeepSeekCultureClient:
             ],
             "response_format": {"type": "json_object"},
             "temperature": 0.1,
-            "max_tokens": 4096,
+            "max_tokens": self.max_tokens,
             "stream": False,
         }
         request = urllib.request.Request(
@@ -117,7 +118,8 @@ class DeepSeekCultureClient:
             raise RuntimeError(f"cannot reach DeepSeek API: {exc.reason}") from exc
 
         try:
-            content = raw["choices"][0]["message"]["content"]
+            choice = raw["choices"][0]
+            content = choice["message"]["content"]
             parsed = _normalize_payload(
                 json.loads(_strip_code_fence(content)),
                 source_text=text,
@@ -125,7 +127,22 @@ class DeepSeekCultureClient:
             )
             result = ExtractedCulture.model_validate(parsed)
         except (KeyError, IndexError, TypeError, json.JSONDecodeError, ValidationError) as exc:
-            logger.warning("invalid structured response from DeepSeek: %s", exc)
+            finish_reason = None
+            content_length = None
+            try:
+                choice = raw["choices"][0]
+                finish_reason = choice.get("finish_reason")
+                content_length = len(choice.get("message", {}).get("content") or "")
+            except Exception:  # noqa: BLE001 - best-effort diagnostics
+                pass
+            logger.warning(
+                "invalid structured response from DeepSeek: %s "
+                "(finish_reason=%s, content_length=%s, max_tokens=%s)",
+                exc,
+                finish_reason,
+                content_length,
+                self.max_tokens,
+            )
             raise RuntimeError("DeepSeek returned an invalid structured response") from exc
 
         return _sanitize_result(result, text)
